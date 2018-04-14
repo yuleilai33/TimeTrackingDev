@@ -2,9 +2,21 @@
 @section('popup-container')
     <div id="billing-day-container"></div>
 @endsection
+@if(isset($blocked))
 @section('content')
-    @php $formatter = new NumberFormatter('en_US', NumberFormatter::PERCENT); $manage=isset($leader); @endphp
     <div class="main-content">
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-triangle"></i>
+            <strong>Can't Create Engagement!</strong><br>
+            In order to create an engagement, you must be set as <strong>'Leader Candidate'</strong> first, please
+            contact the administrator.
+        </div>
+    </div>
+@endsection
+@else
+@section('content')
+    <div class="main-content">
+        @php $manage=isset($leader); @endphp
         @if($manage||$admin)
             <div class="modal fade" id="engagementModal" tabindex="-1" role="dialog"
                  aria-labelledby="engagementModalLabel" data-backdrop="static" data-keyboard="false"
@@ -12,7 +24,8 @@
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h3 class="modal-title" id="engagementModalLabel"><span>Setup A New Engagement</span>
+                            {{--02/19/2018 Diego changed the modal title--}}
+                            <h3 class="modal-title" id="engagementModalLabel"><span>Set Up a New Engagement</span>
                                 <a type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <i class="fa fa-times" aria-hidden="true"></i>
                                 </a>
@@ -22,28 +35,34 @@
                             <div class="modal-body">
                                 <div class="panel-body">
                                     <div class="input-group">
-                                        <span class="input-group-addon"><i class="fa fa-users"></i>&nbsp; Client:</span>
-                                        <select id="client-select" class="selectpicker" data-width="auto"
+                                                <span class="input-group-addon"><i
+                                                            class="fa fa-users"></i>&nbsp; Client:</span>
+                                        <select id="client-select" class="selectpicker" data-width="22%"
                                                 data-live-search="true"
                                                 name="client_id" title="select the client" required>
-                                            @foreach(\newlifecfo\Models\Client::all()->pluck('name','id') as $id=>$client)
+                                            @foreach(\newlifecfo\Models\Client::all()->sortBy('name')->pluck('name','id') as $id=>$client)
                                                 <option value="{{$id}}"
                                                         data-content="<strong>{{$client}}</strong>"></option>
                                             @endforeach
                                         </select>
                                         <span class="input-group-addon"><i class="fa fa-briefcase"
-                                                                           aria-hidden="true"></i>&nbsp;Name:</span>
+                                                                           aria-hidden="true"></i>&nbsp;Engagement Name:</span>
                                         <input type="text" list="engagement-names" class="form-control flexdatalist"
                                                id="engagement-name" name="name"
-                                               placeholder="input a name" data-selection-required='true'
+                                               placeholder="input a name" data-selection-required='false'
                                                data-min-length='0' data-search-by-word='true' required>
                                         <datalist id="engagement-names">
                                             <option value="CFO Services">
                                             <option value="Controller Services">
-                                            <option value="Business Intelligence">
+                                            <option value="Business Intelligence Services">
+                                            <option value="Investor Services"></option>
+                                            <option value="Tip of the Spear Services"></option>
+                                            <option value="New Life Admin"></option>
                                         </datalist>
-                                        <span class="input-group-addon"><i class="fa fa-male" aria-hidden="true"></i>&nbsp; Leader:</span>
-                                        <select class="selectpicker" name="leader_id" id="leader_id" data-width="auto"
+                                        <span class="input-group-addon"><i class="fa fa-male"
+                                                                           aria-hidden="true"></i>&nbsp; Leader:</span>
+                                        <select class="selectpicker" name="leader_id" id="leader_id"
+                                                data-width="auto"
                                                 disabled>
                                             @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
                                                 <option value="{{$consultant->id}}" {{($manage&&$consultant->id==$leader->id)?'selected':''}}>{{$consultant->fullname()}}</option>
@@ -57,8 +76,10 @@
                                         <input class="date-picker form-control" id="start-date" name="start_date"
                                                placeholder="mm/dd/yyyy" type="text" required/>
                                         <span class="input-group-addon"><i class="fa fa-handshake-o"
-                                                                           aria-hidden="true"></i>&nbsp; Buziness Dev:</span>
-                                        <input type="text" class="form-control" id="buz_dev_person" value="New Life CFO"
+                                                                           {{--02/19/2018 Diego changed typo--}}
+                                                                           aria-hidden="true"></i>&nbsp; Business Dev:</span>
+                                        <input type="text" class="form-control" id="buz_dev_person"
+                                               value="New Life CFO"
                                                disabled>
                                         <span class="input-group-addon"><i class="fa fa-pie-chart"></i>&nbsp;Dev Share:</span>
                                         <input class="form-control" id="buz_dev_share" name="buz_dev_share"
@@ -72,7 +93,7 @@
                                     <br>
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-hourglass-half"
-                                                                           aria-hidden="true"></i>&nbsp;Client Billed Type:</span>
+                                                                           aria-hidden="true"></i>&nbsp;Client Billing Type:</span>{{--02/19/2018 Diego changed typo--}}
                                         <select id="cycle-select" class="selectpicker" data-width="auto"
                                                 name="paying_cycle" required>
                                             <option value="0">Hourly</option>
@@ -80,15 +101,42 @@
                                             <option value="2">Fixed Fee Project</option>
                                         </select>
                                         <span class="input-group-addon"><i
-                                                    class="fa fa-money"></i>&nbsp;Billing Amount:<strong>$</strong></span>
-                                        <input class="form-control" id="billing_amount" name="cycle_billing"
-                                               type="number" step="0.1" min="0" placeholder="N/A">
+                                                    class="fa fa-money"></i>&nbsp;Billing Amount:</span>
+                                        <input class="form-control us-currency" id="billing_amount" name="cycle_billing"
+                                               type="text" placeholder="N/A">
                                         <span class="input-group-addon"><i
                                                     class="fa fa-calendar-check-o"></i>&nbsp; Billing Day</span>
                                         <input class="form-control" id="billing-day" name="billing_day"
                                                placeholder="dd" type="number" min="1" max="31" step="1" required/>
                                     </div>
                                     <br>
+                                    <div class="input-group" style="border: dotted #c0c6d1;">
+                                        <span class="input-group-addon"><i
+                                                    class="fa fa-user-o"></i>&nbsp; Closer:</span>
+                                        <select id="closer-select" class="selectpicker" data-width="15%"
+                                                data-live-search="true"
+                                                name="closer_id" title="select closer">
+                                            @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                                <option value="{{$consultant->id}}">{{$consultant->fullname()}}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="input-group-addon"><i
+                                                    class="fa fa-calendar-o"></i>&nbsp;From</span>
+                                        <input class="date-picker form-control" id="closer-from" name="closer_from"
+                                               placeholder="mm/dd/yyyy" type="text"/>
+                                        <span class="input-group-addon"><i
+                                                    class="fa fa-calendar-minus-o"></i>&nbsp;To</span>
+                                        <input class="date-picker form-control" id="closer-end" name="closer_end"
+                                               placeholder="mm/dd/yyyy" type="text"/>
+                                        <span class="input-group-addon"><i
+                                                    class="fa fa-circle-o-notch"></i>&nbsp;Share:</span>
+                                        <input class="form-control" id="closer-share" name="closer_share"
+                                               type="number"
+                                               placeholder="pct."
+                                               step="0.1" min="0"
+                                               max="100">
+                                        <span class="input-group-addon">%</span>
+                                    </div>
                                 </div>
                                 <a id="add-team-member" href="javascript:void(0)" class="label label-info"><i
                                             class="fa fa-user-plus" aria-hidden="true"></i>Add members
@@ -99,8 +147,8 @@
                                         <tr>
                                             <th>Consultant</th>
                                             <th>Position</th>
-                                            <th>Billing Rate</th>
-                                            <th>Pay Rate</th>
+                                            <th>Billing Rate($)</th>
+                                            <th>Pay Rate($)</th>
                                             <th>Firm Share%</th>
                                             <th></th>
                                         </tr>
@@ -113,7 +161,8 @@
                                                         data-live-search="true"
                                                         required disabled>
                                                     @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
-                                                        <option value="{{$consultant->id}}">{{$consultant->fullname()}}</option>
+                                                        <option class="{{$consultant->user->isVerified()?'':'h-consultant'}}"
+                                                                value="{{$consultant->id}}">{{$consultant->fullname()}}</option>
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -125,8 +174,10 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td><input type="number" step=0.01 min=0 class="form-control b-rate"></td>
-                                            <td><input type="number" step=0.01 min=0 class="form-control p-rate"></td>
+                                            <td><input type="number" step=0.01 min=0 class="form-control b-rate">
+                                            </td>
+                                            <td><input type="number" step=0.01 min=0 class="form-control p-rate">
+                                            </td>
                                             <td><input type="number" step=0.01 min=0 max=100
                                                        class="form-control f-share"></td>
                                             <td><a href="javascript:void(0);"><i class="fa fa-minus-circle"
@@ -205,15 +256,18 @@
                         <select class="selectpicker form-control" data-width="fit"
                                 id="status-select"
                                 data-live-search="true" title="&#xf024; Status">
-                            <option value="0" {{Request('status')=="0"?'selected':''}}>Pending</option>
+                            {{--02/19/2018 Diego changed the order--}}
                             <option value="1" {{Request('status')=="1"?'selected':''}}>Active</option>
                             <option value="2" {{Request('status')=="2"?'selected':''}}>Closed</option>
+                            <option value="0" {{Request('status')=="0"?'selected':''}}>Pending</option>
+
                         </select>
                         <input class="date-picker form-control" size=10 id="start-date-filter"
                                placeholder="&#xf073; Start after"
                                value="{{Request('start')}}"
                                type="text"/>
-                        <a href="javascript:void(0)" type="button" class="btn btn-info" id="filter-button">Filter</a>
+                        <a href="javascript:void(0)" type="button" class="btn btn-info"
+                           id="filter-button">Filter</a>
                     </div>
                 </div>
             </div>
@@ -230,7 +284,8 @@
                                             <div class="pull-right">
                                                 <a href="javascript:void(0)" class="eng-edit"
                                                    data-id="{{$engagement->id}}"><i
-                                                            class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                                                            class="fa fa-pencil-square-o"
+                                                            aria-hidden="true"></i></a>
                                                 <span>&nbsp;|&nbsp;</span>
                                                 <a href="javascript:void(0)" class="eng-delete"
                                                    data-del="{{!$engagement->isPending()&&$manage?'0':'1'}}"
@@ -239,15 +294,19 @@
                                             </div>
                                         @endif
                                     </h3>
-                                    <div class="panel-subtitle">Client: <strong>{{$engagement->client->name}}</strong>
+                                    <div class="panel-subtitle">Client:
+                                        <strong>{{$engagement->client->name}}</strong>
                                         <span class="label label-info pull-right">Total Members: <strong>{{$engagement->arrangements->count()}}</strong></span>
                                     </div>
+                                    {{--02/22/2018 Diego changed to content to be viewed differently by the role of viewer--}}
+
                                     <table class="table table-striped table-bordered table-responsive">
                                         <thead>
                                         <tr>
                                             <th>Leader</th>
                                             <th>Started</th>
-                                            <th>Buz Dev Share</th>
+                                            @if($manage||$admin)
+                                                <th>Biz Dev Share</th>@endif
                                             <th>Billed Type</th>
                                             <th>Status</th>
                                         </tr>
@@ -255,14 +314,16 @@
                                         <tbody>
                                         <tr>
                                             <td>{{$engagement->leader->fullname()}}</td>
-                                            <td>{{$engagement->start_date}}</td>
-                                            <td>{{$formatter->format($engagement->buz_dev_share)}}</td>
+                                            <td>{{(new DateTime($engagement->start_date))->format('m/d/Y')}}</td>
+                                            @if($manage||$admin)
+                                                <td>{{number_format($engagement->buz_dev_share*100,1).'%'}}</td>@endif
                                             <td>{{str_limit($engagement->clientBilledType(),11)}}</td>
                                             <td><i class="fa fa-flag {{$engagement->state()}}"
                                                    aria-hidden="true"></i>{{$engagement->state()}}</td>
                                         </tr>
                                         </tbody>
                                     </table>
+
                                 </div>
                                 @if(!$admin)
                                     <div class="panel-body slim-scroll arrangement-table">
@@ -272,8 +333,11 @@
                                             <tr>
                                                 <th>Consultant</th>
                                                 <th>Position</th>
-                                                <th>{{$hourly?'Billing Rate':'Pay Rate'}}</th>
-                                                <th>Firm Share</th>
+                                                @if($manage && $hourly)
+                                                    <th>Billing Rate</th>
+                                                    <th>Firm Share</th>
+                                                @endif
+                                                <th>Pay Rate</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -281,14 +345,21 @@
                                                 <tr>
                                                     <td>{{$arrangement->consultant->fullname()}}</td>
                                                     <td> {{$arrangement->position->name}}</td>
+                                                    @if($manage && $hourly)
+                                                        <td>
+                                                            @can('view',$arrangement)
+                                                                ${{$hourly?number_format($arrangement->billing_rate,2):'-'}}
+                                                            @endcan
+                                                        </td>
+                                                        <td>
+                                                            @can('view',$arrangement)
+                                                                {{$hourly? number_format($arrangement->firm_share*100,1).'%':'-'}}
+                                                            @endcan
+                                                        </td>
+                                                    @endif
                                                     <td>
                                                         @can('view',$arrangement)
-                                                            ${{$hourly?$arrangement->billing_rate:$arrangement->pay_rate}}
-                                                        @endcan
-                                                    </td>
-                                                    <td>
-                                                        @can('view',$arrangement)
-                                                            {{$hourly? $formatter->format($arrangement->firm_share):'-'}}
+                                                            ${{number_format($hourly?$arrangement->billing_rate*(1-$arrangement->firm_share):$arrangement->pay_rate,2)}}
                                                         @endcan
                                                     </td>
                                                 </tr>
@@ -310,10 +381,12 @@
     </div>
 @endsection
 @section('my-js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
     <script>
         $(function () {
             var update;
             var eid;
+            var curFormatter;
             toastr.options = {
                 "positionClass": "toast-top-right",
                 "timeOut": "3000"
@@ -332,7 +405,7 @@
                 autoclose: true,
                 orientation: 'bottom'
             });
-            $('#start-date').datepicker('setDate', new Date());
+
             $('#filter-button').on('click', function () {
                 var query = '?cid=' + $('#client-filter').selectpicker('val')
                     + '&start=' + $('#start-date-filter').val()
@@ -355,7 +428,8 @@
                 $.get({
                     url: '/engagement/create?fetch=business&cid=' + $(this).selectpicker('val'),
                     success: function (dev) {
-                        $('#buz_dev_person').empty().val(dev);
+                        $('#buz_dev_person').empty().val(dev.consul);
+                       if(!update) $('#buz_dev_share').empty().val(dev.share);
                     }
                 })
             });
@@ -381,6 +455,7 @@
             $('#build-engagement').on('click', function () {
                 update = false;
                 initModal(false);
+                curFormatter = new AutoNumeric('#billing_amount', {'currencySymbol': '$', 'unformatOnSubmit': true});
                 $('#engagementModal').modal('toggle');
             });
             $('.eng-delete').on('click', function () {
@@ -423,12 +498,23 @@
                     success: function (data) {
                         $('#cycle-select').selectpicker('val', data.paying_cycle).trigger('change');
                         $('#engagement-name').val(data.name);
-                        $('#client-select').selectpicker('val', data.client_id);
+                        $('#client-select').selectpicker('val', data.client_id).trigger('change');
                         $('#leader_id').selectpicker('val', data.leader_id);
-                        $('#start-date').val(data.start_date);
-                        $('#buz_dev_share').val(parseFloat(data.buz_dev_share * 100).toFixed(2));
+                        $('#start-date').datepicker('setDate', new Date(data.start_date + 'T00:00:00'));
+                        var buz_dev_share = parseFloat(data.buz_dev_share * 100).toFixed(2);
+                        $('#buz_dev_share').val(buz_dev_share);
                         $('#billing_amount').val(parseFloat(data.cycle_billing).toFixed(2));
-                        $('#billing-day').datepicker('setDate', new Date('2022-12-' + data.billing_day + ' 00:00'));
+                        $('#closer-select').selectpicker('val', data.closer_id);
+                        $('#closer-from').datepicker('setDate', new Date(data.closer_from + 'T00:00:00'));
+                        $('#closer-end').datepicker('setDate', new Date(data.closer_end + 'T00:00:00'));
+                        var closer_share = parseFloat(data.closer_share * 100).toFixed(2);
+                        $('#closer-share').val(closer_share > 0 ? closer_share : "");
+                        curFormatter = new AutoNumeric('#billing_amount', {
+                            'currencySymbol': '$',
+                            'unformatOnSubmit': true
+                        });
+                        var queryDate = '2022-12-' + data.billing_day + ' 00:00', dateParts = queryDate.match(/(\d+)/g);
+                        $('#billing-day').datepicker('setDate', data.paying_cycle == 1 ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2]) : null);
                         $('#submit-modal').attr('disabled', @if($admin) false
                         @else data.status != 0  @endif );
                         @if($admin)
@@ -457,9 +543,13 @@
                 eid = $(this).attr('data-id');
                 update = true;
             });
-
+            $('#engagementModal').on('hidden.bs.modal', function (e) {
+                curFormatter.remove();
+            });
             $('#engagement-form').on('submit', function (e) {
                 e.preventDefault();
+                if (!checkCloser()) return false;
+                curFormatter.unformat();
                 formdata = $(this).serializeArray();
                 formdata.push({name: '_token', value: "{{csrf_token()}}"}, {
                     name: 'leader_id', value: $('#leader_id').selectpicker('val')
@@ -499,6 +589,7 @@
             $('#add-team-member').on('click', function () {
                 var table = $('#members-table');
                 var tr = table.find('tr').first().clone().appendTo(table);
+                tr.find('option.h-consultant').remove();
                 tr.find('a').addClass("deletable-row");
                 tr.find('.bootstrap-select').replaceWith(function () {
                     return $('select', this);
@@ -532,6 +623,24 @@
             });
         });
 
+        function checkCloser() {
+            var closerid = $('#closer-select').val();
+            var cfrom = $('#closer-from').val();
+            var cend = $('#closer-end').val();
+            var cshare = $('#closer-share').val();
+            if ((closerid == null || closerid == "") && cfrom == "" && cend == "" && cshare == "") {
+                return true;
+            } else if ((closerid == null || closerid == "") || cfrom == "" || cend == "" || cshare == "") {
+                toastr.warning('Closer information not complete!');
+                return false;
+            }
+            if (new Date(cfrom) > new Date(cend)) {
+                toastr.warning('The closer from date cannot be greater than end date!');
+                return false;
+            }
+            return true;
+        }
+
         function initModal(update) {
             var tb = $("#members-table");
             tb.find("tr:not(:first-child)").remove();
@@ -540,7 +649,15 @@
                 $('#cycle-select').selectpicker('val', 0).trigger('change');
                 $('#engagement-name').val('');
                 $('#submit-modal').text('Build').attr('disabled', false);
-                $('#engagementModalLabel').find('span').text('Setup A New Engagement');
+                $('#engagementModalLabel').find('span').text('Set Up a New Engagement');
+                $('#client-select').val('default').selectpicker('refresh');
+                $('#closer-select').val('default').selectpicker('refresh');
+                $('#start-date').val('');
+                $('#buz_dev_person').val('');
+                $('#buz_dev_share').val('');
+                $('#closer-from').val('');
+                $('#closer-end').val('');
+                $('#closer-share').val('');
                 tb.find('select').first().selectpicker('val', $('#leader_id').val());
                 tb.find('select').last().selectpicker('val', 8);
             } else {
@@ -565,7 +682,7 @@
 @section('special-css')
     <style>
         .arrangement-table {
-            margin-top: -3.8%;
+            margin-top: -3.1%;
         }
 
         .engagement-table {
@@ -605,6 +722,10 @@
             font-size: small;
         }
 
+        input.us-currency {
+            text-align: right;
+        }
+
         #members-table tr td input[type='number'] {
             text-align: center;
         }
@@ -614,3 +735,4 @@
         }
     </style>
 @endsection
+@endif

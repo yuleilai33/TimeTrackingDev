@@ -24,12 +24,14 @@ class Consultant extends Model
     {
         return $this->first_name . ' ' . $this->last_name;
     }
-    public static function recognized()
+
+    public static function recognized($strict = false)
     {
-        return self::all()->filter(function ($consultant){
-            return $consultant->user->isVerified();
-        });
+        return self::all()->filter(function ($consultant) use ($strict) {
+            return $strict ? $consultant->user->isVerified() : !$consultant->user->unRecognized();
+        })->sortBy('first_name');
     }
+
     //Get the corresponding system user of this consultant
     public function user()
     {
@@ -84,6 +86,12 @@ class Consultant extends Model
         return $this->hasMany(Engagement::class, 'leader_id');
     }
 
+    //all the engagements he has ever served as closer
+    public function close_engagements()
+    {
+        return $this->hasMany(Engagement::class, 'closer_id');
+    }
+
     public function justCreatedHourReports($start = null, $end = null, $amount = null)
     {
         return Hour::whereBetween('created_at', [$start ?: '1970-01-01', $end ?: '2038-01-19'])
@@ -118,5 +126,136 @@ class Consultant extends Model
             }
             return $total;
         })->take($amount);
+    }
+
+    //get the payroll for excel output
+    public function getPayroll($start = null, $end = null, $state = null, $eid = null)
+    {
+        $hourReports = Hour::reported($start, $end, $eid, $this, $state);
+        $expenseByArrangement = Expense::reported($start, $end, $eid, $this, $state)
+            ->groupBy('arrangement_id')
+            ->map(function ($group) {
+                return $group->sum(function ($expense) {
+                    return $expense->payConsultant();
+                });
+            });
+        $payByArrangement = $hourReports->groupBy('arrangement_id')->map(function ($group, $aid) {
+            $arrangement = Arrangement::withTrashed()->where('id', $aid)->first();
+            $engagement = $arrangement->engagement()->withTrashed()->first();
+            return ['ename' => '[' . $engagement->client->name . ']' . $engagement->name,
+                'elead' => $engagement->leader->fullname(),
+                'position' => $arrangement->position->name,
+                'bhours' => $group->sum('billable_hours'),
+                'nbhours' => $group->sum('non_billable_hours'),
+                'brate' => $engagement->isHourlyBilling() ? $arrangement->billing_rate : 0,
+                'prate' => $engagement->isHourlyBilling() ? $arrangement->billing_rate * (1 - $arrangement->firm_share) : $arrangement->pay_rate,
+                'hourlyPay' => $group->sum(function ($hour) {
+                    return $hour->earned();
+                }),
+                'expense' => 0, 'bizDevShare' => 0, 'bizDevIncome' => 0, 'closingShare' => 0, 'closings' => 0];
+        });
+        foreach ($expenseByArrangement as $aid => $expense) {
+            if ($expense) {
+                $payRow = $payByArrangement->get($aid);
+                if (empty($payRow)) {
+                    $arrangement = Arrangement::withTrashed()->where('id', $aid)->first();
+                    $engagement = $arrangement->engagement()->withTrashed()->first();
+                    $payRow = ['ename' => '[' . $engagement->client->name . ']' . $engagement->name,
+                        'elead' => $engagement->leader->fullname(), 'position' => $arrangement->position->name,
+                        'bhours' => 0, 'nbhours' => 0, 'brate' => 0, 'prate' => 0, 'hourlyPay' => 0, 'bizDevShare' => 0,
+                        'bizDevIncome' => 0, 'closingShare' => 0, 'closings' => 0];
+                }
+                $payRow['expense'] = $expense;
+                $payByArrangement->put($aid, $payRow);
+            }
+        }
+
+        foreach ($this->getBuzDev($start, $end, $state, $eid) as $aid => $devPay) {
+            $payRow = $payByArrangement->get($aid);
+            if (empty($payRow)) {
+                $payRow = ['ename' => $devPay['ename'], 'elead' => $devPay['elead'],
+                    'position' => $devPay['position'], 'bhours' => 0, 'nbhours' => 0,
+                    'brate' => 0, 'prate' => 0, 'hourlyPay' => 0, 'expense' => 0,
+                    'closingShare' => 0, 'closings' => 0];
+            }
+            $payRow['bizDevShare'] = $devPay['bizDevShare'];
+            $payRow['bizDevIncome'] = $devPay['bizDevIncome'];
+            $payByArrangement->put($aid, $payRow);
+        }
+
+        foreach ($this->getClosings($start, $end, $state, $eid) as $aid => $closing) {
+            $payRow = $payByArrangement->get($aid);
+            if (empty($payRow)) {
+                $payRow = ['ename' => $closing['ename'], 'elead' => $closing['elead'],
+                    'position' => $closing['position'], 'bhours' => 0, 'nbhours' => 0,
+                    'brate' => 0, 'prate' => 0, 'hourlyPay' => 0, 'expense' => 0,
+                    'bizDevShare' => 0, 'bizDevIncome' => 0];
+            }
+            $payRow['closingShare'] = $closing['closingShare'];
+            $payRow['closings'] = $closing['closings'];
+            $payByArrangement->put($aid, $payRow);
+        }
+
+        return $payByArrangement;
+    }
+
+    public function getBuzDev($start = null, $end = null, $state = null, $eid = null)
+    {
+        $devPay = [];
+        $fake_aid = -1;
+        foreach ($this->dev_clients()->withTrashed()->get() as $dev_client) {
+            foreach ($dev_client->engagements()->withTrashed()->get() as $engagement) {
+                if (!$eid[0] || in_array($engagement->id, $eid)) {
+                    if ($engagement->buz_dev_share == 0) continue;
+                    $paid = $engagement->incomeForBuzDev($start, $end, $state);
+                    if ($paid) {
+                        $aids = $this->findAidsFromEngagement($engagement);
+                        $devPay[$aids ? $aids[0] : ($fake_aid--)] = [
+                            'ename' => '[' . $engagement->client->name . ']' . $engagement->name,
+                            'elead' => $engagement->leader->fullname(),
+                            'position' => $aids ? Arrangement::find($aids[0])->position->name : '***NOT IN***',
+                            'bizDevShare' => $engagement->buz_dev_share,
+                            'bizDevIncome' => $paid
+                        ];
+                    }
+                }
+            }
+        }
+        return collect($devPay);
+    }
+
+    private function getClosings($start = null, $end = null, $state = null, $eid = null)
+    {
+        $closings = [];
+        $fake_aid = -10000;
+        foreach ($this->close_engagements()->withTrashed()->get() as $engagement) {
+            if (!$eid[0] || in_array($engagement->id, $eid)) {
+                if (!$eid[0] || in_array($engagement->id, $eid)) {
+                    if ($engagement->closer_share == 0) continue;
+                    $paid = $engagement->incomeForCloser($start, $end, $state);
+                    if ($paid) {
+                        $aids = $this->findAidsFromEngagement($engagement);
+                        $closings[$aids ? $aids[0] : ($fake_aid--)] = [
+                            'ename' => '[' . $engagement->client->name . ']' . $engagement->name,
+                            'elead' => $engagement->leader->fullname(),
+                            'position' => $aids ? Arrangement::find($aids[0])->position->name : '***NOT IN***',
+                            'closingShare' => $engagement->closer_share,
+                            'closings' => $paid
+                        ];
+                    }
+                }
+            }
+        }
+        return collect($closings);
+    }
+
+    private function findAidsFromEngagement($engagement)
+    {
+        $aids = [];
+        $conid = $this->id;
+        foreach ($engagement->arrangements as $arrangement) {
+            if ($arrangement->consultant_id == $conid) array_push($aids, $arrangement->id);
+        }
+        return $aids;
     }
 }

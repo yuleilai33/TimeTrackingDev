@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use newlifecfo\User;
 
-class ConfirmReports extends Notification implements ShouldQueue
+class ConfirmReports extends Notification //implements ShouldQueue
 {
     use Queueable;
 

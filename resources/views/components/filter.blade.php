@@ -11,7 +11,7 @@
             <optgroup label=""
                       data-subtext="<a href='#' data-id='{{$engagements->map(function($e){return $e[0];})}}' class='group-client-name'><span class='label label-info'><strong>{{$cname}}</strong></span></a>">
                 @foreach($engagements as $eng)
-                    <option data-tokens="{{$cname.' '.$eng[1]}}"
+                    <option data-tokens="{{$cname.' '.$eng[1]}}" title="{{'<strong>'.$cname.'</strong> '.$eng[1]}}"
                             value="{{$eng[0]}}" {{in_array($eng[0],explode(',',Request('eid')))?'selected':''}}>{{$eng[1]}}</option>
                 @endforeach
             </optgroup>
@@ -33,8 +33,12 @@
     <select class="selectpicker show-tick form-control form-control-sm" data-width="fit"
             id="state-select" title="&#xf024; Status"
             data-live-search="true">
-        <option value="1" {{Request('state')=="1"?'selected':''}}>Approved</option>
-        <option value="7" {{Request('state')=="7"?'selected':''}}>Unapproved</option>
+        <option value="1" {{Request('state')=="1"?'selected':''}} style="font-size: 1.1em">Approved</option>
+        <option value="7" {{Request('state')=="7"?'selected':''}} style="font-size: 1.1em">Unapproved</option>
+        <option value="0" {{Request('state')=="0"?'selected':''}}>Pending</option>
+        <option value="3" {{Request('state')=="3"?'selected':''}}>Self_confirmed</option>
+        <option value="4" {{Request('state')=="4"?'selected':''}}>Leader_confirmed</option>
+
     </select>
     <i>&nbsp;</i>
     <input class="date-picker form-control" id="start-date" size="10"
@@ -69,9 +73,11 @@
 
             $(function () {
                 var groupClientNameSelected;
-                $('.group-client-name').on('click', function () {
-                    groupClientNameSelected = groupClientNameSelected === $(this).data('id') ? '' : $(this).data('id');
-                    $('#client-engagements').selectpicker('val', groupClientNameSelected);
+                $('#client-engagements').on('loaded.bs.select', function () {
+                    $('a.group-client-name').on('click', function () {
+                        groupClientNameSelected = groupClientNameSelected === $(this).data('id') ? '' : $(this).data('id');
+                        $('#client-engagements').selectpicker('val', groupClientNameSelected);
+                    });
                 });
             });
         </script>

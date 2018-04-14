@@ -1,1 +1,1 @@
-php C:/Users/HaoXiong/PhpstormProjects/NewLifeCFO/artisan email:send
+php E:\TimeReporting\NewLifeCFO\artisan email:send

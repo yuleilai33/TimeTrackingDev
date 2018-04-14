@@ -29,15 +29,18 @@ class EngagementController extends Controller
     public function index(Request $request, $isAdmin = false)
     {
         $consultant = $isAdmin ? null : Auth::user()->consultant;
-        $engs = Engagement::getBySCLS($request->get('start'), $request->get('cid'), Consultant::find($request->get('lid')), $consultant, $request->get('status'));
-        $engagements =$this->paginate($engs,20);
+        $engs = Engagement::getBySCLS($request->get('start'), $request->get('cid'), Consultant::find($request->get('lid')), $consultant, $request->get('status'))
+            ->sortBy(function ($eng) {
+                return $eng->client->name;
+            });
+        $engagements = $this->paginate($engs, 20);
         return view('engagements', ['engagements' => $engagements,
             'clients' => $engs->map(function ($item) {
                 return $item->client;
-            })->unique(),
-            'leaders' => Engagement::all()->map(function ($item, $key) {
+            })->sortBy('name')->unique(),
+            'leaders' => Engagement::all()->map(function ($item) {
                 return $item->leader;
-            })->unique(),
+            })->sortBy('first_name')->unique(),
             'admin' => $isAdmin
         ]);
     }
@@ -45,22 +48,30 @@ class EngagementController extends Controller
     /**
      * Show the form for creating a new resources
      * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function create(Request $request)
     {
         if ($request->ajax()) {
             //return the business development info to the request
             if ($request->get('fetch') == 'business')
-                return Client::find($request->get('cid'))->whoDevelopedMe();
+                $client = Client::find($request->get('cid'));
+            return ['consul' => $client->dev_by_consultant->fullname(), 'share' => $client->default_buz_dev_share];
         }
-        $consultant = Auth::user()->consultant;
-        return view('engagements', [
-            'engagements' =>$this->paginate(Engagement::getBySCLS($request->get('start'), $request->get('cid'), $consultant, null, $request->get('status')),20),
-            'leader' => $consultant,
-            'clients' => $consultant->lead_engagements->map(function ($item) {
-                return $item->client;
-            })->unique(), 'admin' => false]);
+        $user = Auth::user();
+        $consultant = $user->consultant;
+        if ($user->isLeaderCandidate() || $user->isSupervisor()) {
+            return view('engagements', [
+                'engagements' => $this->paginate(Engagement::getBySCLS($request->get('start'), $request->get('cid'), $consultant, null, $request->get('status'))->sortBy(function ($eng) {
+                    return $eng->client->name;
+                }), 20),
+                'leader' => $consultant,
+                'clients' => $consultant->lead_engagements->map(function ($item) {
+                    return $item->client;
+                })->unique(), 'admin' => false]);
+        } else {
+            return view('engagements', ['blocked' => true]);
+        }
     }
 
     /**
@@ -78,15 +89,15 @@ class EngagementController extends Controller
             $lid = $request->get('leader_id');
             if ($consultant->id == $lid) {
                 $eng = new Engagement(['client_id' => $request->get('client_id'), 'leader_id' => $lid,
-                    'name' => $request->get('name'), 'start_date' => $request->get('start_date'), 'billing_day' => $request->get('billing_day'),
+                    'name' => $request->get('name'), 'start_date' => Carbon::parse($request->get('start_date')), 'billing_day' => $request->get('billing_day'),
                     'buz_dev_share' => $request->get('buz_dev_share') / 100 ?: 0, 'paying_cycle' => $request->get('paying_cycle'),
+                    'closer_share' => $request->get('closer_share') / 100 ?: 0, 'closer_id' => $request->get('closer_id'), 'closer_from' => $request->get('closer_from') ? Carbon::parse($request->get('closer_from')) : null, 'closer_end' => $request->get('closer_end') ? Carbon::parse($request->get('closer_end')) : null,
                     'cycle_billing' => $request->get('cycle_billing') ?: 0, 'status' => 0
                 ]);
                 //only supervisor can touch the status(no need to apply policy here)
                 /* if ($this->authorize('activate', $eng) || $this->authorize('close', $eng))
                      $eng->status = $request->get('status');
                  else  $eng->status = 1;//indicate the engagement shall be pending once it created*/
-
                 if ($eng->save()) {
                     if ($this->saveArrangements($request, $eng->id)) {
                         $feedback['code'] = 7;
@@ -96,7 +107,6 @@ class EngagementController extends Controller
                         $feedback['code'] = 2;
                         $feedback['message'] = 'Saving engagement failed, unsupported data encountered!';
                     }
-
                 } else {
                     $feedback['code'] = 1;
                     $feedback['message'] = 'Saving engagement failed, there may be some unsupported data';
@@ -106,7 +116,6 @@ class EngagementController extends Controller
                 $feedback['message'] = 'Unauthorized Operation';
             }
         }
-
         return json_encode($feedback);
     }
 
@@ -166,8 +175,9 @@ class EngagementController extends Controller
             $eng = Engagement::find($id);
             if ($user->can('update', $eng)) {
                 if ($eng->update(['client_id' => $request->get('client_id'),
-                    'name' => $request->get('name'), 'start_date' => $request->get('start_date'), 'billing_day' => $request->get('billing_day'),
+                    'name' => $request->get('name'), 'start_date' => Carbon::parse($request->get('start_date')), 'billing_day' => $request->get('billing_day'),
                     'buz_dev_share' => $request->get('buz_dev_share') / 100 ?: 0, 'paying_cycle' => $request->get('paying_cycle'),
+                    'closer_share' => $request->get('closer_share') / 100 ?: 0, 'closer_id' => $request->get('closer_id'), 'closer_from' => $request->get('closer_from') ? Carbon::parse($request->get('closer_from')) : null, 'closer_end' => $request->get('closer_end') ? Carbon::parse($request->get('closer_end')) : null,
                     'cycle_billing' => $request->get('cycle_billing') ?: 0
                 ])) {
                     if ($this->updateArrangements($request, $eng)) {
@@ -182,7 +192,7 @@ class EngagementController extends Controller
                         $opened = !$eng->isClosed();
                         $status = $request->get('status');
                         if (isset($status)) $eng->update(['status' => $status]);
-                        if($opened&&$eng->isClosed()) $eng->update(['close_date'=>Carbon::now()->toDateString('Y-m-d')]);
+                        if ($opened && $eng->isClosed()) $eng->update(['close_date' => Carbon::now()->toDateString('Y-m-d')]);
                     } else {
                         $feedback['code'] = 5;
                         $feedback['message'] = 'Status updating failed, no authorization';
@@ -252,12 +262,12 @@ class EngagementController extends Controller
         $bs = $request->get('billing_rates');
         $ps = $request->get('pay_rates');
         foreach ($eng->arrangements as $arr) {
-            $keys = array_keys($cids,$arr->consultant_id);
-            if(!$keys){
+            $keys = array_keys($cids, $arr->consultant_id);
+            if (!$keys) {
                 $arr->delete();
-            }else{
-                $pos = array_values(array_only($pids,$keys));
-                if (!in_array($arr->position_id,$pos)) $arr->delete();
+            } else {
+                $pos = array_values(array_only($pids, $keys));
+                if (!in_array($arr->position_id, $pos)) $arr->delete();
             }
         }
         //add new one if exist and update the old guys

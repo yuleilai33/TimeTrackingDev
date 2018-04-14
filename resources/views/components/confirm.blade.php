@@ -5,6 +5,7 @@
             }):$confirm['reports']->sum(function ($expense) {
                 return $expense->total();
             });
+    $isTeamPage=Request::get('reporter');
 @endphp
 <div class="panel-body">
     <div class="alert alert-success">
@@ -18,7 +19,10 @@
                     @if($isHour)
                         <th>Total Billable Hours</th>
                         <th>Payroll Amount</th>
-                        <th>Hours Billing</th>
+                        {{--03/14/2018 Diego changed: only team lead can see the billing--}}
+                        @if($isTeamPage == 'team')
+                            <th>Hours Billing</th>
+                        @endif
                     @else
                         <th>Total Expenses</th>
                         <th>Expense Billing</th>
@@ -35,7 +39,10 @@
                     @if($isHour)
                         <td>{{$stat[0]}} Hours</td>
                         <th>${{number_format($stat[1],2)}}</th>
-                        <th>${{number_format($stat[2],2)}}</th>
+                        {{--03/14/2018 Diego changed: only team lead can see the billing--}}
+                        @if($isTeamPage == 'team')
+                            <th>${{number_format($stat[2],2)}}</th>
+                        @endif
                     @else
                         <td>${{number_format($stat,2)}}</td>
                         <th>${{number_format($stat,2)}}</th>

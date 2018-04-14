@@ -21,11 +21,8 @@
                                 <div class="panel-body">
                                     <div class="input-group">
                                         <span class="input-group-addon"><i class="fa fa-users"></i>&nbsp; Client and Engagement:</span>
-                                        <select id="client-engagement" class="selectpicker" data-width="auto"
-                                                name="eid"
-                                                data-live-search="true"
-                                                title="The engagements your expense related to" required>
-                                        </select>
+                                        @component('components.engagement_selector',['dom_id'=>"client-engagement",'clientIds'=>$clientIds])
+                                        @endcomponent
                                     </div>
                                     <br>
                                     <div class="input-group">
@@ -70,17 +67,19 @@
                                     </div>
                                     <br>
                                     <div class="input-group">
-                                        <span class="input-group-addon"><i class="fa fa-car" aria-hidden="true"></i>&nbsp;Car Rental:$</span>
+                                        <span class="input-group-addon"><i class="fa fa-taxi" aria-hidden="true"></i>&nbsp;Car Rental:$</span>
                                         <input class="form-control input-numbers" id="input-car-rental"
                                                name="car_rental" type="number" placeholder="numbers only"
                                                step="0.01" min="0">
-                                        <span class="input-group-addon"><i class="fa fa-taxi" aria-hidden="true"></i>&nbsp;Mileage Cost<a
-                                                    href="javascript:void(0)" title="number of mileage * $0.54"><i
+                                        <span class="input-group-addon"><i class="fa fa-tachometer"
+                                                                           aria-hidden="true"></i>&nbsp;Mileage<a
+                                                    href="javascript:void(0)"
+                                                    title="Mileage cost = number of miles * $0.545"><i
                                                         class="fa fa-info-circle" aria-hidden="true"></i></a>
-                                            :$</span>
+                                            :(miles)</span>
                                         <input class="form-control input-numbers" id="input-mileage-cost"
                                                name="mileage_cost"
-                                               type="number" step="0.01" min="0" placeholder="numbers only">
+                                               type="number" step="0.1" min="0" placeholder="numbers only">
                                     </div>
                                     <br>
                                     <div class="input-group">
@@ -146,11 +145,15 @@
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>Client</th>
+                            <th>Client <a
+                                        href="{{'?'.http_build_query(array_add(Request::except('corder','dorder'),'corder',Request::get('corder')=="0"?"1":"0"))}}"><i
+                                            class="fa fa-sort" aria-hidden="true"></i></a></th>
                             <th>Engagement<a href="{{url()->current().'?'.http_build_query(Request::except('eid'))}}">&nbsp;<i
                                             class="fa fa-refresh" aria-hidden="true"></i></a></th>
                             <th>Company Paid</th>
-                            <th>Report Date</th>
+                            <th>Report Date <a
+                                        href="{{'?'.http_build_query(array_add(Request::except('corder','dorder'),'dorder',Request::get('dorder')=="1"?"0":"1"))}}"><i
+                                            class="fa fa-sort" aria-hidden="true"></i></a></th>
                             <th>Total</th>
                             <th>Receipts</th>
                             <th>{!!$mcMode?'Consultant<a href="'.url()->current().'?'.http_build_query(Request::except('conid')).'">&nbsp;<i class="fa fa-refresh" aria-hidden="true"></i></a>':'Description'!!}</th>
@@ -173,7 +176,7 @@
                                     <a href="{{str_replace_first('/','',route('expense.index',array_add(Request::except('eid','page'),'eid',$eng->id),false))}}">{{str_limit($eng->name,22)}}</a>
                                 </td>
                                 <td>{{$expense->company_paid?"Yes":"No"}}</td>
-                                <td>{{$expense->report_date}}</td>
+                                <td>{{(new DateTime($expense->report_date))->format('m/d/Y')}}</td>
                                 <td>${{number_format($expense->total(),2)}}</td>
                                 <td>
                                     @foreach($expense->receipts as $receipt)
@@ -198,9 +201,9 @@
                                     <span class="label label-{{$expense->getStatus()[1]}}">{{$expense->getStatus()[0]}}</span>
                                 </td>
                                 <td><a href=" javascript:editExpense({{$expense->id}})"><i
-                                                class="fa fa-pencil-square-o"></i></a><a
-                                            href="javascript:deleteExpense({{$expense->id}})"><i
-                                                class="fa fa-times"></i></a></td>
+                                                class="fa fa-pencil-square-o"></i></a>
+                                    {!!Request::get('reporter')?'':'<a href="javascript:deleteExpense('.$expense->id.')"><i class="fa fa-times"></i></a>'!!}
+                                </td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -215,6 +218,7 @@
 @endsection
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/featherlight/1.7.10/featherlight.min.js"></script>
+    <script src="/js/formdata.js"></script>
     <script>
         var update;
         var expid;
@@ -236,7 +240,6 @@
             );
             $('#add-expense').on('click', function () {
                 $('#expenseModal').modal('toggle');
-                $('#client-engagement').html($('#client-engagements').html()).selectpicker('refresh');
                 $('form .input-group input').val('');
                 $('#description').val('');
                 $('#input-report-date').datepicker('setDate', new Date());
@@ -256,6 +259,8 @@
                 }
                 if (update) tr = $('a[href*="editExpense(' + expid + ')"]').parent().parent();
                 var formdata = new FormData($(this)[0]);
+                formdata.delete('total');
+                formdata.set('mileage_cost', (formdata.get('mileage_cost') * 0.545).toFixed(2));
                 formdata.append('_method', update ? 'put' : 'post');
                 $.ajax({
                     type: "POST",
@@ -311,15 +316,15 @@
             $.get({
                 url: '/expense/' + id + '/edit',
                 success: function (data) {
-                    $('#client-engagement').html('<option selected>' + data.ename + '</option>').selectpicker('refresh');
+                    $('#client-engagement').html('<option selected>' + data.client + '/' + data.ename + '</option>').selectpicker('refresh');
                     $('#input-report-date').datepicker('setDate', data.report_date);
-                    $('#input-company-paid').val(data.company_paid);
+                    $('#input-company-paid').selectpicker('val', data.company_paid);
                     $('#input-hotel').val(data.hotel);
                     $('#input-flight').val(data.flight);
                     $('#input-meal').val(data.meal);
                     $('#input-office-supply').val(data.office_supply);
                     $('#input-car-rental').val(data.car_rental);
-                    $('#input-mileage-cost').val(data.mileage_cost);
+                    $('#input-mileage-cost').val(parseFloat(data.mileage_cost / 0.545).toFixed(1));
                     $('#input-other').val(data.other);
                     $('#input-receipts').val('');
                     $('#description').val(data.description);
@@ -339,7 +344,7 @@
 
                 },
                 dataType: 'json',
-                complete:function () {
+                complete: function () {
                     @if($confirm)
                     $('#report-update').attr('disabled', true);
                     @endif
@@ -390,9 +395,11 @@
             $('.input-numbers').each(function (i, n) {
                 var num = parseFloat($(n).val());
                 num = isNaN(num) ? 0 : num;
+                if ($(n).attr('id') === 'input-mileage-cost') num *= 0.545;
                 total += num;
             });
             $('#expense-total').val(total.toFixed(2));
+
         }
 
         function outputLink(receipts) {

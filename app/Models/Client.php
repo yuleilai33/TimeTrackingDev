@@ -56,6 +56,7 @@ class Client extends Model
             ]);
     }
 
+    //Obsoleted! Based on customer's description, outsider referrer is not a business developer
     public function whoDevelopedMe()
     {
         if ($this->outreferrer->first_name == 'N/A') {
@@ -70,10 +71,12 @@ class Client extends Model
     {
         return $this->hasMany(Revenue::class);
     }
-    public function setRevenue($year,$rev,$ebi)
+
+    public function setRevenue($year, $rev, $ebi)
     {
-        Revenue::updateOrCreate(['client_id'=>$this->id,'year'=>$year],['revenue'=>$rev,'ebit'=>$ebi]);
+        Revenue::updateOrCreate(['client_id' => $this->id, 'year' => $year], ['revenue' => $rev, 'ebit' => $ebi]);
     }
+
     public function getRevenue($year, $type)
     {
         $rev = $this->revenues->where('year', $year)->first();
@@ -107,20 +110,28 @@ class Client extends Model
         return $this->hasMany($class);
     }
 
-    public function hourBill($start = null, $end = null, $state = null, $eid = null)
+    public function engagementBill($start = null, $end = null, $state = null, $eid = null)
     {
-        $hours = Hour::reported($start, $end, $eid, null, $state, $this);
+        $hours = Hour::reported($start, $end, $eid, null, $state, $this)->filter(function ($value) {
+            return $value->rate_type == 0;
+        });
+
         $sumHours = $hours->reduce(function ($carry, $hour) {
             return [$carry[0] + $hour->billable_hours, $carry[1] + $hour->non_billable_hours, $carry[2] + $hour->billClient()];
         });
         $sumHours = [$sumHours[0] ?: 0, $sumHours[1] ?: 0, $sumHours[2] ?: 0];
+        $NonHourlyEngagements = collect();
         foreach ($this->engagements()->withTrashed()->get() as $engagement) {
             if (!$eid[0] || in_array($engagement->id, $eid)) {
-                $sumHours[2] += $engagement->NonHourBilling($start, $end, $state);
+                $billed = $engagement->NonHourBilling($start, $end, $state);
+                if (!$engagement->isHourlyBilling()) {
+                    $sumHours[2] += $billed;
+                    $NonHourlyEngagements->push([$engagement, $billed]);
+                }
             }
         }
 
-        return [$sumHours[2], $hours, $sumHours[0], $sumHours[1]];
+        return [$sumHours[2], $hours, $sumHours[0], $sumHours[1], 'NonHourlyEngagement' => $NonHourlyEngagements];
     }
 
     public function expenseBill($start = null, $end = null, $state = null, $eid = null)
@@ -140,5 +151,77 @@ class Client extends Model
             $pair->push([$engagement->id, $engagement->name]);
         }
         return [$this->id => $pair];
+    }
+
+    public function constructBills($start = null, $end = null, $state = null, $eid = null)
+    {
+        //Hourly Eng. Bill
+        $billByArrangement = Hour::reported($start, $end, $eid, null, $state, $this)->filter(function ($hp) {
+            return $hp->rate_type == 0;
+        });
+        if (!$billByArrangement->count()) $billByArrangement = collect();//fix Illuminate\Database\Eloquent\Collection bugs
+        $billByArrangement = $billByArrangement->groupBy('arrangement_id')->map(function ($group, $aid) {
+            $arrangement = Arrangement::withTrashed()->where('id', $aid)->first();
+            $engagement = $arrangement->engagement()->withTrashed()->first();
+            $row = ['eid' => $engagement->id, 'ename' => $engagement->name,
+                'position' => $arrangement->position->name,
+                'consultant' => $arrangement->consultant->fullname(),
+                'bhours' => $group->sum('billable_hours'),
+                'nbhours' => $group->sum('non_billable_hours'),
+                'brate' => $arrangement->billing_rate,
+                'bType' => 'Hourly',
+                'engBill' => $group->sum(function ($hour) {
+                    return $hour->billClient();
+                }), 'expBill' => 0];
+            return $row;
+        });
+
+        //Non-hourly Eng. Bill
+        $NonHourlyEngagements = collect();
+        foreach ($this->engagements()->withTrashed()->get() as $engagement) {
+            if (!$eid[0] || in_array($engagement->id, $eid)) {
+                $billed = $engagement->NonHourBilling($start, $end, $state);
+                if (!$engagement->isHourlyBilling()) {
+                    $NonHourlyEngagements->push([
+                        'eid' => $engagement->id,
+                        'ename' => $engagement->name,
+                        'position' => 'Multiple',
+                        'consultant' => 'Multiple',
+                        'bhours' => null,
+                        'nbhours' => null,
+                        'brate' => null,
+                        'bType' => $engagement->clientBilledType(),
+                        'engBill' => $billed,
+                        'expBill' => 0,
+                    ]);
+                }
+            }
+        }
+
+        //Expense Bill
+        $expenseByArrangement = Expense::reported($start, $end, $eid, null, $state, $this)
+            ->groupBy('arrangement_id')
+            ->map(function ($group) {
+                return $group->sum(function ($expense) {
+                    return $expense->total();
+                });
+            });
+        foreach ($expenseByArrangement as $aid => $expense) {
+            if ($expense) {
+                $billRow = $billByArrangement->get($aid);
+                if (empty($billRow)) {
+                    $arrangement = Arrangement::withTrashed()->where('id', $aid)->first();
+                    $engagement = $arrangement->engagement()->withTrashed()->first();
+                    $billRow = ['eid' => $engagement->id, 'ename' => $engagement->name,
+                        'position' => $arrangement->position->name,
+                        'consultant' => $arrangement->consultant->fullname(),
+                        'bhours' => 0, 'nbhours' => 0, 'brate' => $engagement->isHourlyBilling() ? $arrangement->billing_rate : 0,
+                        'bType' => null, 'engBill' => 0];
+                }
+                $billRow['expBill'] = $expense;
+                $billByArrangement->put($aid, $billRow);
+            }
+        }
+        return $billByArrangement->values()->merge($NonHourlyEngagements)->groupBy('eid');
     }
 }

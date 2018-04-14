@@ -21,7 +21,7 @@
                             <a href="{{$report=='time'?'hour?reporter=team':'expense?reporter=team'}}" title="Approve my team's {{$report}} reports"><img src="/img/team{{$report}}.png" alt="{{$report}}"
                                                                          width="90px"><span class="badge bg-{{$confirm['count']['team']==0?'default':'danger'}}">{{$confirm['count']['team']}}</span></a>
                             <br>
-                            <p class="label label-success">Led Engagements</p>
+                            <p class="label label-success">Lead Engagements</p>
                         </div>
                     </div>
                 </div>

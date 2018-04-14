@@ -2,19 +2,18 @@
 @section('content')
     <div class="main-content">
         <div class="container-fluid">
-            @php $users = \newlifecfo\User::all()->sortByDesc('created_at'); @endphp
             <div class="panel panel-headline">
                 <div class="panel-title row" style="margin-left: 1em">
                     <h3>Registered Users</h3>
-                    <h5>total:{{$users->count()}}</h5>
+                    <h5>total:{{$users->total()}}</h5>
                 </div>
                 <div class="panel-body">
                     <table class="table table-responsive">
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
+                            <th>First Name <a href="?fo={{Request::get('fo')=="1"?"0":"1"}}"><i class="fa fa-sort" aria-hidden="true"></i></a></th>
+                            <th>Last Name <a href="?lo={{Request::get('lo')=="1"?"0":"1"}}"><i class="fa fa-sort" aria-hidden="true"></i></a></th>
                             <th>Email</th>
                             <th>Type</th>
                             <th>Set Role</th>
@@ -22,27 +21,36 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <?php $offset = ($users->currentPage() - 1) * $users->perPage() + 1;?>
                         @foreach($users as $user)
                             <tr data-id="{{$user->id}}">
-                                <th>{{$loop->index + 1}}</th>
+                                <th scope="row">{{$loop->index+$offset}}</th>
                                 <td>{{$user->first_name}}</td>
                                 <td>{{$user->last_name}}</td>
                                 <td><a href="mailto:{{$user->email}}"><i class="fa fa-envelope" aria-hidden="true">&nbsp;{{$user->email}}</i></a></td>
                                 <td>{{$user->getType()}}</td>
                                 <td><select name="user_role" class="selectpicker show-tick" data-width="fit">
-                                        <option value="0" @if(!$user->isVerified()) selected
+                                        <option value="0" @if($user->unRecognized()) selected
                                                 data-content="<span class='label label-danger'>Unrecognized</span>"@endif>
                                             Unrecognized
                                         </option>
-                                        <option value="1" @if($user->isNormalUser()) selected
-                                                data-content="<span class='label label-success'>Normal User</span>"@endif>
+                                        <option value="1" @if($user->isInactive()) selected
+                                                data-content="<span class='label label-default'>Inactive User</span>"@endif>
+                                            Inactive User
+                                        </option>
+                                        <option value="2" @if($user->isNormalUser()) selected
+                                                data-content="<span class='label label-primary'>Normal User</span>"@endif>
                                             Normal User
                                         </option>
-                                        <option value="2" @if($user->isManager()) selected
+                                        <option value="3" @if($user->isLeaderCandidate()) selected
+                                                data-content="<span class='label label-success'>Leader Candidate</span>"@endif>
+                                            Leader Candidate
+                                        </option>
+                                        <option value="4" @if($user->isManager()) selected
                                                 data-content="<span class='label label-info'>General Admin</span>"@endif>
                                             General Admin
                                         </option>
-                                        <option value="3" @if($user->isSuperAdmin()) selected
+                                        <option value="5" @if($user->isSuperAdmin()) selected
                                                 data-content="<span class='label label-warning'>Super Admin</span>"@endif>
                                             Super Admin
                                         </option>
@@ -53,6 +61,9 @@
                         @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div class="pull-right pagination">
+                    {{ $users->appends(Request::all())->withPath('/admin/user')->links() }}
                 </div>
             </div>
         </div>
@@ -115,7 +126,7 @@
                         if (feedback.code === 7) {
                             toastr.success('Update user success!');
                             var v = select.val();
-                            var style = v == "0" ? "danger'>Unrecognized" : v == "1" ? "success'>Normal User" : v == "2" ? "info'>General Admin" : v == "3" ? "warning'>Super Admin" : "default'";
+                            var style = v == "0" ? "danger'>Unrecognized" : v == "1" ? "default'>Inactive User" : v == "2" ? "primary'>Normal User" : v == "3" ? "success'>Leader Candidate" : v == "4" ? "info'>General Admin" : v == "5" ? "warning'>Super Admin":'';
                             select.find(':selected').data('content', "<span class='label label-" + style+"</span>");
                             select.find('option[value=' + previous + ']').data('content', '');
                             select.selectpicker('refresh');

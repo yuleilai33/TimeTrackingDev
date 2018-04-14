@@ -81,11 +81,11 @@
                 </div>
 
                 <div class="links">
-                    <a href="https://newlifecfo.com/">About</a>
-                    <a href="https://newlifecfo.com/leadership/">Leadership</a>
-                    <a href="https://newlifecfo.com/ceo-support/">CEO Support</a>
-                    <a href="https://newlifecfo.com/careers-cfos/">Careers</a>
-                    <a href="https://newlifecfo.com/contact-us/">Contact</a>
+                    <a href="http://www.newlifecfo.com/">About</a>
+                    <a href="http://www.newlifecfo.com/leadership/">Leadership</a>
+                    <a href="http://www.newlifecfo.com/ceo-support/">CEO Support</a>
+                    <a href="http://www.newlifecfo.com/careers-cfos/">Careers</a>
+                    <a href="http://www.newlifecfo.com/contact-us/">Contact</a>
                 </div>
             </div>
         </div>

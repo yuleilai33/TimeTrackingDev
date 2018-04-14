@@ -1,6 +1,8 @@
 @extends('layouts.app')
 @section('content')
-    @php $mcMode = $admin||Request::get('reporter')=='team'; @endphp
+    @php $mcMode = $admin||Request::get('reporter')=='team';
+    $isTeamPage=Request::get('reporter');
+    @endphp
     <div class="main-content">
         <div class="container-fluid">
             <div class="modal fade" id="hourModal" tabindex="-1" role="dialog" aria-labelledby="hourModalLabel"
@@ -19,7 +21,7 @@
                         <form action="" id="hour-form">
                             <div class="modal-body">
                                 <div class="panel-body">
-                                    @component('components.hour-form',['admin'=>$admin,'clientIds'=>null])
+                                    @component('components.hour-form',['admin'=>$admin,'clientIds'=>null,'withOldTasks'=>true])
                                     @endcomponent
                                 </div>
                             </div>
@@ -56,17 +58,27 @@
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>Client</th>
+                            <th>Client <a
+                                        href="{{'?'.http_build_query(array_add(Request::except('corder','dorder'),'corder',Request::get('corder')=="0"?"1":"0"))}}"><i
+                                            class="fa fa-sort" aria-hidden="true"></i></a></th>
                             <th>Engagement<a href="{{url()->current().'?'.http_build_query(Request::except('eid'))}}">&nbsp;<i
                                             class="fa fa-refresh" aria-hidden="true"></i></a></th>
                             @if($confirm)
-                                <th>Paid</th>
-                                <th>Billing</th>
+                                <th>Pay</th>
+                                {{--03/14/2018 Diego changed: only team lead can see the billing--}}
+                                @if($isTeamPage == 'team')
+                                    <th>Billing</th>
+                                @endif
                             @else
                                 <th>Task</th>
                             @endif
                             <th>Billable Hours</th>
-                            <th>Report Date</th>
+                            {{--02/21/2018 Diego added nonbilllable hours--}}
+                            <th>Non-billable Hours</th>
+
+                            <th>Report Date <a
+                                        href="{{'?'.http_build_query(array_add(Request::except('corder','dorder'),'dorder',Request::get('dorder')=="1"?"0":"1"))}}"><i
+                                            class="fa fa-sort" aria-hidden="true"></i></a></th>
                             <th>{!!$mcMode?'Consultant<a href="'.url()->current().'?'.http_build_query(Request::except('conid')).'">&nbsp;<i class="fa fa-refresh" aria-hidden="true"></i></a>':'Description'!!}</th>
                             <th>Status</th>
                             <th>Operate</th>
@@ -88,12 +100,17 @@
                                 </td>
                                 @if($confirm)
                                     <td>${{number_format($hour->earned(),2)}}</td>
-                                    <td>${{number_format($hour->billClient(),2)}}</td>
+                                    {{--03/14/2018 Diego changed: only team lead can see the billing--}}
+                                    @if($isTeamPage == 'team')
+                                        <td>${{number_format($hour->billClient(),2)}}</td>
+                                    @endif
                                 @else
                                     <td>{{str_limit($hour->task->getDesc(),23)}}</td>
                                 @endif
                                 <td>{{number_format($hour->billable_hours,2)}}</td>
-                                <td>{{$hour->report_date}}</td>
+                                {{--02/21/2018 Diego added nonbilllable hours--}}
+                                <td>{{number_format($hour->non_billable_hours,2)}}</td>
+                                <td>{{(new DateTime($hour->report_date))->format('m/d/Y')}}</td>
                                 <td>
                                     @if($mcMode)
                                         <a href="{{url()->current().'?'.http_build_query(Request::except('conid','page')).'&conid='.$hour->consultant_id}}">{{str_limit($cname,25)}}</a>
@@ -105,8 +122,8 @@
                                 </td>
                                 <td data-id="{{$hour->id}}"><a href="javascript:void(0)"><i
                                                 class="fa fa-pencil-square-o"></i></a><a href="javascript:void(0)"
-                                                                                         data-del="{{($admin||!$hour->isApproved())&&!$confirm?1:0}}"><i
-                                                class="fa fa-times"></i></a></td>
+                                                                                         data-del="{{($admin||!$hour->isApproved())&&!$confirm?1:0}}">{!!Request::get('reporter')?'':'<i class="fa fa-times"></i>' !!}</a>
+                                </td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -141,7 +158,7 @@
                 var br = income.attr('data-br');
                 var fs = income.attr('data-fs');
                 var bh = $(this).val();
-                income.val(bh + 'h  x  $' + br + '/hr  x  ' + (1 - fs) * 100 + '% = $' + (bh * br * (1 - fs)).toFixed(2));
+                income.val(bh + 'h  x  $' + br + '/hr  x  ' + ((1 - fs) * 100).toFixed(2) + '% = $' + (bh * br * (1 - fs)).toFixed(2));
             });
 
             $('tr td:last-child a:nth-child(1)').on('click', function () {
@@ -152,7 +169,7 @@
                     success: function (data) {
                         $('#income-estimate').attr({"data-br": data.rate, "data-fs": data.share});
                         $('#client-engagement').attr('disabled', true)
-                            .empty().append('<option selected>' + data.ename + '</option>').selectpicker('refresh');
+                            .empty().append('<option selected>' + data.client + '/' + data.ename + '</option>').selectpicker('refresh');
                         $('#position').attr('disabled', true)
                             .empty().append('<option>' + data.position + '</option>').selectpicker('refresh');
                         $('#task-id').selectpicker('val', data.task_id);
@@ -174,7 +191,7 @@
                         @endif
                     },
                     dataType: 'json',
-                    complete:function () {
+                    complete: function () {
                         @if($confirm)
                         $('#report-update').attr('disabled', true);
                         @endif
@@ -216,55 +233,60 @@
             });
 
             $('#hour-form').on('submit', function (e) {
-                var token = "{{ csrf_token() }}";
-                $.ajax({
-                    type: "POST",
-                    url: "/hour/" + hid,
-                    data: {
-                        _token: token,
-                        _method: 'put',
-                        report_date: $('#report-date').val(),
-                        task_id: $('#task-id').selectpicker('val'),
-                        billable_hours: $('#billable-hours').val(),
-                        non_billable_hours: $('#non-billable-hours').val(),
-                        description: $('#description').val(),
-                        @if($admin)
-                        review_state: $("input[name=review_state]:checked").val(),
-                        feedback: $('#hour-feedback').val()
-                        @endif
-                    },
-                    dataType: 'json',
-                    success: function (feedback) {
-                        if (feedback.code == 7) {
-                            toastr.success('Success! Report has been updated!');
-                            tr.find('td:nth-child(4)').html(feedback.record.task);
-                            tr.find('td:nth-child(5)').html(feedback.record.billable_hours);
-                            tr.find('td:nth-child(6)').html(feedback.record.report_date);
-                            @if(!$mcMode) tr.find('td:nth-child(7)').html(feedback.record.description);
+                if (parseFloat($('#billable-hours').val()) + parseFloat($('#non-billable-hours').val()) > 0) {
+                    var token = "{{ csrf_token() }}";
+                    $.ajax({
+                        type: "POST",
+                        url: "/hour/" + hid,
+                        data: {
+                            _token: token,
+                            _method: 'put',
+                            report_date: $('#report-date').val(),
+                            task_id: $('#task-id').selectpicker('val'),
+                            billable_hours: $('#billable-hours').val(),
+                            non_billable_hours: $('#non-billable-hours').val(),
+                            description: $('#description').val(),
+                            @if($admin)
+                            review_state: $("input[name=review_state]:checked").val(),
+                            feedback: $('#hour-feedback').val()
                             @endif
-                            tr.find('td:nth-child(8) span').removeClass().addClass('label label-' + feedback.record.status[1]).html(feedback.record.status[0]);
-                            tr.find('td:nth-child(9)').attr('data-id', feedback.record.id);
-                            var flash = tr;
-                            flash.addClass('update-highlight');
-                            setTimeout(function () {
-                                flash.removeClass('update-highlight');
-                            }, 2100);
-                        } else {
-                            toastr.error('Error! Updating failed, code: ' + feedback.code +
-                                ', message: ' + feedback.message);
+                        },
+                        dataType: 'json',
+                        success: function (feedback) {
+                            if (feedback.code == 7) {
+                                toastr.success('Success! Report has been updated!');
+                                tr.find('td:nth-child(4)').html(feedback.record.task);
+                                tr.find('td:nth-child(5)').html(feedback.record.billable_hours);
+                                tr.find('td:nth-child(6)').html(feedback.record.non_billable_hours);
+                                tr.find('td:nth-child(7)').html(feedback.record.report_date);
+                                @if(!$mcMode) tr.find('td:nth-child(8)').html(feedback.record.description);
+                                @endif
+                                tr.find('td:nth-child(9) span').removeClass().addClass('label label-' + feedback.record.status[1]).html(feedback.record.status[0]);
+                                tr.find('td:nth-child(10)').attr('data-id', feedback.record.id);
+                                var flash = tr;
+                                flash.addClass('update-highlight');
+                                setTimeout(function () {
+                                    flash.removeClass('update-highlight');
+                                }, 2100);
+                            } else {
+                                toastr.error('Error! Updating failed, code: ' + feedback.code +
+                                    ', message: ' + feedback.message);
+                            }
+                        },
+                        error: function (feedback) {
+                            toastr.error('Oh NOooooooo...' + feedback.message);
+                        },
+                        beforeSend: function () {
+                            $("#report-update").button('loading');
+                        },
+                        complete: function () {
+                            $("#report-update").button('reset');
+                            $('#hourModal').modal('toggle');
                         }
-                    },
-                    error: function (feedback) {
-                        toastr.error('Oh NOooooooo...' + feedback.message);
-                    },
-                    beforeSend: function () {
-                        $("#report-update").button('loading');
-                    },
-                    complete: function () {
-                        $("#report-update").button('reset');
-                        $('#hourModal').modal('toggle');
-                    }
-                });
+                    });
+                } else {
+                    toastr.warning("Well, you should at least input some hours...");
+                }
                 e.preventDefault();
             });
         });

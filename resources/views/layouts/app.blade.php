@@ -23,21 +23,7 @@
                 </div>
                 <div id="navbar-menu">
                     <ul class="nav navbar-nav navbar-right">
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i
-                                        class="lnr lnr-question-circle"></i> <span>Help</span> <i
-                                        class="icon-submenu lnr lnr-chevron-down"></i></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#" class="notification-item"><span class="dot bg-warning"></span>Basic Use</a>
-                                </li>
-                                <li><a href="#" class="notification-item"><span class="dot bg-danger"></span>Working
-                                        With Data</a></li>
-                                <li><a href="#" class="notification-item"><span
-                                                class="dot bg-success"></span>Security</a></li>
-                                <li><a href="#" class="notification-item"><span class="dot bg-info"></span>Troubleshooting</a>
-                                </li>
-                            </ul>
-                        </li>
+
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown"><img src="/img/user.png"
                                                                                             class="img-circle"
@@ -46,8 +32,7 @@
                                         class="icon-submenu lnr lnr-chevron-down"></i></a>
                             <ul class="dropdown-menu">
                                 <li><a href="/profile"><i class="lnr lnr-user"></i> <span>My Profile</span></a></li>
-                                <li><a href="/message"><i class="lnr lnr-envelope"></i> <span>Message</span></a></li>
-                                <li><a href="#"><i class="lnr lnr-cog"></i> <span>Settings</span></a></li>
+
                                 <li>
                                     <a href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
@@ -89,7 +74,7 @@
                         </li>
                         <li><a href="{{route('expense.index')}}"
                                class="{{Request::is('expense') ?'active':'collapsed'}}"><i class="fa fa-taxi"
-                                                                                           aria-hidden="true"></i><span>Expenses</span></a>
+                                                                                           aria-hidden="true"></i><span>Expense</span></a>
                         </li>
                         <li><a href="/payroll" class="{{Request::is('payroll') ?'active':''}}"><i class="fa fa-envira"
                                                                                                   aria-hidden="true"></i><span>Payroll</span></a>
@@ -97,15 +82,16 @@
                         <li>
                             <a href="#subPages2" data-toggle="collapse"
                                class="{{substr(Request::path(),0,10)=='engagement'  ? 'active':'collapsed '}}"><i
-                                        class="lnr lnr-briefcase"></i> <span>Engagements</span> <i
+                                        class="lnr lnr-briefcase"></i> <span>Engagement</span> <i
                                         class="icon-submenu lnr lnr-chevron-left"></i></a>
                             <div id="subPages2"
                                  class="collapse {{substr(Request::path(),0,10)=='engagement' ?'in':''}}">
                                 <ul class="nav">
                                     <li><a href="{{route('engagement.index')}}"
-                                           class="{{Request::is('engagement') ?'active':''}}">My Engagements</a></li>
+                                           class="{{Request::is('engagement') ?'active':''}}">My Engagement</a></li>
                                     <li><a href="{{route('engagement.create')}}"
-                                           class="{{Request::is('engagement/create') ?'active':''}}">Led Engagements</a>
+                                           {{--02/22/2018 Diego changed--}}
+                                           class="{{Request::is('engagement/create') ?'active':''}}">Lead Engagement</a>
                                     </li>
                                 </ul>
                             </div>
@@ -118,9 +104,9 @@
                             <div id="subPages3" class="collapse {{str_contains(Request::path(),'approval') ?'in':''}}">
                                 <ul class="nav">
                                     <li><a href="/approval/hour?summary=1" class="{{Request::is('approval/hour') ?'active':''}}">Time
-                                            Reports</a></li>
+                                            Report</a></li>
                                     <li><a href="/approval/expense?summary=1"
-                                           class="{{Request::is('approval/expense') ?'active':''}}">Expense Reports</a>
+                                           class="{{Request::is('approval/expense') ?'active':''}}">Expense Report</a>
                                     </li>
                                 </ul>
                             </div>
@@ -136,20 +122,23 @@
                                             class="icon-submenu lnr lnr-chevron-left"></i></a>
                                 <div id="subPages4" class="collapse {{str_contains(Request::path(),'admin') ?'in':''}}">
                                     <ul class="nav">
-                                        <li><a href="/admin/report" class="{{Request::is('admin/report')||Request::is('admin/hour')||Request::is('admin/expense')?'active':''}}">Admin Reports</a></li>
+                                        {{--02/19/2018 Diego changed the name from Admin Reports to Manage Reports--}}
+                                        <li><a href="/admin/report" class="{{Request::is('admin/report')||Request::is('admin/hour')||Request::is('admin/expense')?'active':''}}">Manage Report</a></li>
                                         <li><a href="/admin/engagement"
-                                               class="{{Request::is('admin/engagement')?'active':''}}">Grant
-                                                Engagements</a></li>
+                                               {{--02/19/2018 Diego changed the name from grant engagement to manage engagements--}}
+                                               class="{{Request::is('admin/engagement')?'active':''}}">Manage
+                                                Engagement</a></li>
                                         <li><a href="/admin/bp"
-                                               class="{{Request::is('admin/bp')||Request::is('admin/bill')||Request::is('admin/payroll')?'active':''}}">Billing & Payroll</a>
+                                               {{--02/19/2018 Diego changed the name from Payroll & Billing to View Payroll & Billing--}}
+                                               class="{{Request::is('admin/bp')||Request::is('admin/bill')||Request::is('admin/payroll')?'active':''}}">View Payroll & Billing</a>
                                         </li>
-                                        <li><a href="/admin/user" class="{{Request::is('admin/user') ?'active':''}}">Users</a>
+                                        {{--02/19/2018 Diego changed the name from Users to Manage Users--}}
+                                        <li><a href="/admin/user" class="{{Request::is('admin/user') ?'active':''}}">Manage User</a>
                                         </li>
                                         <li><a href="/admin/client"
-                                               class="{{Request::is('admin/client') ?'active':''}}">Clients</a></li>
-                                        <li><a href="/admin/miscellaneous"
-                                               class="{{Request::is('admin/miscellaneous') ?'active':''}}">Miscellaneous</a>
-                                        </li>
+                                               {{--02/19/2018 Diego changed the name from Clients to Manage Clients--}}
+                                               class="{{Request::is('admin/client') ?'active':''}}">Manage Client</a></li>
+
                                     </ul>
                                 </div>
                             </li>

@@ -10,6 +10,7 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Client;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Engagement;
+use newlifecfo\Models\Receipt;
 use newlifecfo\Models\Templates\Position;
 use newlifecfo\Models\Templates\Task;
 use newlifecfo\Models\Templates\Taskgroup;
@@ -27,46 +28,69 @@ class TestController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->get('token') == 'haoxiong') {
-//        return Excel::create('TestExcelFile', function ($excel) {
-//            $excel->setTitle('Payroll Overview')
-//                ->setCreator('Hao Xiong')
-//                ->setCompany('New Life CFO')
-//                ->setDescription('Your Payroll under the specified condition');
+//        if ($request->get('token') == 'blank'){
+//            foreach (Engagement::withTrashed()->get() as $eng) {
+//                if($eng->name=="(blank)"){
+//                    foreach ($eng->arrangements()->withTrashed()->get() as $arr) {
+//                        foreach ($arr->hours()->withTrashed()->get() as $hour){
+//                            $hour->deleted_at=null;
+//                            $hour->save();
+//                        }
+//                        foreach ($arr->expenses()->withTrashed()->get() as $exp){
+//                            $exp->deleted_at=null;
+//                            $exp->save();
+//                        }
+//                    }
+//                }
+//            }
 //
-//            $excel->sheet('simple-sheet', function ($sheet) {
-//
-//                $sheet->fromArray(array(
-//                    array('data1', 'data2'),
-//                    array('data3', 'data4')
-//                ));
-//
-//            });
-//        })->export('xlsx');
-            // return $this->numberTest($request);
+//        }
 
-            //Consultant::where('last_name','Xiong')->first()->user->notify(new ApplicationPassed(Consultant::where('last_name','Xiong')->first()->user));
-            //Mail::to(Consultant::where('last_name','Xiong')->first()->user)->send(new NewSystemReady());
-            $consultant = Consultant::where('last_name', 'Xiong')->first();
-            $consultant->user->notify(new ConfirmReports($consultant->user));
-            if ($request->get('launch') == 'true') {
-                if ('code' == 'xh123456') {
-                    Consultant::recognized()->each(function ($consultant) {
-                        $user = $consultant->user;
-                        $user->notify(new LaunchApp($user));
-                    });
-                } else {
-                    Consultant::recognized()->each(function ($consultant) {
-                        if (($consultant->first_name == 'Hao' && $consultant->last_name == 'Xiong')
-                            || ($consultant->first_name == 'John' && $consultant->last_name == 'Doe')) {
-                            $user = $consultant->user;
-                            $user->notify(new LaunchApp($user));
-                        }
-                    });
-                }
-            }
-
-        }
+            //correct receipt file name
+//        foreach (Receipt::all() as $item) {
+//            $item->filename = 'receipts/'.$item->filename;
+//            $item->save();
+//        }
+//        if ($request->get('token') == 'haoxiong') {
+////        return Excel::create('TestExcelFile', function ($excel) {
+////            $excel->setTitle('Payroll Overview')
+////                ->setCreator('Hao Xiong')
+////                ->setCompany('New Life CFO')
+////                ->setDescription('Your Payroll under the specified condition');
+////
+////            $excel->sheet('simple-sheet', function ($sheet) {
+////
+////                $sheet->fromArray(array(
+////                    array('data1', 'data2'),
+////                    array('data3', 'data4')
+////                ));
+////
+////            });
+////        })->export('xlsx');
+//            // return $this->numberTest($request);
+//
+//            //Consultant::where('last_name','Xiong')->first()->user->notify(new ApplicationPassed(Consultant::where('last_name','Xiong')->first()->user));
+//            //Mail::to(Consultant::where('last_name','Xiong')->first()->user)->send(new NewSystemReady());
+//            $consultant = Consultant::where('last_name', 'Xiong')->first();
+//            $consultant->user->notify(new ConfirmReports($consultant->user));
+//            if ($request->get('launch') == 'true') {
+//                if ('code' == 'xh123456') {
+//                    Consultant::recognized()->each(function ($consultant) {
+//                        $user = $consultant->user;
+//                        $user->notify(new LaunchApp($user));
+//                    });
+//                } else {
+//                    Consultant::recognized()->each(function ($consultant) {
+//                        if (($consultant->first_name == 'Hao' && $consultant->last_name == 'Xiong')
+//                            || ($consultant->first_name == 'John' && $consultant->last_name == 'Doe')) {
+//                            $user = $consultant->user;
+//                            $user->notify(new LaunchApp($user));
+//                        }
+//                    });
+//                }
+//            }
+//
+//        }
         return 'success';
     }
 
@@ -221,7 +245,7 @@ class TestController extends Controller
     public function get_task_id($group, $desc)
     {
         if ($group == '' || $group == ' ' || str_contains($group, 'blank')) {
-            $group = 'Other';
+            $group = 'Common';
         }
         if ($desc == '' || $desc == ' ' || str_contains($desc, 'blank')) {
             $desc = 'Other';

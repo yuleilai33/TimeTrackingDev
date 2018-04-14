@@ -17,6 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
@@ -49,3 +50,6 @@ Route::get('/receipts/{name}', function ($name) {
 });
 
 Route::get('/test', 'TestController@index')->name('test');
+
+// Testing database connection
+Route::get('database/test','DbController@test');

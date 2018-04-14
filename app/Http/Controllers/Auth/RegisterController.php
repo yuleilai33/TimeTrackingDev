@@ -82,7 +82,7 @@ class RegisterController extends Controller
     {
         $contact = Contact::create([
             'email'=>$data['email'],
-            'phone'=>'123-2345-5434',
+            'phone'=>'123-234-5434', // 02/19/2018 Diego changed the phone number
             'city'=>'Dallas',
             'state_id'=>51
         ]);

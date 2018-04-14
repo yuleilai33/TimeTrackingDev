@@ -9,11 +9,13 @@
                     <div class="panel-title" style="margin-left: 1em">
                         <h3>{{$create?'Create A New Client':'Update Client Information'}}</h3>
                     </div>
-                    <form id="client-form" action="?action={{$create?'create':'update&cid='.$client->id}}" method="post">
+                    <form id="client-form" action="?action={{$create?'create':'update&cid='.$client->id}}"
+                          method="post">
                         {{csrf_field()}}
                         <div class="panel-body">
                             <label for="name">Client Name: </label>
-                            <input type="text" name="name" value="{{$create?'':$client->name}}" class="form-control" placeholder="client name" required>
+                            <input type="text" name="name" value="{{$create?'':$client->name}}" class="form-control"
+                                   placeholder="client name" required>
                             <br>
                             <label for="industry_id">Industry:</label>
                             <select name="industry_id" id="industry-id" data-live-search="true"
@@ -24,20 +26,31 @@
                             </select>
                             <br>
                             <br>
-                            <label for="buz_dev_person_id">Business Develop Persion:</label>
-                            <select name="buz_dev_person_id" id="buz-dev-person-id" data-live-search="true"
-                                    class="selectpicker form-control" title="select business Develop person" required>
-                                <option value="0"  {{$create?'':(0 ==$client->buz_dev_person_id?'selected':'')}}>New Life CFO</option>
-                                @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
-                                    <option value="{{$consultant->id}}" {{$create?'':($consultant->id ==$client->buz_dev_person_id?'selected':'')}}>{{$consultant->fullname()}}</option>
-                                @endforeach
-                            </select>
-                            <br>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="buz_dev_person_id">Business Develop Person:</label>
+                                    <select name="buz_dev_person_id" id="buz-dev-person-id" data-live-search="true"
+                                            class="selectpicker form-control" title="select business develop person"
+                                            required>
+                                        <option value="0" {{$create?'':(0 ==$client->buz_dev_person_id?'selected':'')}}>
+                                            New Life CFO
+                                        </option>
+                                        @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                            <option value="{{$consultant->id}}" {{$create?'':($consultant->id ==$client->buz_dev_person_id?'selected':'')}}>{{$consultant->fullname()}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="default_buz_dev_share">Default Business Development Share%:</label>
+                                    <input type="number" name="default_buz_dev_share" min="0" max="99" step="0.1" class="form-control" value="{{$create?'0':$client->default_buz_dev_share}}" required>
+                                </div>
+                            </div>
                             <br>
                             <label for="outreferrer_id">Outside Referrer:</label>
                             <select name="outreferrer_id" id="outreferrer-id" data-live-search="true"
-                                    class="selectpicker form-control" title="select outsider referer" required>
-                                <option value="0"  {{$create?'':(0 ==$client->outreferrer_id?'selected':'')}}>N/A</option>
+                                    class="selectpicker form-control" title="select outside referrer" required>
+                                <option value="0" {{$create?'':(0 ==$client->outreferrer_id?'selected':'')}}>N/A
+                                </option>
                                 @foreach(\newlifecfo\Models\Outreferrer::all() as $out)
                                     <option value="{{$out->id}}"{{$create?'':($out->id==$client->outreferrer_id?'selected':'')}}>{{$out->fullname()}}</option>
                                 @endforeach
@@ -45,41 +58,57 @@
                             <br>
                             <br>
                             <label class="fancy-checkbox">
-                                <input type="checkbox" name="complex_structure" value="1" {{$create?'':($client->complex_structure?'checked':'')}}>
+                                <input type="checkbox" name="complex_structure"
+                                       value="1" {{$create?'':($client->complex_structure?'checked':'')}}>
                                 <span>Is Complex Structure</span>
                             </label>
                             <label class="fancy-checkbox">
-                                <input type="checkbox" name="messy_accounting_at_begin" value="1" {{$create?'':($client->messy_accounting_at_begin?'checked':'')}}>
+                                <input type="checkbox" name="messy_accounting_at_begin"
+                                       value="1" {{$create?'':($client->messy_accounting_at_begin?'checked':'')}}>
                                 <span>Messy Accounting At Begin</span>
                             </label>
                             <br>
                             <div class="input-group">
-                                <span class="input-group-addon">2015 Revenue <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2015 revenue" value="{{$create?'':$client->getRevenue(2015,'revenue')}}" type="number" name="revenue2015">
-                                <span class="input-group-addon">2015 EBIT <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2015 ebit" value="{{$create?'':$client->getRevenue(2015,'ebit')}}" type="number" name="ebit2015">
+                                <span class="input-group-addon">2015 Revenue:</span>
+                                <input class="form-control currency" placeholder="2015 revenue"
+                                       value="{{$create?'':$client->getRevenue(2015,'revenue')}}" type="text"
+                                       name="revenue2015">
+                                <span class="input-group-addon">2015 EBIT:</span>
+                                <input class="form-control currency" placeholder="2015 ebit"
+                                       value="{{$create?'':$client->getRevenue(2015,'ebit')}}" type="text"
+                                       name="ebit2015">
                             </div>
                             <div class="input-group">
-                                <span class="input-group-addon">2016 Revenue <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2016 revenue" value="{{$create?'':$client->getRevenue(2016,'revenue')}}" type="number" name="revenue2016">
-                                <span class="input-group-addon">2016 EBIT <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2016 ebit" value="{{$create?'':$client->getRevenue(2016,'ebit')}}" type="number" name="ebit2016">
+                                <span class="input-group-addon">2016 Revenue:</span>
+                                <input class="form-control currency" placeholder="2016 revenue"
+                                       value="{{$create?'':$client->getRevenue(2016,'revenue')}}" type="text"
+                                       name="revenue2016">
+                                <span class="input-group-addon">2016 EBIT:</span>
+                                <input class="form-control currency" placeholder="2016 ebit"
+                                       value="{{$create?'':$client->getRevenue(2016,'ebit')}}" type="text"
+                                       name="ebit2016">
                             </div>
                             <div class="input-group">
-                                <span class="input-group-addon">2017 Revenue <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2017 revenue" value="{{$create?'':$client->getRevenue(2017,'revenue')}}" type="number" name="revenue2017">
-                                <span class="input-group-addon">2017 EBIT <i class="fa fa-dollar"></i></span>
-                                <input class="form-control" placeholder="2017 ebit" value="{{$create?'':$client->getRevenue(2017,'ebit')}}" type="number" name="ebit2017">
+                                <span class="input-group-addon">2017 Revenue:</span>
+                                <input class="form-control currency" placeholder="2017 revenue"
+                                       value="{{$create?'':$client->getRevenue(2017,'revenue')}}" type="text"
+                                       name="revenue2017">
+                                <span class="input-group-addon">2017 EBIT:</span>
+                                <input class="form-control currency" placeholder="2017 ebit"
+                                       value="{{$create?'':$client->getRevenue(2017,'ebit')}}" type="text"
+                                       name="ebit2017">
                             </div>
                         </div>
                         <div class="panel-footer">
-                            <button id="update-create" type="submit" data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing" class="btn btn-info">{{$create?'Create':'Update'}}</button>
+                            <button id="update-create" type="submit"
+                                    data-loading-text="<i class='fa fa-spinner fa-spin'></i> Processing"
+                                    class="btn btn-info">{{$create?'Create':'Update'}}</button>
                             <span>&nbsp;</span><a href="/admin/client" class="btn btn-default">Back</a>
                         </div>
                     </form>
                 </div>
             @else
-                @php $clients = \newlifecfo\Models\Client::all(); @endphp
+                @php $clients = \newlifecfo\Models\Client::all()->sortBy('name'); @endphp
                 <div class="panel panel-headline">
                     <div class="panel-title row" style="margin-left: 1em">
                         <div class="col-md-3">
@@ -119,8 +148,8 @@
                                     <td>
                                         @foreach($client->revenues as $revenue)
                                             <a class="label label-info" data-toggle="popover" data-content=
-                                            "<strong>Revenue: </strong>${{number_format($revenue->revenue,2)}}<br>
-                                            <strong>EBIT: </strong>${{number_format($revenue->ebit,2)}}">{{$revenue->year}}</a>
+                                            "<strong>Revenue: </strong>${{number_format($revenue->revenue,0)}}<br>
+                                            <strong>EBIT: </strong>${{number_format($revenue->ebit,0)}}">{{$revenue->year}}</a>
                                         @endforeach
                                     </td>
                                     <td><a href="?edit=1&cid={{$client->id}}"><i class="fa fa-pencil-square-o"
@@ -137,7 +166,9 @@
 
 @endsection
 @section('my-js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
     <script>
+        AutoNumeric.multiple('input.currency', {'currencySymbol': '$', 'unformatOnSubmit': true});
         $(function () {
             $('[data-toggle="popover"]').popover({
                 html: true,
@@ -145,11 +176,11 @@
                 placement: 'top',
                 trigger: 'hover'
             });
-            $('#client-form').on('submit',function () {
+            $('#client-form').on('submit', function () {
                 $('#update-create').button('loading');
             });
             @if ($feedback==1)
-                toastr.success('Operation succeed!');
+            toastr.success('Operation succeed!');
             @endif
         });
     </script>
@@ -158,6 +189,10 @@
     <style>
         tr td a.label-info:last-child {
             margin-left: 0.5em;
+        }
+
+        input.currency {
+            text-align: right;
         }
     </style>
 @endsection

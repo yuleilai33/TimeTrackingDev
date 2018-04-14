@@ -5,7 +5,6 @@ namespace newlifecfo\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use newlifecfo\User;
 
 class Engagement extends Model
 {
@@ -44,6 +43,15 @@ class Engagement extends Model
     public function leader()
     {
         return $this->belongsTo(Consultant::class, 'leader_id')->withDefault([
+            'first_name' => 'Deleted',
+            'last_name' => 'Deleted',
+        ]);
+    }
+
+    //get the closer(consultant) of the engagement
+    public function closer()
+    {
+        return $this->belongsTo(Consultant::class, 'closer_id')->withDefault([
             'first_name' => 'Deleted',
             'last_name' => 'Deleted',
         ]);
@@ -116,7 +124,7 @@ class Engagement extends Model
     public function HourBilling($start = null, $end = null, $review_state = null)
     {
         if ($this->paying_cycle == 0) {
-            return Hour::reported($start,$end,[$this->id],null,$review_state,null)->sum(function ($hour){
+            return Hour::reported($start, $end, [$this->id], null, $review_state, null)->sum(function ($hour) {
                 return $hour->billClient();
             });
         } else {
@@ -144,7 +152,8 @@ class Engagement extends Model
             }
             return $billedMonths * $this->cycle_billing;
         } else if ($this->paying_cycle == 2 && $this->isClosed() && $this->hasReported($review_state)) {
-            return $this->cycle_billing;
+            $close_date = Carbon::parse($this->close_date);
+            return $close_date->between(Carbon::parse($start ?: $this->start_date), Carbon::parse($end)) ? $this->cycle_billing : 0;
         }
         return 0;
     }
@@ -154,13 +163,28 @@ class Engagement extends Model
         return ($billingDate->day > 28 && $billingDate->month == 1) ? $billingDate->addDays(10)->endOfMonth()->startOfDay() : $billingDate->addMonth()->day($this->billing_day);
     }
 
-    public function incomeForBuzDev($start = null, $end = null, $state = null)
+    public function incomeForBuzDev($start = null, $end = null, $state = null, &$bill = null)
     {
-        return $this->buz_dev_share * ($this->paying_cycle == 0 ?
-                $this->HourBilling($start ?: '1970-01-01', $end ?: '2038-01-19', $state) :
-                $this->NonHourBilling($start ?: '1970-01-01', $end ?: '2038-01-19', $state));
+        $bill = $this->paying_cycle == 0 ? $this->HourBilling($start, $end, $state) : $this->NonHourBilling($start, $end, $state);
+        return $this->buz_dev_share * $bill;
     }
 
+    public function incomeForCloser($start = null, $end = null, $state = null, &$bill = null)
+    {
+        $start = !$start || (Carbon::parse($start)->diffInDays(Carbon::parse($this->closer_from), false) > 0) ? $this->closer_from : $start;
+        $end = !$end || (Carbon::parse($end)->diffInDays(Carbon::parse($this->closer_end), false) < 0) ? $this->closer_end : $end;
+        $bill = $this->paying_cycle == 0 ? $this->HourBilling($start, $end, $state) : $this->NonHourBilling($start, $end, $state);
+        return $this->closer_share * $bill;
+    }
+
+    /**
+     * @param null $start
+     * @param null $cid
+     * @param null $leader
+     * @param null $consultant
+     * @param null $status
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public static function getBySCLS($start = null, $cid = null, $leader = null, $consultant = null, $status = null)
     {
         $collection1 = (isset($leader) ? $leader->lead_engagements : self::all())
@@ -175,8 +199,20 @@ class Engagement extends Model
     {
         $aids = collect();
         foreach ($eids as $eid) {
-            $aids->push(self::find($eid)->arrangements()->withTrashed()->get()->pluck('id'));
+            $engagement = self::find($eid);
+            if ($engagement) $aids->push($engagement->arrangements()->withTrashed()->get()->pluck('id'));
         }
         return $aids->flatten();
     }
+
+    public function summaryForBuzDev($billed)
+    {
+        return "Eng. Billed Type: <strong>" . $this->clientBilledType() . "</strong><br>" .
+            "Eng. Status: <strong>" . $this->state() . "</strong><br>" .
+            "Eng. Billed Amount: <strong> $" . number_format($billed, 2) . "</strong><br>" .
+            "Eng. Start Date: <strong>" . $this->start_date . "</strong><br>" .
+            "Eng. Closed Date: <strong>" . ($this->isClosed() ? $this->close_date : "N/A") . "</strong><br>" .
+            "Number of Consultants: <strong>" . $this->arrangements->count() . "</strong><br>";
+    }
+
 }
