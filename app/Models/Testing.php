@@ -4,8 +4,7 @@ namespace newlifecfo\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class TestingAgain extends Model
+class Testing extends Model
 {
     //
-    11111111
 }
