@@ -15,7 +15,9 @@ class CreateSurveyEmplcategoriesTable extends Migration
     {
         Schema::create('survey_emplcategories', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('name');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

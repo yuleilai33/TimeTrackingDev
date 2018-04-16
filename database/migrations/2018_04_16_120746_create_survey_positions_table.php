@@ -15,7 +15,9 @@ class CreateSurveyPositionsTable extends Migration
     {
         Schema::create('survey_positions', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('name');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
