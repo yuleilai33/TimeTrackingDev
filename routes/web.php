@@ -53,3 +53,11 @@ Route::get('/test', 'TestController@index')->name('test');
 
 // Testing database connection
 Route::get('database/test','DbController@test');
+
+//start adding code for goal survey
+
+// Route::get('/toolbox/cultureindex', function(){
+//     return redirect('https://www.cindexinc.com/');
+// })->name('cultureindex');
+
+Route::resource('surveys','SurveysController');
