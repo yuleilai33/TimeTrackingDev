@@ -24,7 +24,7 @@ class Survey extends Model
     }
 
     //Define the  one-to-many relationship between survey and assignment
-    public function survey_assignments()
+    public function surveyAssignments()
     {
         return $this->hasMany(SurveyAssignment::class);
     }

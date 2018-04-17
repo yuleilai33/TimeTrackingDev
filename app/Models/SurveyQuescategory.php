@@ -11,7 +11,7 @@ class SurveyQuescategory extends Model
     use SoftDeletes;
     protected $guarded = [];
 
-    public function survey_questions()
+    public function surveyQuestions()
     {
     	return $this->hasMany(SurveyQuestion::class);
     }

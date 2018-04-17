@@ -12,13 +12,13 @@ class SurveyQuestion extends Model
     protected $guarded = [];
 
     //Define the  one-to-many relationship between survey question and survey question category
-    public function survey_quescategory()
+    public function surveyQuescategory()
     {
     	return $this->belongsTo(SurveyQuescategory::class)->withDefault();
     }
 
     //Define the  many-to-many relationship between survey assignment and survey question
-    public function survey_assignments()
+    public function surveyAssignments()
     {
     	return $this->belongsToMany(SurveyAssignment::class,'survey_results','survey_question_id','survey_assignment_id')->as('result')->withPivot('score','deleted_at')->whereNull('survey_results.deleted_at')->withTimestamps();
     }

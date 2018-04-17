@@ -13,7 +13,7 @@ class SurveyPosition extends Model
 
 
     //Define the  one-to-many relationship between survey assignment and position
-    public function survey_assignments()
+    public function surveyAssignments()
     {
     	return $this->hasMany(SurveyAssignment::class);
     }

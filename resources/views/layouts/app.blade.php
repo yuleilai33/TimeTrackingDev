@@ -113,28 +113,29 @@
                         </li>
 
                         <!-- Start adding the code for goal survey -->
-                        @if( Auth::user() && ( Auth::user()->isSupervisor() || Auth::user()->isLeaderCandidate() ))
                         <li>
                             <a href="#subPages5" data-toggle="collapse"
                                class="{{substr(Request::path(),0,7)=='surveys'  ? 'active':'collapsed '}}"><i
                                         class="lnr lnr-chart-bars"></i> <span>Toolbox</span> <i
                                         class="icon-submenu lnr lnr-chevron-left"></i></a>
                             <div id="subPages5"
-                                 class="collapse {{substr(Request::path(),0,10)=='engagement' ?'in':''}}">
+                                 class="collapse {{substr(Request::path(),0,7)=='surveys' ?'in':''}}">
                                 <ul class="nav">
                                     <li>
                                         <a href="https://www.cindexinc.com/" target="_blank" >Culture Index</a>
                                     </li>
+                                    @if( Auth::user() && ( Auth::user()->isSupervisor() || Auth::user()->isLeaderCandidate() ))
                                     <li>
                                         <a href="{{route('surveys.index')}}" class="{{Request::is('surveys') ?'active':''}}">Goal Survey</a>
                                     </li>
+                                    @endif
                                     <li>
                                         <a href="http://valuebuildersystem.com/" target="_blank" >Value Builder</a>
                                     </li>
                                 </ul>
                             </div>
                         </li>
-                        @endif
+
                         <!-- stop the code here -->
 
                         <li><a href="/profile" class="{{Request::is('profile') ?'active':''}}"><i class="fa fa-id-badge"

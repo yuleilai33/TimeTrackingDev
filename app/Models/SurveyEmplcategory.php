@@ -12,7 +12,7 @@ class SurveyEmplcategory extends Model
     protected $guarded = [];
 
     //Define the  one-to-many relationship between survey assignment and employee category
-    public function survey_assignments()
+    public function surveyAssignments()
     {
     	return $this->hasMany(SurveyAssignment::class);
     }

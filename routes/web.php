@@ -60,4 +60,4 @@ Route::get('database/test','DbController@test');
 //     return redirect('https://www.cindexinc.com/');
 // })->name('cultureindex');
 
-Route::resource('surveys','SurveysController');
+Route::resource('surveys','SurveyController');
