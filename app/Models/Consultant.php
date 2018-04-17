@@ -258,4 +258,11 @@ class Consultant extends Model
         }
         return $aids;
     }
+
+    //start to add code for goal survey
+    //Define the  one-to-many relationship between survey and consultant
+    public function surveys()
+    {
+        return $this->hasMany(Survey::class);
+    }
 }
