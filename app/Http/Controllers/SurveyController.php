@@ -35,13 +35,15 @@ class SurveyController extends Controller
    		}) -> toArray();
 
    		// return surveys belonging to these engagements
-   		$surveys = Survey::whereIn('engagement_id', $engagementIDs) -> paginate(20); 
+        // have to use the paginate function created, because original paginate() wont work after sort by
+
+   		$surveys = $this->paginate( Survey::with('engagement.client') -> whereIn('engagement_id', $engagementIDs) -> get() -> sortBy(function ($sur){
+            return $sur -> engagement -> client_id;
+        }), 20 );
+
 
    		//use for testing the return value
-
-   		// dd($arrangements->map( function ($item) {
-   		// 	return $item -> engagement_id ;
-   		// }) -> toArray() );
+//   		 dd($surveys->first()->surveyAssignments->where('completed',1)->count());
 
    		return view('surveys.survey',compact('surveys'));
    	}

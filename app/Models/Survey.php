@@ -14,7 +14,7 @@ class Survey extends Model
     //Define the  one-to-many relationship between survey and engagement
     public function engagement()
     {
-    	return $this->belongsTo(Engagment::class)->withDefault(['name' => 'Deleted']);
+    	return $this->belongsTo(Engagement::class)->withDefault(['name' => 'Deleted']);
     }
 
     //Define the  one-to-many relationship between survey and consultant
@@ -28,4 +28,38 @@ class Survey extends Model
     {
         return $this->hasMany(SurveyAssignment::class);
     }
+
+    public function state()
+    {
+        switch ($this -> status ) {
+            case 0:
+                return 'Active';
+            case 1:
+                return 'Closed';
+        }
+
+        return 'Unknown';
+    }
+
+    public function isActive()
+    {
+        return $this -> state() == 'Active';
+    }
+
+    public function isClosed()
+    {
+        return $this -> state() == 'Closed';
+    }
+
+    public function pendingAssignments ()
+    {
+        return $this->surveyAssignments()->where('completed',0);
+    }
+
+    public function completedAssignments ()
+    {
+        return $this->surveyAssignments()->where('completed',1);
+    }
+
+
 }
