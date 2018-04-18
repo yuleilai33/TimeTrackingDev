@@ -6,7 +6,7 @@
                 (total {{$surveys->total()}})</h3>
         </div>
 
-        {{--@include('surveys._filter') --}}
+        @include('surveys._filter')
 
     </div>
 
@@ -59,13 +59,13 @@
                                     <td>{{ $survey->completedAssignments()->count()}}</td>
                                     <td><i class="fa fa-flag {{$survey->state()}}"
                                            aria-hidden="true"></i>{{$survey->state()}}</td>
-                                    <td><a style="cursor: pointer;">Download</a></td>
+                                    <td><a style="cursor: pointer;">{{$survey->completedAssignments()->count()>0 ? 'Download' : 'Unavailable'}}</a></td>
                                 </tr>
                                 </tbody>
                             </table>
 
                         </div>
-                        
+
 
                     </div>
                 </div>
