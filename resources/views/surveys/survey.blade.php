@@ -4,7 +4,8 @@
     <div class="main-content">
 
     	<!-- show the modal page for creating new survey -->
-    	{{--@include('surveys.create') --}}
+
+    	@include('surveys.create')
 
 
 <!-- show all the surveys the auth user has access to -->
@@ -20,6 +21,38 @@
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
     <script>
+
+        $(function(){
+            var update;
+
+            /*open modal*/
+
+            $('#build-survey').on('click',function(){
+                update = false;
+                $('#surveyModal').modal('toggle');
+            });
+
+            $('.date-picker').datepicker({
+                format: 'mm/dd/yyyy',
+                todayHighlight: true,
+                autoclose: true
+            });
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     </script>
@@ -82,6 +115,13 @@
 
         #billing-day-container div.datepicker-days thead {
             display: none;
+        }
+
+        /*start adding css just for survey*/
+
+        .panel {
+            overflow-x:auto;
+            overflow-y:hidden;
         }
     </style>
 

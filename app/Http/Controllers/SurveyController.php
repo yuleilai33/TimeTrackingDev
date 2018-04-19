@@ -24,6 +24,8 @@ class SurveyController extends Controller
    	public function index()
    	{
 
+        $consultant = Auth::user() -> consultant;
+
 //   	    supervisor can see all the surveys
 
    		if (Auth::user() -> isSupervisor()){
@@ -37,7 +39,6 @@ class SurveyController extends Controller
         else {
             // goal:show all the surveys that are belonging to the engagements this consultant is in
             // return the instance of consultant
-            $consultant = Auth::user() -> consultant;
 
             // return the collection of instances for the arrangement this consultant is in
             $arrangements = $consultant -> arrangements;
@@ -52,9 +53,11 @@ class SurveyController extends Controller
             }), 20 );
         }
 
-   		//use for testing the return value
-//   		 dd(Auth::user()-> isSupervisor());
+        $clientIds = Engagement::groupedByClient($consultant);
 
-   		return view('surveys.survey',compact('surveys'));
+   		//use for testing the return value
+//   		 dd();
+
+   		return view('surveys.survey',compact('surveys','clientIds'));
    	}
 }
