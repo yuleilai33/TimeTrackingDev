@@ -556,6 +556,7 @@
                 });
                 if (update) formdata.push({name: '_method', value: 'PUT'});
                 pushArrangements(formdata);
+
                 $.post({
                     url: update ? "/engagement/" + eid : "/engagement",
                     data: formdata,
@@ -583,7 +584,10 @@
                         $('#engagementModal').modal('toggle');
                     }
                 });
+
+
                 return false;
+
             });
 
             $('#add-team-member').on('click', function () {

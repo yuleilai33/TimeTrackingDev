@@ -30,7 +30,7 @@
                             <br>
                         </div>
 
-                        <a id="add-team-member" href="javascript:void(0)" class="label label-info"><i
+                        <a id="add-participant-member" href="javascript:void(0)" class="label label-info"><i
                                     class="fa fa-user-plus" aria-hidden="true"></i>Add participants
                         </a>
 
@@ -46,31 +46,33 @@
                                     <th></th>
                                 </tr>
                                 </thead>
-                                <tbody id="members-table">
+                                <tbody id="participants-table">
                                 <tr>
                                     <td>
-                                        <select class="selectpicker pid" data-width="200px"
+                                        <select class="selectpicker" data-width="200px"
                                                 data-dropup-auto="false" required>
                                             @foreach(\newlifecfo\Models\SurveyEmplcategory::all() as $category)
                                                 <option value="{{$category->id}}">{{$category->name}}</option>
                                             @endforeach
                                         </select>
                                     </td>
+
                                     <td>
-                                        <select class="selectpicker pid" data-width="200px"
+                                        <select class="selectpicker" data-width="200px"
                                                 data-dropup-auto="false" required>
                                             @foreach(\newlifecfo\Models\SurveyPosition::all() as $position)
                                                 <option value="{{$position->id}}">{{$position->name}}</option>
                                             @endforeach
                                         </select>
                                     </td>
+
                                     <td>
                                         <input id="first_name" type="text" class="form-control" name="first_name"
-                                               value="{{ old('first_name') }}" required autofocus>
+                                               value="{{ old('first_name') }}" required >
                                     </td>
                                     <td>
                                         <input id="last_name" type="text" class="form-control" name="last_name"
-                                               value="{{ old('last_name') }}" required autofocus>
+                                               value="{{ old('last_name') }}" required>
                                     </td>
                                     <td>
                                         <input id="email" type="email" class="form-control" name="email"
@@ -83,46 +85,29 @@
                                 </tbody>
                             </table>
                         </div>
-
+                    </div>
+                        <div class="row"
+                             style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em; display:none" id="statusBar">
+                            <div class="col-md-4">
+                                <label class="fancy-radio">
+                                    <input name="status" value="0" type="radio">
+                                    <span><i></i><p class="label label-success">Active</p></span>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fancy-radio">
+                                    <input name="status" value="1" type="radio">
+                                    <span><i></i><p class="label label-default">Closed</p></span>
+                                </label>
+                            </div>
+                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button class="btn btn-primary" id="submit-modal" type="submit"
+                                data-loading-text="<i class='fa fa-spinner fa-spin'></i>Processing">Build
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-
-
-                    {{--</div>--}}
-                    {{--@if($admin)--}}
-                        {{--<div class="row"--}}
-                             {{--style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em">--}}
-                            {{--<div class="col-md-4">--}}
-                                {{--<label class="fancy-radio">--}}
-                                    {{--<input name="status" value="0" type="radio">--}}
-                                    {{--<span><i></i><p class="label label-warning">Pending</p></span>--}}
-                                {{--</label>--}}
-                            {{--</div>--}}
-                            {{--<div class="col-md-4">--}}
-                                {{--<label class="fancy-radio">--}}
-                                    {{--<input name="status" value="1" type="radio">--}}
-                                    {{--<span><i></i><p class="label label-success">Active</p></span>--}}
-                                {{--</label>--}}
-                            {{--</div>--}}
-                            {{--<div class="col-md-4">--}}
-                                {{--<label class="fancy-radio">--}}
-                                    {{--<input name="status" value="2" type="radio">--}}
-                                    {{--<span><i></i><p class="label label-default">Closed</p></span>--}}
-                                {{--</label>--}}
-                            {{--</div>--}}
-                        {{--</div>--}}
-                    {{--@endif--}}
-                    {{--<div class="modal-footer">--}}
-                        {{--<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>--}}
-                        {{--<button class="btn btn-primary" id="submit-modal" type="submit"--}}
-                                {{--data-loading-text="<i class='fa fa-spinner fa-spin'></i>Processing">Build--}}
-                        {{--</button>--}}
-                    {{--</div>--}}
-                {{--</form>--}}
-            {{--</div>--}}
-        {{--</div>--}}
-    {{--</div>--}}

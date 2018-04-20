@@ -25,11 +25,21 @@
         $(function(){
             var update;
 
+            $('.selectpicker').selectpicker();
+
             /*open modal*/
 
             $('#build-survey').on('click',function(){
                 update = false;
+
                 $('#surveyModal').modal('toggle');
+                $('#statusBar').hide();
+
+               /* clean up the previous input */
+                $('#participants-table tr').slice(1).remove();
+                $('.selectpicker').selectpicker('val','');
+                $('#surveyModal').find('input').val('');
+
             });
 
             $('.date-picker').datepicker({
@@ -38,8 +48,57 @@
                 autoclose: true
             });
 
+            $('.survey-edit').on('click',function(){
+                update = true;
+
+                $('#surveyModal').modal('toggle');
+                $('#statusBar').show();
+
+            });
+
+            $('#add-participant-member').on('click',function(){
+
+               var table = $('#participants-table') ;
+               var tr = table.find('tr').first().clone().appendTo(table);
+
+                tr.find('.bootstrap-select').replaceWith(function () {
+                    return $('select', this);
+                });
+
+                tr.find('a').addClass("deletable-row");
+                tr.find('select').selectpicker('val', '');
+                tr.find('input').val('');
+
+/*
+                document.write(tr.html());
+                */
+            });
+
+            $('#surveyModal').on('click','.deletable-row',function(){
+                var tr = $(this).parent().parent();
+
+                if (update){
+
+                }else{
+
+                    tr.fadeOut(300, function () {
+                        $(this).remove();
+                    });
+                }
+            });
+
+            $('#survey-form').on('submit',function(e){
+                e.preventDefault();
+                console.log( $( this ).serializeArray() );
+
+            });
+
+
+
 
         });
+
+
 
 
 
