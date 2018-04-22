@@ -54,7 +54,7 @@
                                 <tbody>
                                 <tr>
                                     <td>{{$survey->consultant->fullname()}}</td>
-                                    <td>{{(new DateTime($survey->created_at))->format('m/d/Y')}}</td>
+                                    <td>{{(new DateTime($survey->start_date))->format('m/d/Y')}}</td>
                                     <td>{{ $survey->pendingAssignments()->count() }}</td>
                                     <td>{{ $survey->completedAssignments()->count()}}</td>
                                     <td><i class="fa fa-flag {{$survey->state()}}"

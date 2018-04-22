@@ -11,8 +11,8 @@ class DbController extends Controller{
 
     public function test(){
         $data = DB::table('survey_questions')->orderby('id','desc')->get();
-
-        dd(Client::class);
+        $a = array(1,2,3);
+        dd();
     }
 
 }

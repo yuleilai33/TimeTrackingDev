@@ -24,6 +24,7 @@
 
         $(function(){
             var update;
+            var surveyID;
 
             $('.selectpicker').selectpicker();
 
@@ -50,6 +51,7 @@
 
             $('.survey-edit').on('click',function(){
                 update = true;
+                surveyID = $(this).attr('data-id');
 
                 $('#surveyModal').modal('toggle');
                 $('#statusBar').show();
@@ -66,7 +68,7 @@
                 });
 
                 tr.find('a').addClass("deletable-row");
-                tr.find('select').selectpicker('val', '');
+                tr.find('.selectpicker').selectpicker('val', '');
                 tr.find('input').val('');
 
 /*
@@ -89,14 +91,62 @@
 
             $('#survey-form').on('submit',function(e){
                 e.preventDefault();
-                console.log( $( this ).serializeArray() );
+                var formdata;
+                formdata = $(this).serializeArray();
+                formdata.push({name:'_token', value:'{{csrf_token()}}'});
 
+                if(update) formdata.push({name:'_method', value:'PATCH' }) ;
+
+                getAssignments(formdata);
+
+                $.ajax({
+                   type:"POST",
+                   url: update ? '/surveys/'+surveyID : '/surveys',
+                   dataType: 'json',
+                   data: formdata,
+                   success: function (feedback) {
+                        if (feedback.code == 7) {
+                            toastr.success(update ? feedback.message : 'Survey has been created!');
+                            setTimeout(location.reload.bind(location), 1000);
+                        } else if (feedback.code == 5) {
+                            toastr.warning(feedback.message);
+                        }
+                        else {
+                            toastr.error('Error! Saving failed, code: ' + feedback.code +
+                                ', message: ' + feedback.message);
+                        }
+                    },
+                    error: function (feedback) {
+                        toastr.error('Oh NOooooooo...' + feedback.message);
+                    },
+                    beforeSend: function (jqXHR, settings) {
+                        $("#submit-modal").button('loading');
+                    },
+                    complete: function () {
+                        $("#submit-modal").button('reset');
+                        $('#surveyModal').modal('toggle');
+                    }
+
+                });
+
+                return false;
             });
 
 
 
 
         });
+
+        function getAssignments(formdata){
+            $('#participants-table').find('tr').each( function(){
+               formdata.push({name: 'surveyEmplCategoryID[]', value: $(this).find('.survey_empl_category').selectpicker('val')},
+                   {name: 'surveyPositionID[]', value: $(this).find('.survey_position').selectpicker('val')},
+                   {name: 'participantFirstName[]', value: $(this).find('.survey_firstName').val() },
+                   {name: 'participantLastName[]', value: $(this).find('.survey_lastName').val()},
+                   {name: 'participantEmail[]', value: $(this).find('.survey_Email').val()}
+               );
+            });
+        }
 
 
 

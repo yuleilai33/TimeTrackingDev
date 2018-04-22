@@ -49,7 +49,7 @@
                                 <tbody id="participants-table">
                                 <tr>
                                     <td>
-                                        <select class="selectpicker" data-width="200px"
+                                        <select class="selectpicker survey_empl_category" data-width="200px"
                                                 data-dropup-auto="false" required>
                                             @foreach(\newlifecfo\Models\SurveyEmplcategory::all() as $category)
                                                 <option value="{{$category->id}}">{{$category->name}}</option>
@@ -58,7 +58,7 @@
                                     </td>
 
                                     <td>
-                                        <select class="selectpicker" data-width="200px"
+                                        <select class="selectpicker survey_position" data-width="200px"
                                                 data-dropup-auto="false" required>
                                             @foreach(\newlifecfo\Models\SurveyPosition::all() as $position)
                                                 <option value="{{$position->id}}">{{$position->name}}</option>
@@ -67,15 +67,15 @@
                                     </td>
 
                                     <td>
-                                        <input id="first_name" type="text" class="form-control" name="first_name"
+                                        <input id="first_name" type="text" class="form-control survey_firstName"
                                                value="{{ old('first_name') }}" required >
                                     </td>
                                     <td>
-                                        <input id="last_name" type="text" class="form-control" name="last_name"
+                                        <input id="last_name" type="text" class="form-control survey_lastName"
                                                value="{{ old('last_name') }}" required>
                                     </td>
                                     <td>
-                                        <input id="email" type="email" class="form-control" name="email"
+                                        <input id="email" type="email" class="form-control survey_Email"
                                                value="{{ old('email') }}" required>
                                     </td>
                                     <td>

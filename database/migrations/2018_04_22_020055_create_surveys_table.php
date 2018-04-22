@@ -18,6 +18,7 @@ class CreateSurveysTable extends Migration
             $table->unsignedInteger('engagement_id')->comment('the client and engagement this survey belongs to');
             $table->unsignedInteger('consultant_id')->comment('the consultant who creates the survey');
             $table->unsignedTinyInteger('status')->default(0)->comment('0=>avtive,1=>closed');
+            $table->date('start_date');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -60,4 +60,56 @@ class SurveyController extends Controller
 
    		return view('surveys.survey',compact('surveys','clientIds'));
    	}
+
+   	public function store( Request $request )
+    {
+        $consultant = Auth::user() -> consultant;
+        $feedback = [];
+
+        if ($request->ajax()) {
+
+                $survey = new Survey(['engagement_id' => $request->eid, 'consultant_id' => $consultant->id, 'start_date' => $request -> start_date ]);
+
+                if ($survey->save()) {
+                    if ($this->saveAssignments($request, $survey->id)) {
+                        $feedback['code'] = 7;
+                        $feedback['message'] = 'success';
+                    } else {
+                        $survey->delete();
+                        $feedback['code'] = 2;
+                        $feedback['message'] = 'Saving engagement failed, unsupported data encountered!';
+                    }
+                } else {
+                    $feedback['code'] = 1;
+                    $feedback['message'] = 'Saving engagement failed, there may be some unsupported data';
+                }
+        }
+
+        return json_encode($feedback);
+
+    }
+
+    public function saveAssignments ( Request $request, $surveyID ){
+
+	    $surveyEmplCategoryID = $request -> surveyEmplCategoryID;
+	    $surveyPositionID = $request -> surveyPositionID;
+	    $participantFirstName = $request -> participantFirstName;
+	    $participantLastName = $request -> participantLastName;
+	    $participantEmail = $request -> participantEmail;
+
+	    foreach ( $participantFirstName as $i => $firstName ){
+//	        validate if all value is set
+	        if ( $surveyID && $surveyEmplCategoryID[$i] && $surveyPositionID[$i] && $participantFirstName[$i] && $participantLastName[$i] && $participantEmail[$i] ){
+                if(!SurveyAssignment::create(['survey_id' => $surveyID, 'participant_first_name' => $participantFirstName[$i], 'participant_last_name' => $participantLastName[$i],
+                    'email' => $participantEmail[$i], 'survey_position_id' => $surveyPositionID[$i], 'survey_emplcategory_id' => $surveyEmplCategoryID[$i] ])){
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+
 }
