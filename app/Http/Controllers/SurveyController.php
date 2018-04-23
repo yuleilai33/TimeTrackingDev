@@ -9,6 +9,7 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
+use newlifecfo\Mail;
 
 class SurveyController extends Controller
 {
@@ -97,7 +98,7 @@ class SurveyController extends Controller
 	    $participantLastName = $request -> participantLastName;
 	    $participantEmail = $request -> participantEmail;
 
-	    foreach ( $participantFirstName as $i => $firstName ){
+	    foreach ($participantFirstName as $i => $firstName){
 //	        validate if all value is set
 	        if ( $surveyID && $surveyEmplCategoryID[$i] && $surveyPositionID[$i] && $participantFirstName[$i] && $participantLastName[$i] && $participantEmail[$i] ){
                 if(!SurveyAssignment::create(['survey_id' => $surveyID, 'participant_first_name' => $participantFirstName[$i], 'participant_last_name' => $participantLastName[$i],
@@ -107,7 +108,29 @@ class SurveyController extends Controller
             }
         }
 
+//        send survey to all participants after all participant info can be saved
+        foreach ($participantFirstName as $i => $firstName){
+
+	        $this-> sendSurveyToParticipant($participantEmail[$i]);
+
+        }
+
         return true;
+    }
+
+    public function sendSurveyToParticipant ($participantEmail)
+    {
+
+	    $view = 'surveys.content';
+	    $data = 0;
+	    $from = Auth::user() -> email;
+	    $name = Auth::user() -> consultant -> fullname();
+	    $to = $participantEmail;
+	    $subject = "Vision Goal Survey - New Life CFO";
+
+	    Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject ) {
+	        $message -> from($from, $name) -> to($to) -> subject($subject);
+        });
     }
 
 

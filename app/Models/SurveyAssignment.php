@@ -9,7 +9,17 @@ use Carbon\Carbon;
 class SurveyAssignment extends Model
 {
     use SoftDeletes;
+
     protected $guarded = [];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function($survey_assignment){
+            $survey_assignment -> completion_token = str_random(30);
+        });
+    }
 
     //Define the  one-to-many relationship between survey assignment and position
     public function surveyPosition()
