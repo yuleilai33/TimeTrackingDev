@@ -10,6 +10,7 @@ class SurveyQuestion extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
+    protected $dates = ['deleted_at'];
 
     //Define the  one-to-many relationship between survey question and survey question category
     public function surveyQuescategory()
@@ -18,8 +19,14 @@ class SurveyQuestion extends Model
     }
 
     //Define the  many-to-many relationship between survey assignment and survey question
-    public function surveyAssignments()
+//    public function surveyAssignments()
+//    {
+//    	return $this->belongsToMany(SurveyAssignment::class,'survey_results','survey_question_id','survey_assignment_id')->as('result')->withPivot('score','deleted_at')->whereNull('survey_results.deleted_at')->withTimestamps();
+//    }
+
+    //Define the  one-to-many relationship between survey question and survey result
+    public function surveyResults()
     {
-    	return $this->belongsToMany(SurveyAssignment::class,'survey_results','survey_question_id','survey_assignment_id')->as('result')->withPivot('score','deleted_at')->whereNull('survey_results.deleted_at')->withTimestamps();
+        return $this->hasMany(SurveyResult::class);
     }
 }

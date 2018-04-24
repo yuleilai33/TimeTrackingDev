@@ -10,6 +10,7 @@ class SurveyQuescategory extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
+    protected $dates = ['deleted_at'];
 
     public function surveyQuestions()
     {

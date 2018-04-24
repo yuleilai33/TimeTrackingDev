@@ -61,3 +61,7 @@ Route::get('database/test','DbController@test');
 // })->name('cultureindex');
 
 Route::resource('surveys','SurveyController');
+
+Route::get('surveys/question/{token}', 'SurveyController@startSurvey')->name('start_survey');
+
+Route::post('surveys/question/{assignment}', 'SurveyController@saveAnswer') ->name('save_answer');

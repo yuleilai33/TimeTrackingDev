@@ -10,6 +10,7 @@ class Survey extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
+    protected $dates = ['deleted_at'];
 
     //Define the  one-to-many relationship between survey and engagement
     public function engagement()

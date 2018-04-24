@@ -9,15 +9,23 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
-use newlifecfo\Mail;
+use newlifecfo\Models\SurveyQuestion;
+use Mail;
+use newlifecfo\Models\SurveyResult;
+
 
 class SurveyController extends Controller
 {
     
 	public function __construct()
     {
-        $this->middleware('auth');
-        $this->middleware('verifiedConsultant');
+        $this->middleware('auth', [
+            'except' => ['startSurvey','saveAnswer']
+        ]);
+        $this->middleware('verifiedConsultant',
+            [
+                'except' => ['startSurvey','saveAnswer']
+        ]);
 //        need to add the filter for cfo lead
     }
 
@@ -51,7 +59,7 @@ class SurveyController extends Controller
 
             $surveys = $this->paginate( Survey::with('engagement.client') -> whereIn('engagement_id', $engagementIDs) -> get() -> sortBy(function ($sur){
                 return $sur -> engagement -> client -> name;
-            }), 20 );
+            }), 20,'surveys' );
         }
 
         $clientIds = Engagement::groupedByClient($consultant);
@@ -97,40 +105,90 @@ class SurveyController extends Controller
 	    $participantFirstName = $request -> participantFirstName;
 	    $participantLastName = $request -> participantLastName;
 	    $participantEmail = $request -> participantEmail;
+	    $participants = collect();
 
 	    foreach ($participantFirstName as $i => $firstName){
 //	        validate if all value is set
-	        if ( $surveyID && $surveyEmplCategoryID[$i] && $surveyPositionID[$i] && $participantFirstName[$i] && $participantLastName[$i] && $participantEmail[$i] ){
-                if(!SurveyAssignment::create(['survey_id' => $surveyID, 'participant_first_name' => $participantFirstName[$i], 'participant_last_name' => $participantLastName[$i],
-                    'email' => $participantEmail[$i], 'survey_position_id' => $surveyPositionID[$i], 'survey_emplcategory_id' => $surveyEmplCategoryID[$i] ])){
+            if ( $surveyID && $surveyEmplCategoryID[$i] && $surveyPositionID[$i] && $participantFirstName[$i] && $participantLastName[$i] && $participantEmail[$i] ) {
+
+                $surveyAssignment = new SurveyAssignment(['survey_id' => $surveyID, 'participant_first_name' => $participantFirstName[$i], 'participant_last_name' => $participantLastName[$i],
+                    'email' => $participantEmail[$i], 'survey_position_id' => $surveyPositionID[$i], 'survey_emplcategory_id' => $surveyEmplCategoryID[$i]]);
+                if( !$surveyAssignment->save() ){
                     return false;
+                } else {
+                    $participants->push($surveyAssignment);
                 }
             }
         }
 
-//        send survey to all participants after all participant info can be saved
-        foreach ($participantFirstName as $i => $firstName){
-
-	        $this-> sendSurveyToParticipant($participantEmail[$i]);
-
+        foreach ($participants as $participant){
+	        $this -> sendSurveyToParticipant( $participant );
         }
 
         return true;
     }
 
-    public function sendSurveyToParticipant ($participantEmail)
+    public function sendSurveyToParticipant ($participant)
     {
 
-	    $view = 'surveys.content';
-	    $data = 0;
+	    $view = 'surveys.email';
+	    $data = compact('participant');
 	    $from = Auth::user() -> email;
 	    $name = Auth::user() -> consultant -> fullname();
-	    $to = $participantEmail;
-	    $subject = "Vision Goal Survey - New Life CFO";
+	    $to = $participant->email;
+	    $subject = "Vision Goal Survey";
 
 	    Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject ) {
-	        $message -> from($from, $name) -> to($to) -> subject($subject);
+	        $message  -> to($to) -> subject($subject);
+
+	        $message -> replyTo($from, $name);
         });
+    }
+
+    public function startSurvey ($token)
+    {
+        $participant = SurveyAssignment::where('completion_token', $token) -> firstOrFail();
+
+        $questions = SurveyQuestion::all();
+
+        return view('surveys.question',compact('participant','questions'));
+
+    }
+
+    public function saveAnswer(Request $request, SurveyAssignment $assignment)
+    {
+        $feedback = [];
+
+        $formdata = $request -> all();
+
+        if ($request->ajax()) {
+//
+            foreach ($formdata as $name => $value){
+
+                if(substr($name,0,9) != 'question_'){
+                    continue;
+                }
+
+                $questionID=substr($name,9);
+
+                $SurveyResult= new SurveyResult(['survery_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID, 'score' => $value]);
+                $SurveyResult -> save();
+            }
+
+        }
+
+//        change the status of assignment
+        $assignment -> completed = true;
+        $assignment -> completion_token = null;
+        $assignment -> save();
+
+//        successfully save all the data
+
+        $feedback['code'] = 7;
+        $feedback['message'] = 'success';
+
+        return json_encode($feedback);
+
     }
 
 

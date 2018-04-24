@@ -76,5 +76,5 @@
 </div>
 
 <div class="pull-right pagination">
-    {!! $surveys -> render() !!}
+    {{ $surveys->appends(Request::except('page'))->withPath('surveys')->links() }}
 </div>

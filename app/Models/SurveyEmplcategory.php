@@ -10,6 +10,7 @@ class SurveyEmplcategory extends Model
 {
     use SoftDeletes;
     protected $guarded = [];
+    protected $dates = ['deleted_at'];
 
     //Define the  one-to-many relationship between survey assignment and employee category
     public function surveyAssignments()
