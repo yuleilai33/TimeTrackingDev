@@ -26,7 +26,7 @@
                                                     class="fa fa-pencil-square-o"
                                                     aria-hidden="true"></i></a>
                                         <span>&nbsp;|&nbsp;</span>
-                                        <a href="javascript:void(0)" class="eng-delete"
+                                        <a href="javascript:void(0)" class="survey-delete"
                                            {{--only the owner can delete the survey--}}
                                                    {{--neet testing--}}
                                            data-del="{{$survey->consultant_id == Auth::user()->consultant->id ?'0':'1'}}"
@@ -47,8 +47,9 @@
                                     <th>Start Date</th>
                                     <th>Pending</th>
                                     <th>Completed</th>
-                                    <th>Status</th>
+                                    {{--<th>Status</th>--}}
                                     <th>Report</th>
+                                    <th>Resend</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -57,9 +58,10 @@
                                     <td>{{(new DateTime($survey->start_date))->format('m/d/Y')}}</td>
                                     <td>{{ $survey->pendingAssignments()->count() }}</td>
                                     <td>{{ $survey->completedAssignments()->count()}}</td>
-                                    <td><i class="fa fa-flag {{$survey->state()}}"
-                                           aria-hidden="true"></i>{{$survey->state()}}</td>
+                                    {{--<td><i class="fa fa-flag {{$survey->state()}}"--}}
+                                           {{--aria-hidden="true"></i>{{$survey->state()}}</td>--}}
                                     <td>{!! $survey->completedAssignments()->count()>0 ? '<a style="cursor: pointer;">Download</a>' : 'Unavailable' !!}</td>
+                                    <td><a href='javascript:void(0)' class="resendSurvey" data-id="{{$survey->id}}"><i class="lnr lnr-location"></i></a></td>
                                 </tr>
                                 </tbody>
                             </table>

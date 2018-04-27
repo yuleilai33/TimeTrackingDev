@@ -130,9 +130,6 @@
                                             <a href="{{route('surveys.index')}}" class="{{Request::is('surveys') ?'active':''}}">Goal Survey</a>
                                         </li>
                                         @endif
-                                        <li>
-                                            <a href="http://valuebuildersystem.com/" target="_blank" >Value Builder</a>
-                                        </li>
                                     </ul>
                                 </div>
                             </li>

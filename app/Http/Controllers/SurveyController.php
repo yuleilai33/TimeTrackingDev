@@ -59,7 +59,7 @@ class SurveyController extends Controller
 
             $surveys = $this->paginate( Survey::with('engagement.client') -> whereIn('engagement_id', $engagementIDs) -> get() -> sortBy(function ($sur){
                 return $sur -> engagement -> client -> name;
-            }), 20,'surveys' );
+            }), 20 );
         }
 
         $clientIds = Engagement::groupedByClient($consultant);
@@ -136,7 +136,7 @@ class SurveyController extends Controller
 	    $from = Auth::user() -> email;
 	    $name = Auth::user() -> consultant -> fullname();
 	    $to = $participant->email;
-	    $subject = "Vision Goal Survey";
+	    $subject = "Vision to Actions";
 
 	    Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject ) {
 	        $message  -> to($to) -> subject($subject);
@@ -188,6 +188,133 @@ class SurveyController extends Controller
         $feedback['message'] = 'success';
 
         return json_encode($feedback);
+
+    }
+
+    public function edit ( Request $request, Survey $survey)
+    {
+//        $user = Auth::user();
+
+        if ($request->ajax()) {
+//
+//            if ($user->can('view', $survey)) {
+            foreach ($survey -> surveyAssignments as $assignment) {
+
+                    $assignment->makeHidden(['completion_token', 'created_at', 'updated_at', 'deleted_at']);
+            }
+
+            if (true) {
+                $survey -> surveyAssignments;
+                return json_encode($survey->makeHidden(['created_at', 'updated_at', 'deleted_at']));
+            } else {
+                return 'cannot view engagement';
+            }
+        } else {
+            return "Illegal Request!";
+        }
+
+
+    }
+
+    public function destroy(Request $request, Survey $survey)
+    {
+
+        $user = Auth::user();
+        if ($request->ajax()) {
+
+            //only the owner of the survey can delete it
+            if ( $user->consultant->id == $survey -> consultant_id ) {
+
+                foreach ($survey->surveyAssignments as $assignment) {
+                    $assignment->delete();
+                }
+                if ($survey->delete()) {
+                    return json_encode(['message' => 'succeed']);
+                } else {
+                    return json_encode(['message' => 'Can\'t delete this Active engagement']);
+                }
+            }
+            return json_encode(['message' => ' No authorization']);
+        }
+    }
+
+
+
+    public function update (Request $request, Survey $survey)
+    {
+        $user = Auth::user();
+        $feedback = [];
+        if ($request->ajax()) {
+
+//            if ($user->can('update', $eng)) {
+                if ($survey->update(['engagement_id' => $request->eid, 'start_date' => $request -> start_date])) {
+                    if ($this->updateAssignments($request, $survey)) {
+                        $feedback['code'] = 7;
+                        $feedback['message'] = 'Record Update Success';
+                    } else {
+                        $feedback['code'] = 6;
+                        $feedback['message'] = 'Updating assignments failed, survey update rollback';
+                    }
+                    //only manager or superAdmin can touch the status
+//                    if ($user->can('changeStatus', $eng)) {
+//                        $opened = !$eng->isClosed();
+//                        $status = $request->get('status');
+//                        if (isset($status)) $eng->update(['status' => $status]);
+//                        if ($opened && $eng->isClosed()) $eng->update(['close_date' => Carbon::now()->toDateString('Y-m-d')]);
+//                    } else {
+//                        $feedback['code'] = 5;
+//                        $feedback['message'] = 'Status updating failed, no authorization';
+//                    }
+                } else {
+                    $feedback['code'] = 4;
+                    $feedback['message'] = 'unknown error during updating';
+                }
+//            } else {
+//                $feedback['code'] = 1;
+//                $feedback['message'] = 'Active engagement can only be updated by manager';
+//            }
+            return json_encode($feedback);
+        }
+
+
+    }
+
+    public function updateAssignments (Request $request, $survey)
+    {
+        $surveyEmplCategoryID = $request -> surveyEmplCategoryID;
+        $surveyPositionID = $request -> surveyPositionID;
+        $participantFirstName = $request -> participantFirstName;
+        $participantLastName = $request -> participantLastName;
+        $participantEmail = $request -> participantEmail;
+
+        foreach ($survey ->surveyAssignments as $assignment) {
+            $keys = array_keys($participantEmail, $assignment->email);
+            if (!$keys) {
+                $assignment->delete();
+            }
+        }
+        //add new one if exist and update the old guys
+        foreach ($participantEmail as $i => $email) {
+            if (!SurveyAssignment::updateOrCreate(
+                ['survey_id' => $survey->id, 'email' => $participantEmail[$i]],
+                ['participant_first_name' => $participantFirstName[$i], 'participant_last_name' => $participantLastName[$i], 'survey_position_id' => $surveyPositionID[$i], 'survey_emplcategory_id' => $surveyEmplCategoryID[$i]]
+            )) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function resendSurvey (Survey $survey)
+    {
+        $unfinishedParticipants = $survey -> surveyAssignments() -> where('completed','0') -> get();
+
+
+        foreach ($unfinishedParticipants as $participant){
+            $this -> sendSurveyToParticipant( $participant );
+        }
+
+        return;
 
     }
 

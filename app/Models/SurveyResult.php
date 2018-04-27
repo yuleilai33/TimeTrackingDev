@@ -28,13 +28,13 @@ class SurveyResult extends Model
     {
         switch ($this->score) {
 
-            case -2:
-                return 'Never';
-            case -1:
-                return 'Sporadic';//Operating, running
             case 1:
-                return 'Usually';
+                return 'Never';
             case 2:
+                return 'Sporadic';
+            case 3:
+                return 'Usually';
+            case 4:
                 return 'Always';
         }
         return 'Unknown';

@@ -1,7 +1,7 @@
 
     <div class="modal fade" id="surveyModal" tabindex="-1" role="dialog"
          aria-labelledby="surveyModalLabel" data-backdrop="static" data-keyboard="false"
-         aria-hidden="true">
+         aria-hidden="true" >
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -43,6 +43,7 @@
                                     <th>First Name</th>
                                     <th>Last Name</th>
                                     <th>Email</th>
+                                    <th style="display: none">Completed</th>
                                     <th></th>
                                 </tr>
                                 </thead>
@@ -67,16 +68,19 @@
                                     </td>
 
                                     <td>
-                                        <input id="first_name" type="text" class="form-control survey_firstName"
-                                               value="{{ old('first_name') }}" required >
+                                        <input type="text" class="form-control survey_firstName"
+                                               value="" required >
                                     </td>
                                     <td>
-                                        <input id="last_name" type="text" class="form-control survey_lastName"
-                                               value="{{ old('last_name') }}" required>
+                                        <input type="text" class="form-control survey_lastName"
+                                               value="" required>
                                     </td>
                                     <td>
-                                        <input id="email" type="email" class="form-control survey_Email"
-                                               value="{{ old('email') }}" required>
+                                        <input  type="email" class="form-control survey_Email"
+                                               value="" required>
+                                    </td>
+                                    <td>
+                                        <span class="glyphicon glyphicon-ok completion" style="color: limegreen; display: none;" aria-hidden="true" ></span>
                                     </td>
                                     <td>
                                         <a href="javascript:void(0);"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
@@ -86,21 +90,22 @@
                             </table>
                         </div>
                     </div>
-                        <div class="row"
-                             style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em; display:none" id="statusBar">
-                            <div class="col-md-4">
-                                <label class="fancy-radio">
-                                    <input name="status" value="0" type="radio">
-                                    <span><i></i><p class="label label-success">Active</p></span>
-                                </label>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="fancy-radio">
-                                    <input name="status" value="1" type="radio">
-                                    <span><i></i><p class="label label-default">Closed</p></span>
-                                </label>
-                            </div>
-                        </div>
+                    {{--save the status bar for future need--}}
+                        {{--<div class="row"--}}
+                             {{--style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em; display:none" id="statusBar">--}}
+                            {{--<div class="col-md-4">--}}
+                                {{--<label class="fancy-radio">--}}
+                                    {{--<input name="status" value="0" type="radio">--}}
+                                    {{--<span><i></i><p class="label label-success">Active</p></span>--}}
+                                {{--</label>--}}
+                            {{--</div>--}}
+                            {{--<div class="col-md-4">--}}
+                                {{--<label class="fancy-radio">--}}
+                                    {{--<input name="status" value="1" type="radio">--}}
+                                    {{--<span><i></i><p class="label label-default">Closed</p></span>--}}
+                                {{--</label>--}}
+                            {{--</div>--}}
+                        {{--</div>--}}
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button class="btn btn-primary" id="submit-modal" type="submit"

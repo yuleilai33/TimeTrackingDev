@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="UTF-8">
-        <title>Vision Goal Survey - New Life CFO</title>
+        <title>Vision to Actions - New Life CFO</title>
         <style>
             .button {
                 display: inline-block;

@@ -17,10 +17,14 @@
                     <!-- PANEL HEADLINE -->
                     <div class="panel panel-headline">
                         <div class="panel-heading">
-                            <h1><b>Vision Goal Survey</b></h1>
+                            <h1><b>Vision to Actions</b></h1>
                             <p class="panel-subtitle">provided by New Life CFO Services</p>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <p><b>* This survey will only take a few minutes to complete</b></p>
+                            </div>
+
                             <form id="survey-question" >
 
                                 @php
@@ -32,16 +36,16 @@
                                     @for ($i=1; $i <=4; $i++)
                                         @switch($i)
                                             @case(1)
-                                                @php $answer = 'Never'; $value = -2; @endphp
+                                                @php $answer = 'Never'; $value = 1; @endphp
                                                 @break
                                             @case(2)
-                                                @php $answer = 'Sporadic'; $value = -1; @endphp
+                                                @php $answer = 'Sporadic'; $value = 2; @endphp
                                                 @break
                                             @case(3)
-                                                @php $answer = 'Usually'; $value = 1; @endphp
+                                                @php $answer = 'Usually'; $value = 3; @endphp
                                                 @break
                                             @case(4)
-                                                @php $answer = 'Always'; $value = 2; @endphp
+                                                @php $answer = 'Always'; $value = 4; @endphp
                                                 @break
                                         @endswitch
                                         <div class="radio radio-primary">
@@ -80,7 +84,7 @@
     <script>
 
         /*custom title for survey*/
-        document.title = 'Vision Goal - New Life CFO';
+        document.title = 'Vision to Actions - New Life CFO';
 
         $(function(){
 
