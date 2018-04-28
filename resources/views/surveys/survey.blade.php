@@ -160,7 +160,18 @@
                     data: formdata,
                     success: function (feedback) {
                         if (feedback.code == 7) {
-                            toastr.success(update ? feedback.message : 'Survey has been created!');
+                            $('#surveyModal').modal('toggle');
+
+                            if(update) {
+                                title = "The information has been updated";
+                            } else{
+                                title = "The survey has been sent to the participant"
+                            }
+                            swal({title: title, text: '', type: "success"},
+                                function(){
+                                    location.reload();
+                                }
+                            );
                         } else if (feedback.code == 5) {
                             toastr.warning(feedback.message);
                         }
@@ -177,18 +188,6 @@
                     },
                     complete: function () {
                         $("#submit-modal").button('reset');
-                        $('#surveyModal').modal('toggle');
-
-                        if(update) {
-                            title = "The information has been updated";
-                        } else{
-                            title = "The survey has been sent to the participant"
-                        }
-                        swal({title: title, text: '', type: "success"},
-                            function(){
-                                location.reload();
-                            }
-                        );
                     }
 
                 });

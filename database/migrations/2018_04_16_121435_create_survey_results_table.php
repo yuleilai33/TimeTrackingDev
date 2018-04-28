@@ -15,7 +15,7 @@ class CreateSurveyResultsTable extends Migration
     {
         Schema::create('survey_results', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('survery_assignment_id');
+            $table->unsignedInteger('survey_assignment_id');
             $table->unsignedInteger('survey_question_id');
             $table->decimal('score',6,2)->comment('Score Scale: -2 Never; -1 Sporadic; 1 Usually; 2 Always;');
             $table->timestamps();

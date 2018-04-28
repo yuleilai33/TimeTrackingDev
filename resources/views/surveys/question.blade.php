@@ -61,7 +61,7 @@
                                     @endphp
                                 @endforeach
                                 <div class="text-center">
-                                <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                                <button type="submit" class="btn btn-primary btn-lg" id="question-submit">Submit</button>
                                 </div>
 
 
@@ -111,6 +111,8 @@
                                 },
                                 function () {
                                     window.close();
+                                    $('#question-submit').prop('disabled',true).text('Please close window');
+
                                 });
                         } else if (feedback.code == 5) {
                             toastr.warning(feedback.message);

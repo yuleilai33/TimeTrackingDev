@@ -16,7 +16,7 @@ class CreateSurveyQuestionsTable extends Migration
         Schema::create('survey_questions', function (Blueprint $table) {
             $table->increments('id');
             $table->text('description');
-            $table->unsignedInteger('survey_quescagetory_id')->comment('category of each question');
+            $table->unsignedInteger('survey_quescategory_id')->comment('category of each question');
             $table->timestamps();
             $table->softDeletes();
         });

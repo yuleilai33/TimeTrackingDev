@@ -53,6 +53,26 @@ class SurveyAssignment extends Model
     	return $this->belongsTo(Survey::class)->withDefault();
     }
 
+    public function fullname()
+    {
+        return $this->participant_first_name . ' ' . $this->participant_last_name;
+    }
+
+    public function calculateTotalByCategory ($categoryID)
+    {
+        return $this -> surveyResults -> filter ( function ($item) use ($categoryID) {
+            return $item -> surveyQuestion -> surveyQuescategory -> id == $categoryID;
+        }) -> sum ('score');
+
+    }
+
+    public function calculateTotalScore ()
+    {
+        return $this -> surveyResults -> sum('score');
+    }
+
+
+
 
 
 }

@@ -67,3 +67,5 @@ Route::get('surveys/question/{token}', 'SurveyController@startSurvey')->name('st
 Route::post('surveys/question/{assignment}', 'SurveyController@saveAnswer') ->name('save_answer');
 
 Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('resend_survey');
+
+Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');

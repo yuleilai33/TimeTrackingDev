@@ -9,9 +9,11 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
+use newlifecfo\Models\SurveyQuescategory;
 use newlifecfo\Models\SurveyQuestion;
 use Mail;
 use newlifecfo\Models\SurveyResult;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class SurveyController extends Controller
@@ -171,7 +173,7 @@ class SurveyController extends Controller
 
                 $questionID=substr($name,9);
 
-                $SurveyResult= new SurveyResult(['survery_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID, 'score' => $value]);
+                $SurveyResult= new SurveyResult(['survey_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID, 'score' => $value]);
                 $SurveyResult -> save();
             }
 
@@ -287,6 +289,11 @@ class SurveyController extends Controller
         $participantLastName = $request -> participantLastName;
         $participantEmail = $request -> participantEmail;
 
+//        check if all the emails are unique
+        if ( count(array_unique($participantEmail)) < count($participantEmail) ) {
+            return false;
+        }
+
         foreach ($survey ->surveyAssignments as $assignment) {
             $keys = array_keys($participantEmail, $assignment->email);
             if (!$keys) {
@@ -317,6 +324,120 @@ class SurveyController extends Controller
         return;
 
     }
+
+    public function createReport(Survey $survey)
+    {
+            return Excel::create($this -> filename($survey), function ($excel) use ($survey) {
+                $this->setExcelProperties($excel, 'Vision to Action Report', $survey);
+
+//                create the summary sheet
+                $excel->sheet('Summary', function ($sheet) use ($survey) {
+                    $rowNum = 1;
+                    $questionCategories = SurveyQuescategory::all() -> pluck('name','id') -> toArray();
+
+                    $sheet->freezeFirstRow()
+//                        questionCategories Id matches the calculateTotalByCategory Id below
+                        ->row($rowNum, ['Participant Name', 'Employee Category', 'Position',$questionCategories[1], $questionCategories[2], $questionCategories[3], $questionCategories[4], 'Total'])
+                        ->cells('A1:H1', function ($cells) {
+                            $this->setTitleCellsStyle($cells);
+                        })->setColumnFormat(['D:H' => '0']);
+
+                    $sheet->getStyle('A1:G1')->getAlignment()->setWrapText(true);
+
+                    $sheet->setWidth(['A' => 20, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 30, 'F' => 30, 'G' => 20, 'H' => 20 ]);
+//
+                    $completedAssignments = $survey -> surveyAssignments -> where('completed', 1);
+
+                    if ($completedAssignments -> count()) {
+//
+                        foreach ($completedAssignments as $assignment) {
+
+                            $rowNum ++;
+                            //                        questionCategories Id matches the calculateTotalByCategory Id
+                            $sheet->row($rowNum, [ $assignment -> fullname(), $assignment -> surveyEmplcategory -> name, $assignment -> surveyPosition -> name,
+                                    $assignment->calculateTotalByCategory(1), $assignment->calculateTotalByCategory(2), $assignment->calculateTotalByCategory(3), $assignment->calculateTotalByCategory(4), $assignment->calculateTotalScore()]);
+
+                        }
+                    }
+//                        if ($payroll[1]->count()) {
+//                            $sheet->row($rowNum++, [$payroll[0]]);
+//                            $gTotal = 0;
+//                            foreach ($payroll[1] as $aid => $pay) {
+//                                $rowSum = $pay['hourlyPay'] + $pay['expense'] + $pay['bizDevIncome']+$pay['closings'];
+//                                $gTotal += $rowSum;
+//                                $sheet->row($rowNum, [null, $pay['ename'], $pay['elead'], $pay['position'], $pay['bhours'], $pay['nbhours'], $pay['brate'], $pay['prate'], $pay['hourlyPay'], $pay['expense'], $pay['bizDevShare'], $pay['bizDevIncome'], $pay['closingShare'], $pay['closings'], $rowSum]);
+//                                if ($aid < 0) {
+//                                    $sheet->cells('A' . $rowNum . ':O' . $rowNum, function ($cells) use ($aid) {
+//                                        $cells->setFontColor($aid < -9999 ? '#0000ff' : '#ff0000');
+//                                    });
+//                                } else if ($pay['bizDevShare'] > 0 || $pay['bizDevIncome'] > 0) {
+//                                    $sheet->cells('K' . $rowNum . ':L' . $rowNum, function ($cells) {
+//                                        $cells->setBackground('##faff02');
+//                                    });
+//                                } else if ($pay['closingShare'] > 0 || $pay['closings'] > 0) {
+//                                    $sheet->cells('M' . $rowNum . ':N' . $rowNum, function ($cells) {
+//                                        $cells->setBackground('##faa0ff');
+//                                    });
+//                                }
+//                                $rowNum++;
+//                            }
+//                            $bhours = $payroll[1]->sum('bhours');
+//                            $nbhours = $payroll[1]->sum('nbhours');
+//                            $hourpay = $payroll[1]->sum('hourlyPay');
+//                            $expense = $payroll[1]->sum('expense');
+//                            $bizdev = $payroll[1]->sum('bizDevIncome');
+//                            $closings = $payroll[1]->sum('closings');
+//                            $BTotal += $bhours;
+//                            $NbTotal += $nbhours;
+//                            $HpTotal += $hourpay;
+//                            $ExpTotal += $expense;
+//                            $BizTotal += $bizdev;
+//                            $ClosingTotal += $closings;
+//                            $Total += $gTotal;
+//                            $sheet->row($rowNum, [$payroll[0] . ' Total', null, null, null, $bhours, $nbhours, null, null, $hourpay, $expense, null, $bizdev, null, $closings, $gTotal])
+//                                ->cells('A' . $rowNum . ':O' . $rowNum, function ($cells) {
+//                                    $cells->setBackground('#c5cddb')->setFontWeight('bold');
+//                                });
+//                            $rowNum++;
+//                        }
+
+//                    $rowNum++;
+//                    $sheet->row($rowNum, ['Hourly Total', null, null, null, $BTotal, $NbTotal])
+//                        ->row($rowNum + 1, ['Dollar Total', null, null, null, null, null, null, null, $HpTotal, $ExpTotal, null, $BizTotal, null, $ClosingTotal, $Total])
+//                        ->cells('A' . $rowNum . ':O' . ($rowNum + 1), function ($cells) {
+//                            $cells->setBackground('#bfffe8')->setFontWeight('bold')->setFontSize('12');
+//                        });
+                });
+//
+//                create the detail response sheet
+                $excel->sheet('Summary', function ($sheet) use ($survey) {
+
+                });
+            })->export('xlsx');
+
+    }
+
+    private function filename ($survey)
+    {
+        $engagementName = $survey -> engagement -> name;
+        $clientName = $survey -> engagement -> client -> name;
+        return 'Vision to Actions_' . $clientName . '_' . $engagementName;
+    }
+
+    private function setExcelProperties($excel, $title, $survey)
+    {
+        $clientName = $survey -> engagement -> client -> name;
+        $excel->setTitle($title.' for '.$clientName)
+            ->setCreator('New Life CFO')
+            ->setCompany('New Life CFO')
+            ->setDescription('Vision to Actions Report');
+    }
+
+    private function setTitleCellsStyle($cells)
+    {
+        $cells->setBackground('#3bd3f9')->setFontFamily('Calibri')->setFontWeight('bold')->setAlignment('center')->setValignment('center');
+    }
+
 
 
 
