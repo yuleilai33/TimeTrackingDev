@@ -9,6 +9,7 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
+use newlifecfo\Models\SurveyEmplcategory;
 use newlifecfo\Models\SurveyQuescategory;
 use newlifecfo\Models\SurveyQuestion;
 use Mail;
@@ -108,6 +109,11 @@ class SurveyController extends Controller
 	    $participantLastName = $request -> participantLastName;
 	    $participantEmail = $request -> participantEmail;
 	    $participants = collect();
+
+        //        check if all the emails are unique
+        if ( count(array_unique($participantEmail)) < count($participantEmail) ) {
+            return false;
+        }
 
 	    foreach ($participantFirstName as $i => $firstName){
 //	        validate if all value is set
@@ -340,7 +346,7 @@ class SurveyController extends Controller
                         ->row($rowNum, ['Participant Name', 'Employee Category', 'Position',$questionCategories[1], $questionCategories[2], $questionCategories[3], $questionCategories[4], 'Total'])
                         ->cells('A1:H1', function ($cells) {
                             $this->setTitleCellsStyle($cells);
-                        })->setColumnFormat(['D:H' => '0']);
+                        })->setColumnFormat(['D:H' => '0.00']);
 
                     $sheet->getStyle('A1:G1')->getAlignment()->setWrapText(true);
 
@@ -358,6 +364,111 @@ class SurveyController extends Controller
                                     $assignment->calculateTotalByCategory(1), $assignment->calculateTotalByCategory(2), $assignment->calculateTotalByCategory(3), $assignment->calculateTotalByCategory(4), $assignment->calculateTotalScore()]);
 
                         }
+
+//                        summary by cateogry
+//                        two empty rows
+                        $rowNum += 3;
+                        $startRow = $rowNum;
+
+//                        set the title
+                        $sheet->row($rowNum,['','','Summary by Category:'])->cells('C' . $rowNum . ':' . 'H' . $rowNum, function($cells){
+
+                            $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setFontWeight('bold')->setValignment('center');
+
+                        })->getStyle('C'.$rowNum)->getFont()->setUnderline(true);
+
+                        $rowNum ++;
+
+//                        set the overall rows
+                        $sheet->row($rowNum,['','','Overall', $survey->calculateAvgByEmplCategory (1, null), $survey->calculateAvgByEmplCategory (2, null),
+                            $survey->calculateAvgByEmplCategory (3, null),$survey->calculateAvgByEmplCategory (4, null),
+                            $survey->calculateAvgByEmplCategory (null, null)]) -> cells('C' . $rowNum . ':' . 'H' . $rowNum, function($cells){
+
+                            $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setValignment('center');
+
+                        });
+
+//                        set the rows for each employee Category
+                        $emplcategoryIDs = $completedAssignments -> sortBy('survey_emplcategory_id') -> pluck ('survey_emplcategory_id') -> unique() -> toArray();
+
+                        foreach ( $emplcategoryIDs as $id ){
+
+                            $rowNum ++;
+                            $sheet->row($rowNum,['','',SurveyEmplcategory::find($id) -> name, $survey->calculateAvgByEmplCategory (1, $id), $survey->calculateAvgByEmplCategory (2, $id),
+                                $survey->calculateAvgByEmplCategory (3, $id),$survey->calculateAvgByEmplCategory (4, $id),
+                                $survey->calculateAvgByEmplCategory (null, $id)]) -> cells('C' . $rowNum . ':' . 'H' . $rowNum, function($cells){
+
+                                $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setValignment('center');
+
+                            });
+                        }
+
+                        $endRow = $rowNum;
+
+//                        add border to the summary by category section
+                        $range = "C".$startRow.":"."H".$endRow;
+                        $sheet->cells($range, function($cells) {
+                            $cells->setBorder('medium', 'medium', 'medium', 'medium');
+                        });
+
+//                        statistics summary
+//                        two empty rows
+                        $rowNum += 3;
+
+
+                        $startRow = $rowNum;
+
+//                        set the title
+                        $sheet->row($rowNum,['','','Summary:'])->cells('C' . $rowNum . ':' . 'G' . $rowNum, function($cells){
+
+                            $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setFontWeight('bold')->setValignment('center');
+
+                        })->getStyle('C'.$rowNum)->getFont()->setUnderline(true);
+
+//                        highest section
+                        $rowNum ++;
+
+                        $sheet->row($rowNum,['','','Highest', $survey->getHighestOrLowestScore(1,'highest'), $survey->getHighestOrLowestScore(2,'highest'),
+                            $survey->getHighestOrLowestScore(3,'highest'),$survey->getHighestOrLowestScore(4,'highest')])
+                            -> cells('C' . $rowNum . ':' . 'G' . $rowNum, function($cells){
+
+                            $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setValignment('center');
+
+                        });
+
+                        //                        average section
+                        $rowNum ++;
+
+                        $sheet->row($rowNum,['','','Average', $survey->calculateAvgByEmplCategory (1, null), $survey->calculateAvgByEmplCategory (2, null),
+                            $survey->calculateAvgByEmplCategory (3, null),$survey->calculateAvgByEmplCategory (4, null)])
+                            -> cells('C' . $rowNum . ':' . 'G' . $rowNum, function($cells){
+
+                                $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setValignment('center');
+
+                            });
+
+
+                        //                        lowest section
+                        $rowNum ++;
+
+                        $sheet->row($rowNum,['','','Lowest', $survey->getHighestOrLowestScore(1,'lowest'), $survey->getHighestOrLowestScore(2,'lowest'),
+                            $survey->getHighestOrLowestScore(3,'lowest'),$survey->getHighestOrLowestScore(4,'lowest')])
+                            -> cells('C' . $rowNum . ':' . 'G' . $rowNum, function($cells){
+
+                                $cells->setBackground('#FFFF00')->setFontFamily('Calibri')->setValignment('center');
+
+                            });
+
+                        $endRow = $rowNum;
+
+                        //add border to the summary section
+                        $range = "C".$startRow.":"."G".$endRow;
+
+                        $sheet->cells($range, function($cells) {
+                            $cells->setBorder('medium', 'medium', 'medium', 'medium');
+                        });
+
+
                     }
 //                        if ($payroll[1]->count()) {
 //                            $sheet->row($rowNum++, [$payroll[0]]);
@@ -410,7 +521,7 @@ class SurveyController extends Controller
                 });
 //
 //                create the detail response sheet
-                $excel->sheet('Summary', function ($sheet) use ($survey) {
+                $excel->sheet('Detailed Responses', function ($sheet) use ($survey) {
 
                 });
             })->export('xlsx');

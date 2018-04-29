@@ -72,7 +72,4 @@ class SurveyAssignment extends Model
     }
 
 
-
-
-
 }
