@@ -615,6 +615,16 @@ class SurveyController extends Controller
                                     ->setAlignment('center')->setValignment('top');
                                 });
 
+//                                add the color conditionally
+                                $commonScores=$this->getMostAnswer($survey,$question->id,null);
+                                foreach ($commonScores as $commonScore ) {
+                                    if ($commonScore == $score) {
+                                        $sheet->cell($currentColumn . $rowNum, function ($cell) use ($score) {
+                                            $cell->setBackground($this->getColor($score));
+                                        });
+                                    }
+                                }
+
                                 $subtotal[$currentColumn][$rowNum]= $this -> excelSection (null, null, $score, 'number', $survey, $question->id);
                                 $summaryTotal[$currentColumn][$rowNum]= $this -> excelSection (null, null, $score, 'number', $survey, $question->id);
                             }
@@ -647,10 +657,11 @@ class SurveyController extends Controller
 //                                individual answer section
                                 foreach ($this->excelSection (null, $emplcategoryID, null, 'individual', $survey, null) as $individual) {
                                     $currentColumn++;
-
+                                    
                                     $sheet->cell($currentColumn . $rowNum, function ($cell) use ($individual, $question) {
                                         $cell->setValue($individual -> surveyResults -> where('survey_question_id', $question->id)->first()->getAnswer())
-                                            ->setAlignment('center')->setValignment('top');
+                                            ->setAlignment('center')->setValignment('top')
+                                            ->setBackground($this->getColor($individual -> surveyResults -> where('survey_question_id', $question->id)->first()->score));
                                     });
                                 }
 
@@ -663,6 +674,15 @@ class SurveyController extends Controller
                                         $cell->setValue( $this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id))
                                             ->setAlignment('center')->setValignment('top');
                                     });
+
+                                    $commonScores=$this->getMostAnswer($survey,$question->id,$emplcategoryID);
+                                    foreach ($commonScores as $commonScore ) {
+                                        if ($commonScore == $score) {
+                                            $sheet->cell($currentColumn . $rowNum, function ($cell) use ($score) {
+                                                $cell->setBackground($this->getColor($score));
+                                            });
+                                        }
+                                    }
 
                                     $subtotal[$currentColumn][$rowNum]= $this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id);
                                     $summaryTotal[$currentColumn][$rowNum]=$this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id);
@@ -889,6 +909,8 @@ class SurveyController extends Controller
 
         }
 
+        return null;
+
     }
 
     private function excelTitle ($row,$emplCategoryID=null,$part=null, $survey=null, $score=null)
@@ -914,7 +936,42 @@ class SurveyController extends Controller
         } else if ($row ==4 ){
                 return SurveyResult::findAnswer($score);
         }
+
+        return null;
     }
-    
+
+    private function getMostAnswer ($survey, $questionID, $emplCategoryID=null)
+    {
+	    if ($emplCategoryID==null) {
+            $completedAssignmentIDs = $survey->surveyAssignments->where('completed', 1)->pluck('id')->toArray();
+        } else {
+            $completedAssignmentIDs=$survey -> surveyAssignments ->where('completed', 1) -> where('survey_emplcategory_id', $emplCategoryID) ->pluck('id')->toArray();
+        }
+
+            for ($score=1;$score<5;$score++) {
+                $result[$score]=SurveyResult::with('surveyAssignment')->whereIn('survey_assignment_id', $completedAssignmentIDs)->
+                where('survey_question_id', $questionID)->where('score', $score)->count();
+            }
+
+            return array_keys($result, max($result));
+
+    }
+
+    private function getColor ($score)
+    {
+        switch ($score){
+            case 1:
+                return '#FF0000'; //red
+            case 2:
+                return '#FFFF00'; //yellow
+            case 3:
+                return '#00FF00'; //green
+            case 4:
+                return '#7030A0'; //purple
+        }
+        return null;
+
+    }
+
 
 }

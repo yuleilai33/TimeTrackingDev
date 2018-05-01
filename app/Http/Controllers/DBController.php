@@ -22,16 +22,12 @@ class DbController extends Controller{
 //            return $item->surveyResults->where('survey_question_id',1)->first()->score ==2;
 //        })->count();
 
-        $a['A'][2]=1;
-        $a['A'][3]=4;
 
-        $total=0;
-        foreach ($a as $column => $subarray){
-            foreach ($subarray as $row => $value){
-                $total = $total + $value;
-            }
-        }
-        dd($total);
+        $result[1]=5;
+        $result[2]=4;
+        $result[3]=5;
+        $data= array_keys($result, max($result));
+        dd($data);
     }
 
 
