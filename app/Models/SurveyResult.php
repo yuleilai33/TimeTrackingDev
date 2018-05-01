@@ -40,5 +40,22 @@ class SurveyResult extends Model
         return 'Unknown';
     }
 
+    public static function findAnswer ($score)
+    {
+        switch ($score) {
+
+            case 1:
+                return 'Never';
+            case 2:
+                return 'Sporadic';
+            case 3:
+                return 'Usually';
+            case 4:
+                return 'Always';
+        }
+        return 'Unknown';
+
+    }
+
 
 }

@@ -470,58 +470,360 @@ class SurveyController extends Controller
 
 
                     }
-//                        if ($payroll[1]->count()) {
-//                            $sheet->row($rowNum++, [$payroll[0]]);
-//                            $gTotal = 0;
-//                            foreach ($payroll[1] as $aid => $pay) {
-//                                $rowSum = $pay['hourlyPay'] + $pay['expense'] + $pay['bizDevIncome']+$pay['closings'];
-//                                $gTotal += $rowSum;
-//                                $sheet->row($rowNum, [null, $pay['ename'], $pay['elead'], $pay['position'], $pay['bhours'], $pay['nbhours'], $pay['brate'], $pay['prate'], $pay['hourlyPay'], $pay['expense'], $pay['bizDevShare'], $pay['bizDevIncome'], $pay['closingShare'], $pay['closings'], $rowSum]);
-//                                if ($aid < 0) {
-//                                    $sheet->cells('A' . $rowNum . ':O' . $rowNum, function ($cells) use ($aid) {
-//                                        $cells->setFontColor($aid < -9999 ? '#0000ff' : '#ff0000');
-//                                    });
-//                                } else if ($pay['bizDevShare'] > 0 || $pay['bizDevIncome'] > 0) {
-//                                    $sheet->cells('K' . $rowNum . ':L' . $rowNum, function ($cells) {
-//                                        $cells->setBackground('##faff02');
-//                                    });
-//                                } else if ($pay['closingShare'] > 0 || $pay['closings'] > 0) {
-//                                    $sheet->cells('M' . $rowNum . ':N' . $rowNum, function ($cells) {
-//                                        $cells->setBackground('##faa0ff');
-//                                    });
-//                                }
-//                                $rowNum++;
-//                            }
-//                            $bhours = $payroll[1]->sum('bhours');
-//                            $nbhours = $payroll[1]->sum('nbhours');
-//                            $hourpay = $payroll[1]->sum('hourlyPay');
-//                            $expense = $payroll[1]->sum('expense');
-//                            $bizdev = $payroll[1]->sum('bizDevIncome');
-//                            $closings = $payroll[1]->sum('closings');
-//                            $BTotal += $bhours;
-//                            $NbTotal += $nbhours;
-//                            $HpTotal += $hourpay;
-//                            $ExpTotal += $expense;
-//                            $BizTotal += $bizdev;
-//                            $ClosingTotal += $closings;
-//                            $Total += $gTotal;
-//                            $sheet->row($rowNum, [$payroll[0] . ' Total', null, null, null, $bhours, $nbhours, null, null, $hourpay, $expense, null, $bizdev, null, $closings, $gTotal])
-//                                ->cells('A' . $rowNum . ':O' . $rowNum, function ($cells) {
-//                                    $cells->setBackground('#c5cddb')->setFontWeight('bold');
-//                                });
-//                            $rowNum++;
-//                        }
-
-//                    $rowNum++;
-//                    $sheet->row($rowNum, ['Hourly Total', null, null, null, $BTotal, $NbTotal])
-//                        ->row($rowNum + 1, ['Dollar Total', null, null, null, null, null, null, null, $HpTotal, $ExpTotal, null, $BizTotal, null, $ClosingTotal, $Total])
-//                        ->cells('A' . $rowNum . ':O' . ($rowNum + 1), function ($cells) {
-//                            $cells->setBackground('#bfffe8')->setFontWeight('bold')->setFontSize('12');
-//                        });
                 });
 //
 //                create the detail response sheet
                 $excel->sheet('Detailed Responses', function ($sheet) use ($survey) {
+
+                    $rowNum = 1;
+                    $questionCategories = SurveyQuescategory::all() -> pluck('name','id') -> toArray();
+                    $scale=[1 => 'Never', 2 => 'Sporadic', 3 => 'Usually', 4 => 'Always'];
+
+                    $completedAssignments = $survey -> surveyAssignments -> where('completed', 1);
+
+                    $emplcategoryIDs = $completedAssignments -> sortBy('survey_emplcategory_id') -> pluck ('survey_emplcategory_id') -> unique() -> toArray();
+
+                    $sheet->setFreeze('B5');
+
+                    $sheet->getStyle('A')->getFont()->setBold(true);
+
+                    $sheet->cell('A'.$rowNum, function($cell){
+                       $cell->setValue('# of Responses by Employee Category');
+                    })->getStyle('A'.$rowNum)->getFont()->setUnderline(true)->setBold(true);
+
+                    //                    indicator for score scale
+                    $sheet->cell('A6',function($cell){
+                        $cell->setValue('Score Scale: Never: 1; Sporadic: 2; Usually: 3; Always: 4;');
+                    });
+
+                    $sheet->getStyle('A')->getAlignment()->setWrapText(true);
+
+//                    set up title row 1 - 4
+                    for ($row=1; $row<5; $row++){
+
+                            $currentColumn = 'A';
+
+//                            second column - start the consolidated section -number section
+                            foreach ($scale as $score => $description ) {
+                                $currentColumn++;
+
+                                $sheet->cell($currentColumn.$rowNum, function ($cell) use ( $row, $score){
+                                    $cell->setValue( $this -> excelTitle($row,null,'number', null, $score))
+                                        ->setAlignment('center')->setValignment('top');
+                                });
+
+                            }
+
+//                            empty column between section
+                            $currentColumn++;
+
+//                            consolidated section -percent section
+                            foreach ($scale as $score => $description ) {
+                                $currentColumn++;
+
+                                $sheet->cell($currentColumn . $rowNum, function ($cell) use ($row, $score) {
+                                    $cell->setValue($this -> excelTitle($row,null,'percent', null, $score))
+                                        ->setAlignment('center')->setValignment('top');
+                                });
+
+                            }
+
+//                              empty column between employee category
+                            $currentColumn++;
+
+                            foreach ($emplcategoryIDs as $emplcategoryID) {
+
+//                                individual answer section
+                                foreach ($this->excelTitle($row,$emplcategoryID,'individual', $survey, null) as $individual) {
+                                    $currentColumn++;
+
+                                    if($row == 1){
+                                        $value = $individual -> surveyEmplcategory -> name;
+                                    } else if ($row == 2){
+                                        $value = $individual->surveyPosition->name;
+                                    } else if ($row ==3){
+                                        $value = $individual->participant_first_name;
+                                    } else {
+                                        $value = $individual->participant_last_name;
+                                    }
+
+                                    $sheet->cell($currentColumn . $rowNum, function ($cell) use ($value) {
+                                        $cell->setValue($value)->setAlignment('center')->setValignment('top');
+                                    });
+                                }
+
+//                                number section
+                                $currentColumn++;
+                                foreach ($scale as $score => $description ) {
+
+                                    $currentColumn++;
+
+                                    $sheet->cell($currentColumn.$rowNum, function ($cell) use ($row, $survey, $score, $emplcategoryID){
+                                        $cell->setValue( $this->excelTitle($row,$emplcategoryID,'number', $survey, $score))
+                                            ->setAlignment('center')->setValignment('top');
+                                    });
+
+                                }
+
+//                                percent section
+                                $currentColumn++;
+                                foreach ($scale as $score => $description ) {
+
+                                    $currentColumn++;
+
+                                    $sheet->cell($currentColumn . $rowNum, function ($cell) use ($row, $survey, $score, $emplcategoryID) {
+                                        $cell->setValue($this->excelTitle($row,$emplcategoryID,'percent', $survey, $score))
+                                            ->setAlignment('center')->setValignment('top');
+                                    });
+
+                                }
+
+//                              empty column between next category
+                                $currentColumn++;
+
+                            }
+                            $rowNum++;
+
+                    }
+
+//                    start the section for excel body
+                    $rowNum = 7;
+                    $summaryTotal = array();
+                    foreach ($questionCategories as $id => $name){
+//                        empty row
+                        $rowNum ++;
+
+//                        category name row
+                        $sheet->row($rowNum++,[$name]);
+                        $questions = SurveyQuestion::all() -> where('survey_quescategory_id', $id);
+
+                        $subtotal=array();
+//                            rows for each question in the category
+                        foreach ($questions as $question){
+                            $currentColumn = 'A';
+//                            first column for question description
+                            $sheet->cell($currentColumn.$rowNum, function ($cell) use ($question){
+                               $cell->setValue($question->id.').'.$question->description);
+                            });
+
+//                            second column - start the consolidated section -number section
+                            foreach ($scale as $score => $description ) {
+                                $currentColumn++;
+
+                                $sheet->cell($currentColumn.$rowNum, function ($cell) use ($question, $survey, $score){
+                                    $cell->setValue( $this -> excelSection (null, null, $score, 'number', $survey, $question->id))
+                                    ->setAlignment('center')->setValignment('top');
+                                });
+
+                                $subtotal[$currentColumn][$rowNum]= $this -> excelSection (null, null, $score, 'number', $survey, $question->id);
+                                $summaryTotal[$currentColumn][$rowNum]= $this -> excelSection (null, null, $score, 'number', $survey, $question->id);
+                            }
+
+//                            empty column between section
+                            $currentColumn++;
+
+//                            consolidated section -percent section
+                            foreach ($scale as $score => $description ) {
+                                $currentColumn++;
+
+                                $sheet->setColumnFormat([$currentColumn => '0%']);
+
+                                $sheet->cell($currentColumn . $rowNum, function ($cell) use ($question, $survey, $score) {
+                                    $cell->setValue($this->excelSection(null, null, $score, 'percent', $survey, $question->id))
+                                        ->setAlignment('center')->setValignment('top');
+                                });
+
+                            }
+
+//                              empty column between employee category
+
+                            $currentColumn++;
+                            $sheet->cells($currentColumn.'1:'.$currentColumn.'41', function ($cells){
+                                $cells->setBackground('#C0C0C0');
+                            })->setwidth([ $currentColumn=>3 ]);
+
+                            foreach ($emplcategoryIDs as $emplcategoryID) {
+
+//                                individual answer section
+                                foreach ($this->excelSection (null, $emplcategoryID, null, 'individual', $survey, null) as $individual) {
+                                    $currentColumn++;
+
+                                    $sheet->cell($currentColumn . $rowNum, function ($cell) use ($individual, $question) {
+                                        $cell->setValue($individual -> surveyResults -> where('survey_question_id', $question->id)->first()->getAnswer())
+                                            ->setAlignment('center')->setValignment('top');
+                                    });
+                                }
+
+//                                number section
+                                $currentColumn++;
+                                foreach ($scale as $score => $description ) {
+                                    $currentColumn++;
+
+                                    $sheet->cell($currentColumn.$rowNum, function ($cell) use ($question, $survey, $score, $emplcategoryID){
+                                        $cell->setValue( $this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id))
+                                            ->setAlignment('center')->setValignment('top');
+                                    });
+
+                                    $subtotal[$currentColumn][$rowNum]= $this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id);
+                                    $summaryTotal[$currentColumn][$rowNum]=$this -> excelSection (null, $emplcategoryID, $score, 'number', $survey, $question->id);
+
+                                }
+
+//                                percent section
+                                $currentColumn++;
+                                foreach ($scale as $score => $description ) {
+                                    $currentColumn++;
+
+                                    $sheet->setColumnFormat([$currentColumn => '0%']);
+
+                                    $sheet->cell($currentColumn . $rowNum, function ($cell) use ($question, $survey, $score, $emplcategoryID) {
+                                        $cell->setValue($this->excelSection(null, $emplcategoryID, $score, 'percent', $survey, $question->id))
+                                            ->setAlignment('center')->setValignment('top');
+                                    });
+
+                                }
+
+//                              empty column between next category
+
+                                $currentColumn++;
+                                $sheet->cells($currentColumn.'1:'.$currentColumn.'41', function ($cells){
+                                    $cells->setBackground('#C0C0C0');
+                                })->setwidth([ $currentColumn=>3 ]);
+
+                            }
+
+                            $rowNum++;
+                        }
+
+//                        subtotal section after each question category
+                        $sheet->cell('A'.$rowNum, function ($cell) use ($question){
+                            $cell->setValue('Sub-Total');
+                        });
+
+                        $total=array();
+                        $categoryTotal=0;
+                        $turn=0;
+//                        each four turn store the total for each category
+                        foreach ($subtotal as $column => $subarray){
+                            $sum=0;
+
+                            foreach ($subarray as $row => $value ){
+                               $sum=$sum+$value;
+                            }
+
+                            $sheet->cell($column.$rowNum, function ($cell) use ($sum) {
+                                $cell->setValue($sum)->setAlignment('center')->setValignment('top')->setBorder('thin', '', 'thin', '');
+                            });
+
+                            $categoryTotal = $categoryTotal +$sum;
+                            $turn++;
+                            if ($turn%4 == 0){
+                                $total[]=$categoryTotal;
+                                $categoryTotal=0;
+                            }
+
+                        }
+
+//                        for the percentage in the total line
+                        $turn=0;
+                        $index=0;
+//                        each four turn use the total for each category
+                        foreach ($subtotal as $column => $subarray){
+                            $sum=0;
+
+                            foreach ($subarray as $row => $value ){
+                                $sum=$sum+$value;
+                            }
+
+                            $percentColumn=$column;
+                            for($i=1;$i<6;$i++){
+                                $percentColumn++;
+                            }
+
+                            $nextRow = $rowNum;
+                            $nextRow ++;
+
+                            $sheet->cell($percentColumn.$rowNum, function ($cell) use ($sum, $total,$index) {
+                                $cell->setValue($sum/$total[$index])->setAlignment('center')->setValignment('top')->setBorder('thin', '', 'thin', '');
+                            });
+
+                            $sheet->cell($column.$nextRow, function ($cell) use ($sum, $total,$index) {
+                                $cell->setValue($sum/$total[$index])->setAlignment('center')->setValignment('top');
+                            })->getStyle($column.$nextRow)->getNumberFormat()->setFormatCode('0%');
+
+                            $turn++;
+                            if($turn%4==0){
+                                $index++;
+                            }
+                        }
+
+                        $rowNum ++;
+                        $rowNum ++;
+                    }
+
+//                    add summary line at the bottom
+                    $rowNum ++;
+                    $sheet->cell('A'.$rowNum, function ($cell) use ($question){
+                        $cell->setValue('Total All Responses');
+                    });
+
+                    $total=array();
+                    $categoryTotal=0;
+                    $turn=0;
+                    foreach ($summaryTotal as $column => $subarray){
+                        $sum=0;
+
+                        foreach ($subarray as $row => $value ){
+                            $sum=$sum+$value;
+                        }
+
+                        $sheet->cell($column.$rowNum, function ($cell) use ($sum) {
+                            $cell->setValue($sum)->setAlignment('center')->setValignment('top')->setBorder('thin', '', 'double', '');
+                        });
+
+                        $categoryTotal = $categoryTotal +$sum;
+                        $turn++;
+                        if ($turn%4 == 0){
+                            $total[]=$categoryTotal;
+                            $categoryTotal=0;
+                        }
+                    }
+
+//                  for the percentage in the total line
+                    $turn=0;
+                    $index=0;
+                    foreach ($summaryTotal as $column => $subarray){
+                        $sum=0;
+
+                        foreach ($subarray as $row => $value ){
+                            $sum=$sum+$value;
+                        }
+
+                        $percentColumn=$column;
+                        for($i=1;$i<6;$i++){
+                            $percentColumn++;
+                        }
+
+                        $nextRow = $rowNum;
+                        $nextRow ++;
+
+                        $sheet->cell($percentColumn.$rowNum, function ($cell) use ($sum, $total,$index) {
+                            $cell->setValue($sum/$total[$index])->setAlignment('center')->setValignment('top')->setBorder('thin', '', 'double', '');
+                        });
+
+                        $sheet->cell($column.$nextRow, function ($cell) use ($sum, $total,$index) {
+                            $cell->setValue($sum/$total[$index])->setAlignment('center')->setValignment('top');
+                        })->getStyle($column.$nextRow)->getNumberFormat()->setFormatCode('0%');
+
+                        $turn++;
+                        if($turn%4==0){
+                            $index++;
+                        }
+                    }
+
+//                    this need to add after all rows are added in the excel
+                    $sheet->setAutoSize(true);
+                    $sheet->setWidth(['A' => 50]);
 
                 });
             })->export('xlsx');
@@ -549,7 +851,70 @@ class SurveyController extends Controller
         $cells->setBackground('#3bd3f9')->setFontFamily('Calibri')->setFontWeight('bold')->setAlignment('center')->setValignment('center');
     }
 
+    private function excelSection ($row=null, $emplCategoryID=null, $score=null, $part, $survey, $questionID=null)
+    {
+        if ($emplCategoryID==null){
+
+            $completedAssignmentIDs=$survey -> surveyAssignments ->where('completed', 1) ->pluck('id')->toArray();
+
+            if ($part == 'number' ){
+
+               return SurveyResult::with('surveyAssignment') -> whereIn('survey_assignment_id',$completedAssignmentIDs)->
+               where('survey_question_id',$questionID)->where('score',$score)->count();
+
+            } else if ($part == 'percent') {
+
+                return SurveyResult::with('surveyAssignment') -> whereIn('survey_assignment_id',$completedAssignmentIDs)->
+                where('survey_question_id',$questionID)->where('score',$score)->count() / count($completedAssignmentIDs) ;
+            }
+
+        } else if ($emplCategoryID != null){
+
+            $completedAssignmentIDs=$survey -> surveyAssignments ->where('completed', 1) -> where('survey_emplcategory_id', $emplCategoryID) ->pluck('id')->toArray();
+
+            if ($part == 'number' ){
+
+                return SurveyResult::with('surveyAssignment') -> whereIn('survey_assignment_id',$completedAssignmentIDs)->
+                where('survey_question_id',$questionID)->where('score',$score)->count();
+
+            } else if ($part == 'percent') {
+
+                return SurveyResult::with('surveyAssignment') -> whereIn('survey_assignment_id',$completedAssignmentIDs)->
+                    where('survey_question_id',$questionID)->where('score',$score)->count() / count($completedAssignmentIDs) ;
+
+            } else if ($part == 'individual'){
+                return $survey -> surveyAssignments  -> where('completed', 1) -> where('survey_emplcategory_id', $emplCategoryID) -> sortBy('survey_position_id');
+            }
 
 
+        }
+
+    }
+
+    private function excelTitle ($row,$emplCategoryID=null,$part=null, $survey=null, $score=null)
+    {
+        if($part == 'individual'){
+            return $survey -> surveyAssignments  -> where('completed', 1) -> where('survey_emplcategory_id', $emplCategoryID) -> sortBy('survey_position_id');
+        }
+        if($row ==1){
+                return '';
+            }
+            else if ($row ==2 ){
+            if ($part=='number'){
+                return '#';
+            } else if ($part=='percent'){
+                return '%';
+            }
+        } else if ($row ==3 ){
+            if ($emplCategoryID==null){
+                return 'Consolidated';
+            } else {
+                return SurveyEmplcategory::find($emplCategoryID)->name;
+            }
+        } else if ($row ==4 ){
+                return SurveyResult::findAnswer($score);
+        }
+    }
+    
 
 }
