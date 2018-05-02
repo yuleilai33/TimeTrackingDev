@@ -72,12 +72,30 @@
                             if (element.completed === "1" ) {
                                 tr.find('.completion').show();
                                 tr.find('.survey_Email').prop('disabled',true);
+                            } else {
+                                tr.find('.surveyLink').show().on('click', function(){
+                                    var link ='{{url('/surveys/question')}}'+'/'+ element.completion_token;
+
+                                    swal({
+                                        title:'Survey link for '+element.participant_first_name+' '+element.participant_last_name,
+                                        text: '<h3>'+link+'</h3>',
+                                        html: true,
+                                        type: "",
+                                        customClass: 'swal-wide',
+                                        showCancelButton: false,
+                                        showConfirmButton:true,
+                                        confirmButtonText: "Ok",
+                                        closeOnConfirm: true
+                                    });
+
+                                });
                             }
 
                             if (data.survey_assignments[index + 1]) {
                                 tr = tr.clone().appendTo(table);
-                                tr.find('a').addClass("deletable-row");
+                                tr.find('td:nth-last-child(1) a').addClass("deletable-row");
                                 tr.find('.completion').hide();
+                                tr.find('.surveyLink').hide();
                                 tr.find('.survey_Email').prop('disabled',false);
                                 tr.find('.bootstrap-select').replaceWith(function () {
                                     return $('select', this);
@@ -88,9 +106,6 @@
                     },
                     dataType: 'json'
                 });
-
-
-
 
             });
 
@@ -103,15 +118,21 @@
                     return $('select', this);
                 });
 
-                tr.find('a').addClass("deletable-row");
+                tr.find('td:nth-last-child(1) a').addClass("deletable-row");
                 tr.find('.selectpicker').selectpicker('val', '');
                 tr.find('input').val('').prop('disabled',false);
                 tr.find('.completion').hide();
+                tr.find('.surveyLink').hide();
 
                 /*
                                 document.write(tr.html());
                                 */
             });
+
+            /* add function to get the survey link*/
+
+
+
 
             $('#surveyModal').on('click', '.deletable-row', function () {
                 var tr = $(this).parent().parent();
@@ -135,7 +156,6 @@
 
 
                 } else {
-
                     tr.fadeOut(300, function () {
                         $(this).remove();
                     });
@@ -261,7 +281,6 @@
 
         });
 
-
         function initializeModal(update){
             $('#participants-table tr').slice(1).remove();
             $('.selectpicker').selectpicker('val','');
@@ -270,6 +289,7 @@
             $('#surveyModal td:nth-last-child(2)').hide();
             $('.survey_Email').prop('disabled',false);
             $('.completion').hide();
+            $('.surveyLink').hide();
 
             if(update){
                 $('#submit-modal').html('Update');
@@ -373,6 +393,12 @@
             width: 80% !important;
 
         }
+
+        .swal-wide{
+            width:900px !important;
+        }
+
+
 
 
 

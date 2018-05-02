@@ -81,6 +81,7 @@
                                     </td>
                                     <td>
                                         <span class="glyphicon glyphicon-ok completion" style="color: limegreen; display: none;" aria-hidden="true" ></span>
+                                        <a class="surveyLink" style="cursor: pointer; display: none; " href="javascript:void(0)">Link</a>
                                     </td>
                                     <td>
                                         <a href="javascript:void(0);"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>

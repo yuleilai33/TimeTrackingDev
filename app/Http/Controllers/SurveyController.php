@@ -208,7 +208,7 @@ class SurveyController extends Controller
 //            if ($user->can('view', $survey)) {
             foreach ($survey -> surveyAssignments as $assignment) {
 
-                    $assignment->makeHidden(['completion_token', 'created_at', 'updated_at', 'deleted_at']);
+                    $assignment->makeHidden(['created_at', 'updated_at', 'deleted_at']);
             }
 
             if (true) {
@@ -657,7 +657,7 @@ class SurveyController extends Controller
 //                                individual answer section
                                 foreach ($this->excelSection (null, $emplcategoryID, null, 'individual', $survey, null) as $individual) {
                                     $currentColumn++;
-                                    
+
                                     $sheet->cell($currentColumn . $rowNum, function ($cell) use ($individual, $question) {
                                         $cell->setValue($individual -> surveyResults -> where('survey_question_id', $question->id)->first()->getAnswer())
                                             ->setAlignment('center')->setValignment('top')
