@@ -53,3 +53,19 @@ Route::get('/test', 'TestController@index')->name('test');
 
 // Testing database connection
 Route::get('database/test','DbController@test');
+
+//start adding code for goal survey
+
+// Route::get('/toolbox/cultureindex', function(){
+//     return redirect('https://www.cindexinc.com/');
+// })->name('cultureindex');
+
+Route::resource('surveys','SurveyController');
+
+Route::get('surveys/question/{token}', 'SurveyController@startSurvey')->name('start_survey');
+
+Route::post('surveys/question/{assignment}', 'SurveyController@saveAnswer') ->name('save_answer');
+
+Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('resend_survey');
+
+Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');

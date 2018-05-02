@@ -215,4 +215,13 @@ class Engagement extends Model
             "Number of Consultants: <strong>" . $this->arrangements->count() . "</strong><br>";
     }
 
+
+    //start adding code for goal survey
+    //Define the  one-to-many relationship between survey and engagement
+    public function surveys()
+    {
+        return $this->hasMany(Survey::class);
+    }
+
+
 }

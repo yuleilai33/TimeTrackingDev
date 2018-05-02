@@ -174,12 +174,12 @@
                                                     @endforeach
                                                 </select>
                                             </td>
-                                            <td><input type="number" step=0.01 min=0 class="form-control b-rate">
+                                            <td><input type="number" step=0.01 min=0 class="form-control b-rate" required>
                                             </td>
-                                            <td><input type="number" step=0.01 min=0 class="form-control p-rate">
+                                            <td><input type="number" step=0.01 min=0 class="form-control p-rate" required>
                                             </td>
                                             <td><input type="number" step=0.01 min=0 max=100
-                                                       class="form-control f-share"></td>
+                                                       class="form-control f-share" required></td>
                                             <td><a href="javascript:void(0);"><i class="fa fa-minus-circle"
                                                                                  aria-hidden="true"></i></a></td>
                                         </tr>
@@ -493,6 +493,7 @@
             });
             $('.eng-edit').on('click', function () {
                 initModal(true);
+
                 $.get({
                     url: '/engagement/' + $(this).attr('data-id') + '/edit?admin={{$admin}}',
                     success: function (data) {
@@ -556,6 +557,7 @@
                 });
                 if (update) formdata.push({name: '_method', value: 'PUT'});
                 pushArrangements(formdata);
+
                 $.post({
                     url: update ? "/engagement/" + eid : "/engagement",
                     data: formdata,
@@ -583,7 +585,10 @@
                         $('#engagementModal').modal('toggle');
                     }
                 });
+
+
                 return false;
+
             });
 
             $('#add-team-member').on('click', function () {
