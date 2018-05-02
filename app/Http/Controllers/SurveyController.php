@@ -179,8 +179,8 @@ class SurveyController extends Controller
 
                 $questionID=substr($name,9);
 
-                $SurveyResult= new SurveyResult(['survey_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID, 'score' => $value]);
-                $SurveyResult -> save();
+//                use update Or Create to aviod multiple submit
+                SurveyResult::updateOrCreate(['survey_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID], ['score' => $value]);
             }
 
         }

@@ -104,7 +104,7 @@
                             swal({
                                     title: "Success!",
                                     html: true,
-                                    text: "<b>You can close this survey now.</b>",
+                                    text: "<h3><b>You can close this survey now.</b></h3>",
                                     type: "success",
                                     confirmButtonColor: "#5adb76",
                                     confirmButtonText: "Close"

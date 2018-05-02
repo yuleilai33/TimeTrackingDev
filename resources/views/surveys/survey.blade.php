@@ -288,6 +288,8 @@
             $('.survey_Email').prop('disabled',false);
             $('.completion').hide();
             $('.surveyLink').hide();
+            $('#submit-modal').html('Build');
+            $('#surveyModalLabel').find('span').text('Set Up a New Survey');
 
             if(update){
                 $('#submit-modal').html('Update');
