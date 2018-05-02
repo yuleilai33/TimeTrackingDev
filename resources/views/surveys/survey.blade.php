@@ -132,8 +132,6 @@
             /* add function to get the survey link*/
 
 
-
-
             $('#surveyModal').on('click', '.deletable-row', function () {
                 var tr = $(this).parent().parent();
 

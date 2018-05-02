@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('surveys._layout')
 
 {{--Custom header for vision goal survey--}}
 
@@ -141,11 +141,6 @@
 
 @section('special-css')
 <style>
-
-    /*hide the original header and side bar in the time tracking system*/
-    #headerAndLeftSidebar {
-        display:none;
-    }
 
     .header{
         Background-color:#444;
