@@ -11,6 +11,8 @@ class DbController extends Controller{
     public function test(){
         $users = DB::table('users')->orderby('id','desc')->get();
         dd($users);
+
+        $testingFormerge = 0;
     }
 
 }
