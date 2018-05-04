@@ -493,7 +493,6 @@
             });
             $('.eng-edit').on('click', function () {
                 initModal(true);
-
                 $.get({
                     url: '/engagement/' + $(this).attr('data-id') + '/edit?admin={{$admin}}',
                     success: function (data) {
@@ -557,7 +556,6 @@
                 });
                 if (update) formdata.push({name: '_method', value: 'PUT'});
                 pushArrangements(formdata);
-
                 $.post({
                     url: update ? "/engagement/" + eid : "/engagement",
                     data: formdata,
@@ -585,10 +583,7 @@
                         $('#engagementModal').modal('toggle');
                     }
                 });
-
-
                 return false;
-
             });
 
             $('#add-team-member').on('click', function () {

@@ -181,6 +181,7 @@ class SurveyController extends Controller
 
 //                use update Or Create to aviod multiple submit
                 SurveyResult::updateOrCreate(['survey_assignment_id'=> $assignment -> id, 'survey_question_id'=> $questionID], ['score' => $value]);
+
             }
 
         }
