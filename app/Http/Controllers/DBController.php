@@ -16,8 +16,9 @@ use newlifecfo\Models\SurveyAssignment;
 class DbController extends Controller{
 
     public function test(){
-
+        echo 'tesing page';
     }
+
 
 
 }

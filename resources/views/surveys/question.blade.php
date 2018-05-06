@@ -22,7 +22,7 @@
                         </div>
                         <div class="panel-body">
                             <div>
-                                <p><b>* This survey will only take a few minutes to complete</b></p>
+                                <p style="color: red;"><b>* This survey will take less than 5 minutes to complete</b></p>
                             </div>
 
                             <form id="survey-question" >
