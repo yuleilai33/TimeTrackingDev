@@ -21,8 +21,8 @@
                             <p class="panel-subtitle">provided by New Life CFO Services</p>
                         </div>
                         <div class="panel-body">
-                            <div>
-                                <p style="color: red;"><b>* This survey will take less than 5 minutes to complete</b></p>
+                            <div class="survey-note">
+                                <p><b>* This survey will take less than 5 minutes to complete</b></p>
                             </div>
 
                             <form id="survey-question" >
@@ -166,6 +166,10 @@
         font-size: 20px;
         font-family: FontAwesome;
         color:#080808;
+    }
+
+    .survey-note p {
+        color:red !important;
     }
 
  /*style for radio button*/
