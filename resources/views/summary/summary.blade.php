@@ -43,7 +43,7 @@
                                 </tr>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
+                                    <th>Client</th>
                                     <th>Last Period</th>
                                     <th>This Period</th>
                                     <th>Change</th>
@@ -56,10 +56,11 @@
                                 </tr>
 
                                 </thead>
-                                <tbody id="summary">
-                                <tr>
+
+                                <tbody>
+                                <tr class="clickable" data-toggle="collapse" data-target=".group-of-rows-1" aria-expanded="false" aria-controls="group-of-rows-1">
                                     <td>1</td>
-                                    <td>2</td>
+                                    <td><i class="fa fa-plus" aria-hidden="true"></i> 2</td>
                                     <td>3</td>
                                     <td>4</td>
                                     <td>5</td>
@@ -70,19 +71,71 @@
                                     <td>10</td>
                                     <td>11</td>
                                 </tr>
-                                <tr>
-                                    <td>1</td>
-                                    <td>2</td>
-                                    <td>3</td>
-                                    <td>4</td>
-                                    <td>5</td>
-                                    <td>6</td>
-                                    <td>7</td>
-                                    <td>8</td>
-                                    <td>9</td>
-                                    <td>10</td>
+                                </tbody>
+
+
+                                <tbody>
+                                <tr class="collapse group-of-rows-1" data-toggle="collapse" data-target=".group-of-rows-2" aria-expanded="false" aria-controls=".group-of-rows-2">
                                     <td>11</td>
+                                    <td>21</td>
+                                    <td>31</td>
+                                    <td>41</td>
+                                    <td>51</td>
+                                    <td>61</td>
+                                    <td>71</td>
+                                    <td>81</td>
+                                    <td>91</td>
+                                    <td>101</td>
+                                    <td>111</td>
                                 </tr>
+
+
+                                <tr  class="collapse group-of-rows-2">
+                                    <td>3331</td>
+                                    <td>21</td>
+                                    <td>31</td>
+                                    <td>41</td>
+                                    <td>51</td>
+                                    <td>61</td>
+                                    <td>71</td>
+                                    <td>81</td>
+                                    <td>91</td>
+                                    <td>101</td>
+                                    <td>111</td>
+                                </tr>
+
+                                <tr class="collapse group-of-rows-2">
+                                    <td>44444</td>
+                                    <td>210</td>
+                                    <td>310</td>
+                                    <td>410</td>
+                                    <td>510</td>
+                                    <td>61</td>
+                                    <td>71</td>
+                                    <td>81</td>
+                                    <td>91</td>
+                                    <td>101</td>
+                                    <td>111</td>
+                                </tr>
+
+
+
+                                <tr>
+                                    <td>101</td>
+                                    <td>210</td>
+                                    <td>310</td>
+                                    <td>410</td>
+                                    <td>510</td>
+                                    <td>61</td>
+                                    <td>71</td>
+                                    <td>81</td>
+                                    <td>91</td>
+                                    <td>101</td>
+                                    <td>111</td>
+                                </tr>
+                                </tbody>
+
+
                                 {{--@php $index =0; @endphp--}}
                                 {{--@foreach($consultants as $consultant)--}}
                                     {{--@php $conid=$consultant->id;$salary = $incomes[$conid];$total = $salary[0]+$salary[1]+$buzIncomes[$conid]+$closerIncomes[$conid];@endphp--}}
@@ -103,7 +156,7 @@
                                         {{--</tr>--}}
                                     {{--@endif--}}
                                 {{--@endforeach--}}
-                                </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -133,6 +186,8 @@
         {
             border-left: 2px solid #ddd !important;
         }
+
+
 
     </style>
 @endsection
