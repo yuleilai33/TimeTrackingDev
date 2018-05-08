@@ -20,11 +20,19 @@
     $('#client-engagement-addrow, #client-engagement').on('changed.bs.select',function (e) {
         var selected = $(this).find('option:selected').text();
         var current_selector = $(this).parents('form:first').find("select.task_selector");
-        if(valid_tasks.indexOf(selected)!=-1){
-            current_selector.empty().append(all_options.filter("[title~='" + selected + "']"))
-                                .append(commons).selectpicker("refresh");
-        }else{
-            current_selector.empty().append(all_options).selectpicker("refresh");;
+        var allTasks = true;
+        $.each(valid_tasks, function(index,value){
+        if(selected.includes(value)){
+            current_selector.empty().append(all_options.filter("[title~='" + value + "']"))
+            .append(commons).selectpicker("refresh");
+            allTasks = false;
+            return false;
+            }
+        });
+
+        if (allTasks) {
+            current_selector.empty().append(all_options).selectpicker("refresh");
         }
+
     });
 @endsection

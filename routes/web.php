@@ -69,3 +69,6 @@ Route::post('surveys/question/{assignment}', 'SurveyController@saveAnswer') ->na
 Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('resend_survey');
 
 Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');
+
+//start adding route for summary page
+Route::get('/summary', 'SummaryController@index')->name('summary_index');
