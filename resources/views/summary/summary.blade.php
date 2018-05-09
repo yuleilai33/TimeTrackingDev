@@ -58,9 +58,9 @@
                                 </thead>
 
                                 <tbody>
-                                <tr class="clickable" data-toggle="collapse" data-target=".group-of-rows-1" aria-expanded="false" aria-controls="group-of-rows-1">
+                                <tr class="clickable" data-toggle="collapse" data-target=".group-of-rows-1" >
                                     <td>1</td>
-                                    <td><i class="fa fa-plus" aria-hidden="true"></i> 2</td>
+                                    <td><i class="fa fa-plus" aria-hidden="true"></i> Client</td>
                                     <td>3</td>
                                     <td>4</td>
                                     <td>5</td>
@@ -73,11 +73,10 @@
                                 </tr>
                                 </tbody>
 
-
-                                <tbody>
-                                <tr class="collapse group-of-rows-1" data-toggle="collapse" data-target=".group-of-rows-2" aria-expanded="false" aria-controls=".group-of-rows-2">
-                                    <td>11</td>
-                                    <td>21</td>
+                                <tbody class="collapse group-of-rows-1">
+                                <tr data-toggle="collapse" data-target=".group-of-rows-2" >
+                                    <td>22</td>
+                                    <td>Engagement</td>
                                     <td>31</td>
                                     <td>41</td>
                                     <td>51</td>
@@ -90,9 +89,10 @@
                                 </tr>
 
 
-                                <tr  class="collapse group-of-rows-2">
-                                    <td>3331</td>
-                                    <td>21</td>
+
+                                <tr>
+                                    <td>3333</td>
+                                    <td>Consultant</td>
                                     <td>31</td>
                                     <td>41</td>
                                     <td>51</td>
@@ -104,8 +104,10 @@
                                     <td>111</td>
                                 </tr>
 
-                                <tr class="collapse group-of-rows-2">
-                                    <td>44444</td>
+
+
+                                <tr>
+                                    <td>3333</td>
                                     <td>210</td>
                                     <td>310</td>
                                     <td>410</td>
@@ -120,8 +122,10 @@
 
 
 
+
+
                                 <tr>
-                                    <td>101</td>
+                                    <td>22</td>
                                     <td>210</td>
                                     <td>310</td>
                                     <td>410</td>
