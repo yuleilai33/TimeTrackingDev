@@ -19,7 +19,7 @@ class SummaryController extends Controller
 
     public function index ()
     {
-        $allHours = new Hour;
+        $allHours = Hour::with(['client','arrangement']);
 
 //        create a query builder for filter
         $filter = $allHours -> newQuery();
@@ -50,6 +50,7 @@ class SummaryController extends Controller
         $engagementIDs = $engagements -> pluck('id') ->toArray();
         $arrangementIDs = $arrangements -> pluck('id') ->toArray();
 
+//        dd($hours);
 //        $consultants = $arrangements -> map(function($item){
 //            return $item->consultant()->withTrashed()->first();
 //        })-> unique();

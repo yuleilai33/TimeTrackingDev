@@ -61,7 +61,7 @@
                                 @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
                                 {{--client level--}}
                                 @foreach ($clients as $client)
-                                <tr class="treegrid-{{$clientGrid}} client-level">
+                                <tr class="treegrid-{{$clientGrid}}">
                                     <td>{{$index++}}</td>
                                     <td>{{$client->name}}</td>
                                     <td>3</td>
@@ -77,7 +77,7 @@
                                 {{--engagement level--}}
                                 @foreach($client->engagements()->withTrashed()->get()->whereIn('id',$engagementIDs) as $eng )
 
-                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}} engagement-level">
+                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}}">
                                             <td></td>
                                             <td>{{$eng->name}}</td>
                                             <td>3</td>
@@ -94,7 +94,7 @@
                                     {{--Consultant level--}}
                                     @foreach($eng->arrangements()->withTrashed()->get()->whereIn('id',$arrangementIDs) as $arrange)
 
-                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level">
+                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}}">
                                             <td></td>
                                             <td>{{$arrange->consultant->fullname()}}</td>
                                             <td>3</td>
@@ -111,7 +111,7 @@
                                         {{--daily report level--}}
                                         {{--{{dd($hours->where('arrangement_id',96))}}--}}
                                         @foreach( $hours -> where('arrangement_id',$arrange->id) as $hr )
-                                            <tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}} report-level">
+                                            <tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}}">
                                                 <td></td>
                                                 <td>{{$hr -> report_date}}</td>
                                                 <td>3</td>
