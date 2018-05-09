@@ -31,14 +31,12 @@ class SummaryController extends Controller
 
         $filter -> whereBetween('report_date',[$startDate, $endDate]);
 
-        $hours = $filter -> get();
+        $hours = $filter -> get() ->sortByDesc('report_date');
 
 //        get clients in the filtered hours
         $clients = $hours -> map(function($item){
             return $item -> client;
-        }) -> unique() -> sortBy(function($item){
-            return $item -> name;
-        });
+        }) -> unique() -> sortBy('name');
 
 //        Also include deleted arrangements and engagements
         $arrangements = $hours -> map(function($item){
@@ -49,11 +47,14 @@ class SummaryController extends Controller
            return $item->engagement()->withTrashed()->first();
         })-> unique();
 
+        $engagementIDs = $engagements -> pluck('id') ->toArray();
+        $arrangementIDs = $arrangements -> pluck('id') ->toArray();
+
 //        $consultants = $arrangements -> map(function($item){
 //            return $item->consultant()->withTrashed()->first();
 //        })-> unique();
 
-        return view('summary.summary',compact('hours','clients','engagements','arrangements'));
+        return view('summary.summary',compact('hours','clients','engagements','arrangements','engagementIDs', 'arrangementIDs'));
 
     }
 

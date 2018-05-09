@@ -75,8 +75,10 @@
                                     <td>11</td>
                                 </tr>
                                 {{--engagement level--}}
-                                @foreach($client->engagements()->withTrashed()->get()->whereIn('id',$engagementIDs) as $eng )
-
+                                @foreach($client->engagements as $eng )
+                                    @if ( !($engagements -> contains($eng)) )
+                                        @continue
+                                    @endif
                                         <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}}">
                                             <td></td>
                                             <td>{{$eng->name}}</td>
@@ -92,7 +94,12 @@
                                         </tr>
 
                                     {{--Consultant level--}}
-                                    @foreach($eng->arrangements()->withTrashed()->get()->whereIn('id',$arrangementIDs) as $arrange)
+                                    {{--@foreach($eng->arrangements as $arrange)--}}
+                                        {{--@if ( !($arrangements -> contains($arrange)) )--}}
+                                            {{--@continue--}}
+                                        {{--@endif--}}
+
+                                        @foreach($hours->arrangement as $arrange)
 
                                         <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}}">
                                             <td></td>
@@ -126,11 +133,83 @@
                                             </tr>
                                         @endforeach
 
+
                                         @php $consultantGrid++ @endphp
                                     @endforeach
 
+
                                         @php $engagementGrid++ @endphp
                                 @endforeach
+
+                                {{--<tr class="treegrid-3 treegrid-parent-2">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Consultant 1</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
+
+                                {{--<tr class="treegrid-4 treegrid-parent-3">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>05/08/2018</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
+
+                                {{--<tr class="treegrid-5 treegrid-parent-3">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>03/20/2018</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
+
+                                {{--<tr class="treegrid-6 treegrid-parent-2">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Consultant 2</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
+
+                                {{--<tr class="treegrid-7 treegrid-parent-1">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Engagement B</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
                                     @php $clientGrid++ @endphp
                                 @endforeach
@@ -184,8 +263,8 @@
 
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
-    <script src="/js/jquery.treegrid.min.js"></script>
-    <script src="/js/jquery.treegrid.bootstrap3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/js/jquery.treegrid.bootstrap3.min.js"></script>
     <script>
         $(function () {
 
@@ -198,7 +277,7 @@
             });
 
             /*hide and show the content area so users wont feel the collapse-expand flash*/
-             document.getElementsByClassName("main-content")[0].style.visibility = "visible";
+            /* document.getElementsByClassName("main-content")[0].style.visibility = "visible"; */
 
         });
 
@@ -207,11 +286,11 @@
 @endsection
 
 @section('special-css')
-    <link href="/css/jquery.treegrid.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/css/jquery.treegrid.min.css" rel="stylesheet">
     <style>
 
         /*hide and show the content area so users wont feel the collapse-expand flash*/
-        .main-content { visibility:hidden; }
+        /*.main-content { visibility:hidden; }*/
 
         table tr:first-child th {
             text-align: center !important;
