@@ -4,6 +4,7 @@ namespace newlifecfo\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use newlifecfo\Models\Hour;
 
 class SummaryController extends Controller
 {
@@ -18,8 +19,42 @@ class SummaryController extends Controller
 
     public function index ()
     {
+        $allHours = new Hour;
 
-        return view('summary.summary');
+//        create a query builder for filter
+        $filter = $allHours -> newQuery();
+
+//        apply filter condition to the hours
+//        date condition
+        $startDate = '2017-06-01';
+        $endDate = '2017-7-31';
+
+        $filter -> whereBetween('report_date',[$startDate, $endDate]);
+
+        $hours = $filter -> get();
+
+//        get clients in the filtered hours
+        $clients = $hours -> map(function($item){
+            return $item -> client;
+        }) -> unique() -> sortBy(function($item){
+            return $item -> name;
+        });
+
+//        Also include deleted arrangements and engagements
+        $arrangements = $hours -> map(function($item){
+            return $item ->arrangement()->withTrashed()->first();
+        }) -> unique();
+
+        $engagements = $arrangements -> map(function($item){
+           return $item->engagement()->withTrashed()->first();
+        })-> unique();
+
+//        $consultants = $arrangements -> map(function($item){
+//            return $item->consultant()->withTrashed()->first();
+//        })-> unique();
+
+        return view('summary.summary',compact('hours','clients','engagements','arrangements'));
+
     }
 
 }

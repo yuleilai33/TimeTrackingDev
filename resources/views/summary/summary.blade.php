@@ -32,7 +32,7 @@
                             {{--</div>--}}
                         </div>
                         <div class="table-responsive ">
-                            <table class="table table-hover">
+                            <table class="table table-hover tree">
                                 <thead>
                                 <tr>
                                     <th ></th>
@@ -58,9 +58,12 @@
                                 </thead>
 
                                 <tbody>
-                                <tr class="clickable" data-toggle="collapse" data-target=".group-of-rows-1" >
-                                    <td>1</td>
-                                    <td><i class="fa fa-plus" aria-hidden="true"></i> Client</td>
+                                @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
+                                {{--client level--}}
+                                @foreach ($clients as $client)
+                                <tr class="treegrid-{{$clientGrid}}">
+                                    <td>{{$index++}}</td>
+                                    <td>{{$client->name}}</td>
                                     <td>3</td>
                                     <td>4</td>
                                     <td>5</td>
@@ -71,72 +74,145 @@
                                     <td>10</td>
                                     <td>11</td>
                                 </tr>
-                                </tbody>
+                                {{--engagement level--}}
+                                @foreach($client->engagements as $eng )
+                                    @if ( !($engagements -> contains($eng)) )
+                                        @continue
+                                    @endif
+                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}}">
+                                            <td></td>
+                                            <td>{{$eng->name}}</td>
+                                            <td>3</td>
+                                            <td>4</td>
+                                            <td>5</td>
+                                            <td>6</td>
+                                            <td>7</td>
+                                            <td>8</td>
+                                            <td>9</td>
+                                            <td>10</td>
+                                            <td>11</td>
+                                        </tr>
 
-                                <tbody class="collapse group-of-rows-1">
-                                <tr data-toggle="collapse" data-target=".group-of-rows-2" >
-                                    <td>22</td>
-                                    <td>Engagement</td>
-                                    <td>31</td>
-                                    <td>41</td>
-                                    <td>51</td>
-                                    <td>61</td>
-                                    <td>71</td>
-                                    <td>81</td>
-                                    <td>91</td>
-                                    <td>101</td>
-                                    <td>111</td>
-                                </tr>
+                                    {{--Consultant level--}}
+                                    @foreach($eng->arrangements as $arrange)
+                                        @if ( !($arrangements -> contains($arrange)) )
+                                            @continue
+                                        @endif
+
+                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}}">
+                                            <td></td>
+                                            <td>{{$arrange->consultant->fullname()}}</td>
+                                            <td>3</td>
+                                            <td>4</td>
+                                            <td>5</td>
+                                            <td>6</td>
+                                            <td>7</td>
+                                            <td>8</td>
+                                            <td>9</td>
+                                            <td>10</td>
+                                            <td>11</td>
+                                        </tr>
+
+                                        {{--daily report level--}}
+                                        @foreach( $arrange -> hours as $hr )
+                                            @if ( !($hours -> contains($hr)) )
+                                                @continue
+                                            @endif
+                                            <tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}}">
+                                                <td></td>
+                                                <td>22</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                                <td>5</td>
+                                                <td>6</td>
+                                                <td>7</td>
+                                                <td>8</td>
+                                                <td>9</td>
+                                                <td>10</td>
+                                                <td>11</td>
+                                            </tr>
+                                        @endforeach
 
 
-
-                                <tr>
-                                    <td>3333</td>
-                                    <td>Consultant</td>
-                                    <td>31</td>
-                                    <td>41</td>
-                                    <td>51</td>
-                                    <td>61</td>
-                                    <td>71</td>
-                                    <td>81</td>
-                                    <td>91</td>
-                                    <td>101</td>
-                                    <td>111</td>
-                                </tr>
+                                        @php $consultantGrid++ @endphp
+                                    @endforeach
 
 
+                                        @php $engagementGrid++ @endphp
+                                @endforeach
 
-                                <tr>
-                                    <td>3333</td>
-                                    <td>210</td>
-                                    <td>310</td>
-                                    <td>410</td>
-                                    <td>510</td>
-                                    <td>61</td>
-                                    <td>71</td>
-                                    <td>81</td>
-                                    <td>91</td>
-                                    <td>101</td>
-                                    <td>111</td>
-                                </tr>
+                                {{--<tr class="treegrid-3 treegrid-parent-2">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Consultant 1</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
+                                {{--<tr class="treegrid-4 treegrid-parent-3">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>05/08/2018</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
+                                {{--<tr class="treegrid-5 treegrid-parent-3">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>03/20/2018</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
+                                {{--<tr class="treegrid-6 treegrid-parent-2">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Consultant 2</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
+                                {{--<tr class="treegrid-7 treegrid-parent-1">--}}
+                                    {{--<td></td>--}}
+                                    {{--<td>Engagement B</td>--}}
+                                    {{--<td>3</td>--}}
+                                    {{--<td>4</td>--}}
+                                    {{--<td>5</td>--}}
+                                    {{--<td>6</td>--}}
+                                    {{--<td>7</td>--}}
+                                    {{--<td>8</td>--}}
+                                    {{--<td>9</td>--}}
+                                    {{--<td>10</td>--}}
+                                    {{--<td>11</td>--}}
+                                {{--</tr>--}}
 
-                                <tr>
-                                    <td>22</td>
-                                    <td>210</td>
-                                    <td>310</td>
-                                    <td>410</td>
-                                    <td>510</td>
-                                    <td>61</td>
-                                    <td>71</td>
-                                    <td>81</td>
-                                    <td>91</td>
-                                    <td>101</td>
-                                    <td>111</td>
-                                </tr>
+                                    @php $clientGrid++ @endphp
+                                @endforeach
                                 </tbody>
 
 
@@ -161,6 +237,20 @@
                                     {{--@endif--}}
                                 {{--@endforeach--}}
 
+
+                                {{--<tr class="treegrid-1">--}}
+                                    {{--<td>Root node</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-200 treegrid-parent-1">--}}
+                                    {{--<td>Node 1-1</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-300 treegrid-parent-1">--}}
+                                    {{--<td>Node 1-2</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-4 treegrid-parent-300">--}}
+                                    {{--<td>Node 1-2-1</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+
                             </table>
                         </div>
                     </div>
@@ -173,12 +263,34 @@
 
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/js/jquery.treegrid.bootstrap3.min.js"></script>
     <script>
+        $(function () {
+
+            $('.tree').treegrid({
+                initialState:'collapsed',
+                expanderExpandedClass: 'glyphicon glyphicon-minus',
+                expanderCollapsedClass: 'glyphicon glyphicon-plus',
+                treeColumn: 1
+
+            });
+
+            /*hide and show the content area so users wont feel the collapse-expand flash*/
+            document.getElementsByClassName("main-content")[0].style.visibility = "visible";
+
+        });
+
     </script>
+
 @endsection
 
 @section('special-css')
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-treegrid/0.2.0/css/jquery.treegrid.min.css" rel="stylesheet">
     <style>
+
+        /*hide and show the content area so users wont feel the collapse-expand flash*/
+        .main-content { visibility:hidden; }
 
         table tr:first-child th {
             text-align: center !important;
@@ -189,6 +301,14 @@
         table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
         {
             border-left: 2px solid #ddd !important;
+        }
+
+        .glyphicon-plus {
+            color:#41B314;
+        }
+
+        .glyphicon-minus {
+            color:#0AF;
         }
 
 
