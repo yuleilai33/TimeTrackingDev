@@ -63,8 +63,5 @@ class Hour extends Report
     }
 
     //diego start adding code for summary page
-    public function totalHour()
-    {
-        return $this->billable_hours + $this->non_billable_hours;
-    }
+
 }
