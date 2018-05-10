@@ -17,6 +17,8 @@ class SummaryController extends Controller
         $this->middleware('supervisor');
     }
 
+    private $currentMonth;
+
     public function index ()
     {
         $allHours = Hour::with(['client','arrangement']);
@@ -26,8 +28,10 @@ class SummaryController extends Controller
 
 //        apply filter condition to the hours
 //        date condition
-        $startDate = '2017-06-01';
-        $endDate = '2017-7-31';
+        $this->currentMonth = '2017-07-01';
+
+        $startDate = date("Y-m-01", strtotime($this->currentMonth .' -1 month') );
+        $endDate = date("Y-m-t", strtotime($this->currentMonth) );
 
         $filter -> whereBetween('report_date',[$startDate, $endDate]);
 
@@ -50,12 +54,17 @@ class SummaryController extends Controller
         $engagementIDs = $engagements -> pluck('id') ->toArray();
         $arrangementIDs = $arrangements -> pluck('id') ->toArray();
 
-//        dd($hours);
 //        $consultants = $arrangements -> map(function($item){
 //            return $item->consultant()->withTrashed()->first();
 //        })-> unique();
-
+//
+        dd($hours);
         return view('summary.summary',compact('hours','clients','engagements','arrangements','engagementIDs', 'arrangementIDs'));
+//
+    }
+
+    public function calculateTotalHour()
+    {
 
     }
 

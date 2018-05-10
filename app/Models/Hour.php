@@ -61,4 +61,10 @@ class Hour extends Report
                 return [$month->sum(0), $month->sum(1)];
             });
     }
+
+    //diego start adding code for summary page
+    public function totalHour()
+    {
+        return $this->billable_hours + $this->non_billable_hours;
+    }
 }

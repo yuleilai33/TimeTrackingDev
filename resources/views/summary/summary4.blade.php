@@ -57,13 +57,13 @@
 
                                 </thead>
 
-                                <tbody id="summary-table">
+                                <tbody>
                                 @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
                                 {{--client level--}}
                                 @foreach ($clients as $client)
-                                <tr class="treegrid-{{$clientGrid}} client-level">
+                                <tr class="treegrid-{{$clientGrid}} client-level" data-toggle="collapse" data-target=".treegrid-parent-{{$clientGrid}}">
                                     <td>{{$index++}}</td>
-                                    <td data-toggle="collapse" data-target=".treegrid-parent-{{$clientGrid}}"><i class="fa fa-plus"></i>{{$client->name}}</td>
+                                    <td>{{$client->name}}</td>
                                     <td>3</td>
                                     <td>4</td>
                                     <td>5</td>
@@ -77,10 +77,9 @@
                                 {{--engagement level--}}
                                 @foreach($client->engagements()->withTrashed()->get()->whereIn('id',$engagementIDs) as $eng )
 
-                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}} engagement-level collapse"
-                                            data-engagement-group="engagement-{{$engagementGrid}}">
+                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}} engagement-level collapse" data-toggle="collapse" data-target=".treegrid-parent-{{$engagementGrid}}">
                                             <td></td>
-                                            <td data-toggle="collapse" data-target=".treegrid-parent-{{$engagementGrid}}"><i class="fa fa-plus"></i>{{$eng->name}}</td>
+                                            <td>{{$eng->name}}</td>
                                             <td>3</td>
                                             <td>4</td>
                                             <td>5</td>
@@ -95,11 +94,9 @@
                                     {{--Consultant level--}}
                                     @foreach($eng->arrangements()->withTrashed()->get()->whereIn('id',$arrangementIDs) as $arrange)
 
-                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse"
-                                            data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">
+                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse" data-toggle="collapse" data-target=".treegrid-parent-{{$consultantGrid}}">
                                             <td></td>
-                                            <td data-toggle="collapse" data-target=".treegrid-parent-{{$consultantGrid}}">
-                                                <a href="javascript:void(0)">{{$arrange->consultant->fullname()}}</a></td>
+                                            <td>{{$arrange->consultant->fullname()}}</td>
                                             <td>3</td>
                                             <td>4</td>
                                             <td>5</td>
@@ -112,22 +109,22 @@
                                         </tr>
 
                                         {{--daily report level--}}
-                                        {{--@foreach( $hours -> where('arrangement_id',$arrange->id) as $hr )--}}
-                                            {{--<tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}} report-level collapse"--}}
-                                                {{--data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">--}}
-                                                {{--<td></td>--}}
-                                                {{--<td>{{$hr -> report_date}}</td>--}}
-                                                {{--<td>3</td>--}}
-                                                {{--<td>4</td>--}}
-                                                {{--<td>5</td>--}}
-                                                {{--<td>6</td>--}}
-                                                {{--<td>7</td>--}}
-                                                {{--<td>8</td>--}}
-                                                {{--<td>9</td>--}}
-                                                {{--<td>10</td>--}}
-                                                {{--<td>11</td>--}}
-                                            {{--</tr>--}}
-                                        {{--@endforeach--}}
+                                        {{--{{dd($hours->where('arrangement_id',96))}}--}}
+                                        @foreach( $hours -> where('arrangement_id',$arrange->id) as $hr )
+                                            <tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}} report-level collapse">
+                                                <td></td>
+                                                <td>{{$hr -> report_date}}</td>
+                                                <td>3</td>
+                                                <td>4</td>
+                                                <td>5</td>
+                                                <td>6</td>
+                                                <td>7</td>
+                                                <td>8</td>
+                                                <td>9</td>
+                                                <td>10</td>
+                                                <td>11</td>
+                                            </tr>
+                                        @endforeach
 
                                         @php $consultantGrid++ @endphp
                                     @endforeach
@@ -162,6 +159,19 @@
                                 {{--@endforeach--}}
 
 
+                                {{--<tr class="treegrid-1">--}}
+                                    {{--<td>Root node</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-200 treegrid-parent-1">--}}
+                                    {{--<td>Node 1-1</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-300 treegrid-parent-1">--}}
+                                    {{--<td>Node 1-2</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+                                {{--<tr class="treegrid-4 treegrid-parent-300">--}}
+                                    {{--<td>Node 1-2-1</td><td>Additional info</td>--}}
+                                {{--</tr>--}}
+
                             </table>
                         </div>
                     </div>
@@ -174,28 +184,21 @@
 
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
+    <script src="/js/jquery.treegrid.min.js"></script>
+    <script src="/js/jquery.treegrid.bootstrap3.js"></script>
     <script>
         $(function () {
+
+            $('.tree').treegrid({
+                initialState:'collapsed',
+                expanderExpandedClass: 'glyphicon glyphicon-minus',
+                expanderCollapsedClass: 'glyphicon glyphicon-plus',
+                treeColumn: 1
+
+            });
+
             /*hide and show the content area so users wont feel the collapse-expand flash*/
-             /*document.getElementsByClassName("main-content")[0].style.visibility = "visible";*/
-
-            /*customize the behavior of collapsing and expanding*/
-            $(".client-level>td:nth-child(2), .engagement-level>td:nth-child(2), .consultant-level>td:nth-child(2)").on('click', function () {
-                $(this).find('i').toggleClass("fa-plus fa-minus");
-            });
-
-            $('.engagement-level').on('hidden.bs.collapse', function () {
-                group=$(this).attr('data-engagement-group');
-                $("#summary-table tr[data-engagement-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
-            });
-
-            $('.consultant-level').on('hidden.bs.collapse', function () {
-                group=$(this).attr('data-consultant-group');
-                $("#summary-table tr[data-consultant-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
-            });
-
-
-
+             document.getElementsByClassName("main-content")[0].style.visibility = "visible";
 
         });
 
@@ -204,10 +207,11 @@
 @endsection
 
 @section('special-css')
+    <link href="/css/jquery.treegrid.css" rel="stylesheet">
     <style>
 
         /*hide and show the content area so users wont feel the collapse-expand flash*/
-        /*.main-content { visibility:hidden; }*/
+        .main-content { visibility:hidden; }
 
         table tr:first-child th {
             text-align: center !important;
@@ -220,33 +224,14 @@
             border-left: 2px solid #ddd !important;
         }
 
-        .fa-plus {
+        .glyphicon-plus {
             color:#41B314;
-            padding-right: 8px;
         }
 
-        .fa-minus {
+        .glyphicon-minus {
             color:#0AF;
-            padding-right: 8px;
         }
 
-        .client-level td:nth-child(2){
-            cursor: pointer;
-        }
-
-        .engagement-level td:nth-child(2) {
-            padding-left: 25px !important;
-            cursor: pointer;
-        }
-
-        .consultant-level td:nth-child(2) {
-            padding-left: 50px !important;
-            cursor: pointer;
-        }
-
-        .report-level td:nth-child(2) {
-            padding-left: 70px !important;
-        }
 
 
     </style>
