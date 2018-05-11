@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use newlifecfo\Models\Hour;
 use newlifecfo\Models\Client;
 use newlifecfo\Models\Engagement;
+use newlifecfo\Models\Consultant;
 class SummaryController extends Controller
 {
     //
@@ -19,12 +20,20 @@ class SummaryController extends Controller
     }
 
 
-    public function index ()
+    public function index (Request $request)
     {
 
 //        date condition
-        $currentMonth = '2018-04-01';
-        $range='2months'; //or one month
+        if($request->month){
+            $currentMonth=date('Y-m-01',strtotime(str_replace('/', '-', '01/'.$request->month)));
+        }else{
+            $currentMonth=date('Y-m-d',strtotime('now'));
+        }
+
+        $range= $request->period ?: '2months'; //or one month
+        $eids = explode(',', $request->eid);
+        $consultant = Consultant::find($request->conid);
+
 
         if($range == '2months') {
             $startDate = date("Y-m-01", strtotime($currentMonth . ' -1 month'));
@@ -35,7 +44,7 @@ class SummaryController extends Controller
         }
 
 
-        $hours = Hour::reported($start=$startDate, $end=$endDate,$eids=null,$consultant=null,$review_state=null,$client=null);
+        $hours = Hour::reported($startDate,$endDate,$eids,$consultant,null,null);
 
         //        filter section end
 
@@ -56,7 +65,27 @@ class SummaryController extends Controller
         }
 
 //        get clients in the filtered hours
-        $clients = Client::all() -> sortBy('name');
+        $filterByConsultant=false;
+        $filterByEngagement=false;
+
+        $clients = Client::all()->sortBy('name');
+        if($request->conid){
+            $clients = $hours->map(function($item){
+               return $item->client()->withTrashed()->first();
+            })->unique();
+            $filterByConsultant=true;
+        }
+
+        if($request->eid){
+
+            $clientIds=array();
+            foreach ($eids as $eid ){
+                $clientIds[]=Engagement::find($eid)->client_id;
+            }
+            $clients = $clients->whereIn('id',$clientIds);
+            $filterByEngagement=true;
+        }
+
 
 //        Also include deleted arrangements and engagements
 //        $arrangements = $hours -> map(function($item){
@@ -141,7 +170,8 @@ class SummaryController extends Controller
 //
         $clientIds = Engagement::groupedByClient($consultant);
 
-        return view('summary.summary',compact('hours','clients','startDate','endDate','currentStart','lastEnd','clientIds',
+        return view('summary.summary',compact('hours','clients','startDate','endDate','currentStart','lastEnd',
+            'clientIds','eids','filterByConsultant','filterByEngagement',
             'lastPeriodHoursByClient','currentPeriodHoursByClient','lastPeriodHoursByEngagement','currentPeriodHoursByEngagement',
             'lastPeriodHoursByArrangement','currentPeriodHoursByArrangement','lastPeriodPayByClient','currentPeriodPayByClient',
             'lastPeriodPayByEngagement','currentPeriodPayByEngagement','lastPeriodPayByArrangement','currentPeriodPayByArrangement',

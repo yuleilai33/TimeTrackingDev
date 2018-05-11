@@ -10,13 +10,19 @@ use newlifecfo\Models\SurveyResult;
 use newlifecfo\User;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
+use newlifecfo\Models\Hour;
 
 
 
 class DbController extends Controller{
 
     public function test(){
-        echo 'tesing page';
+
+
+
+        $b= Hour::first()->toArray();
+
+        dd($b);
     }
 
 

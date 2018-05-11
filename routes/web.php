@@ -71,4 +71,4 @@ Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('res
 Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');
 
 //start adding route for summary page
-Route::get('/summary', 'SummaryController@index')->name('summary_index');
+Route::get('/summary', 'SummaryController@index')->name('summary');

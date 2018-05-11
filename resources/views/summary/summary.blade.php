@@ -3,11 +3,70 @@
 @section('content')
 
     <div class="main-content">
+
+        {{--daily report section--}}
+        <div class="modal fade" id="daily-report-modal" tabindex="-1" role="dialog"
+             aria-labelledby="daily-report-modal" data-backdrop="true" data-keyboard="true"
+             aria-hidden="true" >
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        {{--02/19/2018 Diego changed the modal title--}}
+                        <h3 class="modal-title"><span>Daily Report: {{date('m/d/y',strtotime($startDate))}} to {{date('m/d/y',strtotime($endDate))}}</span>
+                            <a type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </a>
+                        </h3>
+
+                    </div>
+
+                    <form action="" id="daily-report-form">
+                        <div class="modal-body">
+
+                            <div class="panel-heading">
+                                <h3 class="panel-title text-center" id="consultant-name"><strong></strong></h3>
+                                <br>
+                                <h3 class="panel-title text-center" id="client-engagement"><strong></strong></h3>
+                            </div>
+
+
+                            <div class="panel-footer">
+                                <table class="table table-responsive table-hover" id="daily-report-table">
+                                    <thead>
+                                    <tr>
+                                        <th class="col-sm-2">Report Date</th>
+                                        <th class="col-sm-1">Billable Hour</th>
+                                        <th class="col-sm-1">Non-billable Hour</th>
+                                        <th class="col-sm-1">Pay</th>
+                                        <th class="col-sm-1">Billing</th>
+                                        <th class="col-sm-2">Task</th>
+                                        <th class="col-sm-4">Description</th>
+                                    </tr>
+                                    </thead>
+
+
+
+                                        <tbody id="daily-report-body">
+
+                                        </tbody>
+                                    </table>
+
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div class="container-fluid">
             <div class="panel panel-headline">
                 <div class="row">
                     <div class="panel-heading col-md-3">
-                        <h3 class="panel-title">Summary</h3>
+                        <h3 class="panel-title"><strong>Summary</strong></h3>
                         <p class="panel-subtitle">
                             {{--Period: {{(Request::get('start')?:'Begin of time').' - '.(Request::get('end')?:'Today')}}</p>--}}
                     </div>
@@ -42,13 +101,13 @@
                                     </select>
 
                             <i>&nbsp;</i>
-                            <input class="date-picker form-control " id="start-date" size="10" data-width="fit"
-                                   placeholder="&#xf073; Current Month"
-                                   value="{{Request('currentMonth')?: 'testing'}}"
+                            <input class="date-picker form-control " id="current-month" size="10" data-width="fit"
+                                   placeholder="&#xf073; Month"
+                                   value="{{Request('month')?: date('m/Y',strtotime('now'))}}"
                                    type="text"/>
                             <i>&nbsp;</i>
                             <select class="selectpicker show-tick form-control form-control-sm" data-width="fit"
-                                    id="state-select" title="&#xf024; Period"
+                                    id="period" title="&#xf024; Period"
                                     data-live-search="true">
                                 <option value="1month"  {{Request('period')=="1month"?'selected':''}} style="font-size: 1.1em">One Month</option>
                                 <option value="2months" selected {{Request('period')=="2months"?'selected':''}} style="font-size: 1.1em">Two Months</option>
@@ -76,7 +135,7 @@
                             {{--</div>--}}
                         </div>
                         <div class="table-responsive ">
-                            <table class="table table-hover tree">
+                            <table class="table table-hover tree" id="summary-table">
                                 <thead>
                                 <tr>
                                     <th ></th>
@@ -101,7 +160,8 @@
 
                                 </thead>
 
-                                <tbody id="summary-table">
+
+                                <tbody>
                                 @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
                                 {{--client level--}}
                                 @foreach ($clients as $client)
@@ -136,6 +196,11 @@
                                 </tr>
                                 {{--engagement level--}}
                                 @foreach($client->engagements()->withTrashed()->get() as $eng )
+                                    @if($filterByEngagement)
+                                        @if(!in_array($eng->id,$eids))
+                                            @continue;
+                                        @endif
+                                    @endif
                                     @php
                                         $lastPeriodHours=$lastPeriodHoursByEngagement->get($eng->id);
                                         $currentPeriodHours=$currentPeriodHoursByEngagement->get($eng->id);
@@ -151,8 +216,12 @@
                                         $currentPeriodBill=$client->engagementBill($currentStart,$endDate,null,$eid)[0];
                                         $billDiff=$currentPeriodBill-$lastPeriodBill;
                                     @endphp
-
-                                    @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
+                                    @if($filterByConsultant)
+                                        @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0)
+                                            @continue;
+                                        @endif
+                                    @elseif($filterByEngagement)
+                                    @elseif($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
                                         @continue;
                                     @endif
 
@@ -193,7 +262,8 @@
                                         <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse"
                                             data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">
                                             <td></td>
-                                            <td data-toggle="collapse" data-target=".treegrid-parent-{{$consultantGrid}}">
+                                            <td data-toggle="modal" data-target="#daily-report-modal" data-consultant="{{$arrange->consultant->fullname()}}"
+                                                data-hours="{{$hours ->where('arrangement_id', $arrange->id)}}" data-client="{{$client->name}}" data-engagement="{{$eng->name}}">
                                                 <a href="javascript:void(0)">{{$arrange->consultant->fullname()}}</a></td>
                                             <td>{{number_format($lastPeriodHours, 2)}}</td>
                                             <td>{{number_format($currentPeriodHours, 2)}}</td>
@@ -206,24 +276,6 @@
                                             <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
                                         </tr>
 
-                                        {{--daily report level--}}
-                                        {{--@foreach( $hours -> where('arrangement_id',$arrange->id) as $hr )--}}
-                                            {{--<tr class="treegrid-{{$reportGrid++}} treegrid-parent-{{$consultantGrid}} report-level collapse"--}}
-                                                {{--data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">--}}
-                                                {{--<td></td>--}}
-                                                {{--<td>{{$hr -> report_date}}</td>--}}
-                                                {{--<td>3</td>--}}
-                                                {{--<td>4</td>--}}
-                                                {{--<td>5</td>--}}
-                                                {{--<td>6</td>--}}
-                                                {{--<td>7</td>--}}
-                                                {{--<td>8</td>--}}
-                                                {{--<td>9</td>--}}
-                                                {{--<td>10</td>--}}
-                                                {{--<td>11</td>--}}
-                                            {{--</tr>--}}
-                                        {{--@endforeach--}}
-
                                         @php $consultantGrid++ @endphp
                                     @endforeach
 
@@ -233,31 +285,12 @@
                                     @php $clientGrid++ @endphp
                                 @endforeach
                                 </tbody>
-
-
-                                {{--@php $index =0; @endphp--}}
-                                {{--@foreach($consultants as $consultant)--}}
-                                    {{--@php $conid=$consultant->id;$salary = $incomes[$conid];$total = $salary[0]+$salary[1]+$buzIncomes[$conid]+$closerIncomes[$conid];@endphp--}}
-                                    {{--@if($total>0.01)--}}
-                                        {{--<tr>--}}
-                                            {{--<td>{{++$index}}</td>--}}
-                                            {{--<td>--}}
-                                                {{--<a href="{{str_replace_first('/','',route('payroll',array_add(Request::except('conid'),'conid',$consultant->id),false))}}">{{$consultant->fullname()}}</a>--}}
-                                            {{--</td>--}}
-                                            {{--<td>{{$hrs[$conid][0]}}</td>--}}
-                                            {{--<td>{{$hrs[$conid][1]}}</td>--}}
-                                            {{--<td>{{$salary[0]?'$'.number_format($salary[0],2):'-'}}</td>--}}
-                                            {{--<td>{{$salary[1]?'$'.number_format($salary[1],2):'-'}}</td>--}}
-                                            {{--<td>{{$buzIncomes[$conid]?'$'.number_format($buzIncomes[$conid],2):'-'}}</td>--}}
-                                            {{--<td>--}}
-                                                {{--{{$closerIncomes[$conid]?'$'.number_format($closerIncomes[$conid],2):'-'}}</td>--}}
-                                            {{--<td>${{number_format($total,2)}}</td>--}}
-                                        {{--</tr>--}}
-                                    {{--@endif--}}
-                                {{--@endforeach--}}
-
-
                             </table>
+
+
+
+
+
                         </div>
                     </div>
                 </div>
@@ -275,7 +308,7 @@
              /*document.getElementsByClassName("main-content")[0].style.visibility = "visible";*/
 
             /*customize the behavior of collapsing and expanding*/
-            $(".client-level>td:nth-child(2), .engagement-level>td:nth-child(2), .consultant-level>td:nth-child(2)").on('click', function () {
+            $(".client-level>td:nth-child(2), .engagement-level>td:nth-child(2)").on('click', function () {
                 $(this).find('i').toggleClass("fa-plus fa-minus");
             });
 
@@ -289,6 +322,41 @@
                 $("#summary-table tr[data-consultant-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
             });
 
+            $(".consultant-level>td:nth-child(2)").on('click', function () {
+
+                $('#daily-report-table > tbody > tr').remove();
+
+                var hours = $(this).data('hours');
+                var consultantName = $(this).data('consultant');
+                var clientName = $(this).data('client');
+                var engagementName = $(this).data('engagement');
+
+                $('#consultant-name strong').text(consultantName);
+                $('#client-engagement strong').text(clientName+' - '+engagementName);
+
+
+                $.each(hours, function(index,hour){
+                    var date = hour.report_date;
+                    var report_date = date.substring(5,7)+'/'+date.substring(8)+'/'+date.substring(0,4);
+                    var billableHours = parseFloat(hour.billable_hours||0).toFixed(2);
+                    var nonbillableHours = parseFloat(hour.non_billable_hours||0).toFixed(2);
+                    var description = (hour.description || '');
+                    var task_desctription = ( hour.task_description || '');
+                    var pay = '$ ' + parseFloat(hour.payment||0).toFixed(2);
+                    var bill = '$ ' + parseFloat(hour.billing||0).toFixed(2);
+
+
+
+                    $('#daily-report-table > tbody:last-child').append("<tr><td>" + report_date + "</td>" +
+                        "<td>" + billableHours + "</td><td>" + nonbillableHours + "</td><td>" + pay + "</td><td>"
+                        + bill + "</td><td title='"+task_desctription+"'>" + task_desctription + "</td><td title='" +description+"'>" + description + "</td></tr>");
+
+                });
+
+            });
+
+
+
             $('.date-picker').datepicker(
                 {
                     format: 'mm/yyyy',
@@ -298,17 +366,26 @@
                     autoclose: true
                 }
             );
+
+            /*use for clicking client name to add all the engagements*/
+            var groupClientNameSelected;
+            /*need to preload the on click function so the it can be used immediately*/
+            $('#client-engagements').on('loaded.bs.select', function () {
+                $('a.group-client-name').on('click', function () {
+                    groupClientNameSelected = groupClientNameSelected === $(this).data('id') ? '' : $(this).data('id');
+                    $('#client-engagements').selectpicker('val', groupClientNameSelected);
+                });
+            });
+
+
         });
 
         function filter_resource() {
-            {{--var query = '?eid=' + $('#client-engagements').selectpicker('val') +--}}
-                {{--'&state=' + $('#state-select').selectpicker('val') +--}}
-                {{--'&start=' + $('#start-date').val() + '&end=' + $('#end-date').val();--}}
-            {{--@if($admin&&($target!='bill')) query += '&conid=' + $('#consultant-select').selectpicker('val');--}}
-            {{--@elseif($target=='bill')--}}
-                {{--query += '&cid={{$client_id}}';--}}
-            {{--@endif--}}
-                {{--window.location.href = "{{$target}}" + query;--}}
+            var query = '?eid=' + $('#client-engagements').selectpicker('val') +
+                '&month=' + $('#current-month').val() +
+                '&period=' + $('#period').selectpicker('val') + '&conid=' + $('#consultant-select').selectpicker('val');
+
+                window.location.href = "{{'summary'}}" + query;
 
         }
 
@@ -318,15 +395,7 @@
             filter_resource();
         }
 
-        $(function () {
-            var groupClientNameSelected;
-            $('#client-engagements').on('loaded.bs.select', function () {
-                $('a.group-client-name').on('click', function () {
-                    groupClientNameSelected = groupClientNameSelected === $(this).data('id') ? '' : $(this).data('id');
-                    $('#client-engagements').selectpicker('val', groupClientNameSelected);
-                });
-            });
-        });
+
 
     </script>
 
@@ -338,13 +407,13 @@
         /*hide and show the content area so users wont feel the collapse-expand flash*/
         /*.main-content { visibility:hidden; }*/
 
-        table tr:first-child th {
+        #summary-table tr:first-child th {
             text-align: center !important;
         }
 
-        table tr:first-child th:nth-child(n+4),
-        table tr:nth-child(2) th:nth-child(n+6):nth-child(3n+3),
-        table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
+        #summary-table tr:first-child th:nth-child(n+4),
+        #summary-table tr:nth-child(2) th:nth-child(n+6):nth-child(3n+3),
+        #summary-table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
         {
             border-left: 2px solid #ddd !important;
         }
@@ -381,7 +450,57 @@
             color: red;
         }
 
+        .modal-lg {
+            width: 80% !important;
 
+        }
+
+        .panel-heading h3 {
+            color:#17a2b8;
+            font-size: 24px !important;
+        }
+
+
+
+        /*.panel-footer {*/
+            /*overflow-x:auto;*/
+            /*max-height:400px;*/
+            /*overflow-y:auto;*/
+        /*}*/
+
+        table {
+            width: 100%;
+        }
+
+        thead, tbody, tr, td, th { display: block; }
+
+        tr:after {
+            content: ' ';
+            display: block;
+            visibility: hidden;
+            clear: both;
+        }
+
+        thead th {
+            height: 30px;
+
+            /*text-align: left;*/
+        }
+
+        tbody {
+            height: 120px;
+            overflow-y: auto;
+        }
+
+        thead {
+            /* fallback */
+        }
+
+
+        tbody td, thead th {
+            width: 19.2%;
+            float: left;
+        }
 
 
     </style>

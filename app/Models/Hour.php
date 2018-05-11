@@ -63,5 +63,17 @@ class Hour extends Report
     }
 
     //diego start adding code for summary page
+    protected $appends = ['task_description','payment','billing'];
 
+    function getTaskDescriptionAttribute() {
+        return $this->task->description;
+    }
+
+    function getPaymentAttribute() {
+        return $this->earned();
+    }
+
+    function getBillingAttribute() {
+        return $this->billClient();
+    }
 }
