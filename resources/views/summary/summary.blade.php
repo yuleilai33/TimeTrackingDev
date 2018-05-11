@@ -1,5 +1,7 @@
 @extends('layouts.app')
-
+@section('popup-container')
+    <div class="se-pre-con"></div>
+@endsection
 @section('content')
 
     <div class="main-content">
@@ -30,27 +32,27 @@
                             </div>
 
 
-                            <div class="panel-footer">
-                                <table class="table table-responsive table-hover" id="daily-report-table">
+                            <div class="panel-footer " id="daily-report-roll">
+                                <table class="table table-responsive table-hover" style="margin-bottom: 0">
                                     <thead>
                                     <tr>
-                                        <th class="col-sm-2">Report Date</th>
-                                        <th class="col-sm-1">Billable Hour</th>
-                                        <th class="col-sm-1">Non-billable Hour</th>
-                                        <th class="col-sm-1">Pay</th>
-                                        <th class="col-sm-1">Billing</th>
-                                        <th class="col-sm-2">Task</th>
-                                        <th class="col-sm-4">Description</th>
+                                        <th style="width: 10%;">Report Date</th>
+                                        <th style="width: 10%;">Billable Hour</th>
+                                        <th style="width: 10%;">Non-billable Hour</th>
+                                        <th style="width: 10%;">Pay</th>
+                                        <th style="width: 10%;">Billing</th>
+                                        <th style="width: 15%;">Task</th>
+                                        <th style="width: 35%;">Description</th>
                                     </tr>
                                     </thead>
-
-
-
+                                </table>
+                                <div class="scroll-me">
+                                    <table class="table table-responsive table-hover" id="daily-report-table">
                                         <tbody id="daily-report-body">
 
                                         </tbody>
                                     </table>
-
+                                </div>
                             </div>
                         </div>
 
@@ -134,176 +136,180 @@
                                         {{--type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>--}}
                             {{--</div>--}}
                         </div>
-                        <div class="table-responsive ">
-                            <table class="table table-hover tree" id="summary-table">
-                                <thead>
-                                <tr>
-                                    <th ></th>
-                                    <th ></th>
-                                    <th colspan="3" >Hours (Billable & Nonbillable)</th>
-                                    <th colspan="3" >Total Pay (Exclude Commission)</th>
-                                    <th colspan="3" >Total Bill (Exclude Expenses)</th>
-                                </tr>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Client</th>
-                                    <th>Last Period</th>
-                                    <th>This Period</th>
-                                    <th>Change</th>
-                                    <th>Last Period</th>
-                                    <th>This Period</th>
-                                    <th>Change</th>
-                                    <th>Last Period</th>
-                                    <th>This Period</th>
-                                    <th>Change</th>
-                                </tr>
-
-                                </thead>
-
-
-                                <tbody>
-                                @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
-                                {{--client level--}}
-                                @foreach ($clients as $client)
-                                    @php
-                                        $lastPeriodHours=$lastPeriodHoursByClient->get($client->id);
-                                        $currentPeriodHours=$currentPeriodHoursByClient->get($client->id);
-                                        $hoursDiff =$currentPeriodHours-$lastPeriodHours;
-
-                                        $lastPeriodPay=$lastPeriodPayByClient->get($client->id);
-                                        $currentPeriodPay=$currentPeriodPayByClient->get($client->id);
-                                        $payDiff =$currentPeriodPay-$lastPeriodPay;
-
-                                        $lastPeriodBill=$client->engagementBill($startDate,$lastEnd)[0];
-                                        $currentPeriodBill=$client->engagementBill($currentStart,$endDate)[0];
-                                        $billDiff=$currentPeriodBill-$lastPeriodBill;
-                                    @endphp
-                                    @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
-                                        @continue;
-                                    @endif
-                                <tr class="treegrid-{{$clientGrid}} client-level">
-                                    <td>{{$index++}}</td>
-                                    <td data-toggle="collapse" data-target=".treegrid-parent-{{$clientGrid}}"><i class="fa fa-plus"></i>{{$client->name}}</td>
-                                    <td>{{number_format($lastPeriodHours, 2)}}</td>
-                                    <td>{{number_format($currentPeriodHours, 2)}}</td>
-                                    <td {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
-                                    <td>{{'$ '.number_format($lastPeriodPay, 2)}}</td>
-                                    <td>{{'$ '.number_format($currentPeriodPay, 2)}}</td>
-                                    <td {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
-                                    <td>{{'$ '.number_format($lastPeriodBill, 2)}}</td>
-                                    <td>{{'$ '.number_format($currentPeriodBill, 2)}}</td>
-                                    <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
-                                </tr>
-                                {{--engagement level--}}
-                                @foreach($client->engagements()->withTrashed()->get() as $eng )
-                                    @if($filterByEngagement)
-                                        @if(!in_array($eng->id,$eids))
-                                            @continue;
-                                        @endif
-                                    @endif
-                                    @php
-                                        $lastPeriodHours=$lastPeriodHoursByEngagement->get($eng->id);
-                                        $currentPeriodHours=$currentPeriodHoursByEngagement->get($eng->id);
-                                        $hoursDiff =$currentPeriodHours-$lastPeriodHours;
-
-                                        $lastPeriodPay=$lastPeriodPayByEngagement->get($eng->id);
-                                        $currentPeriodPay=$currentPeriodPayByEngagement->get($eng->id);
-                                        $payDiff =$currentPeriodPay-$lastPeriodPay;
-
-                                        $eid=array();
-                                        $eid[]=$eng->id;
-                                        $lastPeriodBill=$client->engagementBill($startDate,$lastEnd,null,$eid)[0];
-                                        $currentPeriodBill=$client->engagementBill($currentStart,$endDate,null,$eid)[0];
-                                        $billDiff=$currentPeriodBill-$lastPeriodBill;
-                                    @endphp
-                                    @if($filterByConsultant)
-                                        @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0)
-                                            @continue;
-                                        @endif
-                                    @elseif($filterByEngagement)
-                                    @elseif($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
-                                        @continue;
-                                    @endif
-
-                                        <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}} engagement-level collapse"
-                                            data-engagement-group="engagement-{{$engagementGrid}}">
-                                            <td></td>
-                                            <td data-toggle="collapse" data-target=".treegrid-parent-{{$engagementGrid}}"><i class="fa fa-plus"></i>{{$eng->name}}</td>
-                                            <td>{{number_format($lastPeriodHours, 2)}}</td>
-                                            <td>{{number_format($currentPeriodHours, 2)}}</td>
-                                            <td {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
-                                            <td>{{'$ '.number_format($lastPeriodPay, 2)}}</td>
-                                            <td>{{'$ '.number_format($currentPeriodPay, 2)}}</td>
-                                            <td {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
-                                            <td>{{'$ '.number_format($lastPeriodBill, 2)}}</td>
-                                            <td>{{'$ '.number_format($currentPeriodBill, 2)}}</td>
-                                            <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
+                            <div id="summary-roll">
+                                <table class="table table-hover table-responsive summary-table " style="margin-bottom: 0">
+                                    <thead>
+                                        <tr>
+                                            <th ></th>
+                                            <th ></th>
+                                            <th colspan="3" >Hours (Billable & Nonbillable)</th>
+                                            <th colspan="3" >Total Pay (Exclude Commission)</th>
+                                            <th colspan="3" >Total Bill (Exclude Expenses)</th>
                                         </tr>
-
-                                    {{--Consultant level--}}
-                                    @foreach($eng->arrangements()->withTrashed()->get() as $arrange)
-                                        @php
-                                            $lastPeriodHours=$lastPeriodHoursByArrangement->get($arrange->id);
-                                            $currentPeriodHours=$currentPeriodHoursByArrangement->get($arrange->id);
-                                            $hoursDiff =$currentPeriodHours-$lastPeriodHours;
-
-                                            $lastPeriodPay=$lastPeriodPayByArrangement->get($arrange->id);
-                                            $currentPeriodPay=$currentPeriodPayByArrangement->get($arrange->id);
-                                            $payDiff =$currentPeriodPay-$lastPeriodPay;
-
-                                            $lastPeriodBill=$lastPeriodBillByArrangement->get($arrange->id);
-                                            $currentPeriodBill=$currentPeriodBillByArrangement->get($arrange->id);
-                                            $billDiff=$currentPeriodBill-$lastPeriodBill;
-                                        @endphp
-
-                                        @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
-                                            @continue;
-                                        @endif
-                                        <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse"
-                                            data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">
-                                            <td></td>
-                                            <td data-toggle="modal" data-target="#daily-report-modal" data-consultant="{{$arrange->consultant->fullname()}}"
-                                                data-hours="{{$hours ->where('arrangement_id', $arrange->id)}}" data-client="{{$client->name}}" data-engagement="{{$eng->name}}">
-                                                <a href="javascript:void(0)">{{$arrange->consultant->fullname()}}</a></td>
-                                            <td>{{number_format($lastPeriodHours, 2)}}</td>
-                                            <td>{{number_format($currentPeriodHours, 2)}}</td>
-                                            <td {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
-                                            <td>{{'$ '.number_format($lastPeriodPay, 2)}}</td>
-                                            <td>{{'$ '.number_format($currentPeriodPay, 2)}}</td>
-                                            <td {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
-                                            <td>{{'$ '.number_format($lastPeriodBill, 2)}}</td>
-                                            <td>{{'$ '.number_format($currentPeriodBill, 2)}}</td>
-                                            <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
+                                        <tr>
+                                            <th style="width: 4%;">#</th>
+                                            <th style="width: 16%;">Client</th>
+                                            <th style="width: 8%;">Last Period</th>
+                                            <th style="width: 8%;">This Period</th>
+                                            <th style="width: 8%;">Change</th>
+                                            <th style="width: 8%;">Last Period</th>
+                                            <th style="width: 8%;">This Period</th>
+                                            <th style="width: 8%;">Change</th>
+                                            <th style="width: 8%;">Last Period</th>
+                                            <th style="width: 8%;">This Period</th>
+                                            <th style="width: 8%;">Change</th>
                                         </tr>
+                                    </thead>
+                                </table>
+                                <div class="scroll-me">
+                                    <table class="table table-hover table-responsive summary-table">
+                                        <tbody>
+                                        @php $index=1; $clientGrid=1; $engagementGrid=1000; $consultantGrid=10000; $reportGrid=20000; @endphp
+                                        {{--client level--}}
+                                        @foreach ($clients as $client)
+                                            @php
+                                                $lastPeriodHours=$lastPeriodHoursByClient->get($client->id);
+                                                $currentPeriodHours=$currentPeriodHoursByClient->get($client->id);
+                                                $hoursDiff =$currentPeriodHours-$lastPeriodHours;
 
-                                        @php $consultantGrid++ @endphp
-                                    @endforeach
+                                                $lastPeriodPay=$lastPeriodPayByClient->get($client->id);
+                                                $currentPeriodPay=$currentPeriodPayByClient->get($client->id);
+                                                $payDiff =$currentPeriodPay-$lastPeriodPay;
 
-                                        @php $engagementGrid++ @endphp
-                                @endforeach
+                                                $lastPeriodBill=$client->engagementBill($startDate,$lastEnd)[0];
+                                                $currentPeriodBill=$client->engagementBill($currentStart,$endDate)[0];
+                                                $billDiff=$currentPeriodBill-$lastPeriodBill;
+                                            @endphp
+                                            @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
+                                                @continue;
+                                            @endif
+                                        <tr class="treegrid-{{$clientGrid}} client-level">
+                                            <td style="width: 4%;">{{$index++}}</td>
+                                            <td style="width: 16%;" data-toggle="collapse" data-target=".treegrid-parent-{{$clientGrid}}"><i class="fa fa-plus"></i>{{$client->name}}</td>
+                                            <td style="width: 8%;">{{number_format($lastPeriodHours, 2)}}</td>
+                                            <td style="width: 8%;">{{number_format($currentPeriodHours, 2)}}</td>
+                                            <td style="width: 8%;" {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
+                                            <td style="width: 8%;">{{'$ '.number_format($lastPeriodPay, 2)}}</td>
+                                            <td style="width: 8%;">{{'$ '.number_format($currentPeriodPay, 2)}}</td>
+                                            <td style="width: 8%;" {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
+                                            <td style="width: 8%;">{{'$ '.number_format($lastPeriodBill, 2)}}</td>
+                                            <td style="width: 8%;">{{'$ '.number_format($currentPeriodBill, 2)}}</td>
+                                            <td style="width: 8%;" {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
+                                        </tr>
+                                        {{--engagement level--}}
+                                        @foreach($client->engagements()->withTrashed()->get() as $eng )
+                                            @if($filterByEngagement)
+                                                @if(!in_array($eng->id,$eids))
+                                                    @continue;
+                                                @endif
+                                            @endif
+                                            @php
+                                                $lastPeriodHours=$lastPeriodHoursByEngagement->get($eng->id);
+                                                $currentPeriodHours=$currentPeriodHoursByEngagement->get($eng->id);
+                                                $hoursDiff =$currentPeriodHours-$lastPeriodHours;
 
-                                    @php $clientGrid++ @endphp
-                                @endforeach
-                                </tbody>
-                            </table>
+                                                $lastPeriodPay=$lastPeriodPayByEngagement->get($eng->id);
+                                                $currentPeriodPay=$currentPeriodPayByEngagement->get($eng->id);
+                                                $payDiff =$currentPeriodPay-$lastPeriodPay;
 
+                                                $eid=array();
+                                                $eid[]=$eng->id;
+                                                $lastPeriodBill=$client->engagementBill($startDate,$lastEnd,null,$eid)[0];
+                                                $currentPeriodBill=$client->engagementBill($currentStart,$endDate,null,$eid)[0];
+                                                $billDiff=$currentPeriodBill-$lastPeriodBill;
+                                            @endphp
+                                            @if($filterByConsultant)
+                                                @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0)
+                                                    @continue;
+                                                @endif
+                                            @elseif($filterByEngagement)
+                                            @elseif($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
+                                                @continue;
+                                            @endif
 
+                                                <tr class="treegrid-{{$engagementGrid}} treegrid-parent-{{$clientGrid}} engagement-level collapse"
+                                                    data-engagement-group="engagement-{{$engagementGrid}}">
+                                                    <td></td>
+                                                    <td data-toggle="collapse" data-target=".treegrid-parent-{{$engagementGrid}}"><i class="fa fa-plus"></i>{{$eng->name}}</td>
+                                                    <td>{{number_format($lastPeriodHours, 2)}}</td>
+                                                    <td>{{number_format($currentPeriodHours, 2)}}</td>
+                                                    <td {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
+                                                    <td>{{'$ '.number_format($lastPeriodPay, 2)}}</td>
+                                                    <td>{{'$ '.number_format($currentPeriodPay, 2)}}</td>
+                                                    <td {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
+                                                    <td>{{'$ '.number_format($lastPeriodBill, 2)}}</td>
+                                                    <td>{{'$ '.number_format($currentPeriodBill, 2)}}</td>
+                                                    <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
+                                                </tr>
 
+                                            {{--Consultant level--}}
+                                            @foreach($eng->arrangements()->withTrashed()->get() as $arrange)
+                                                @php
+                                                    $lastPeriodHours=$lastPeriodHoursByArrangement->get($arrange->id);
+                                                    $currentPeriodHours=$currentPeriodHoursByArrangement->get($arrange->id);
+                                                    $hoursDiff =$currentPeriodHours-$lastPeriodHours;
 
+                                                    $lastPeriodPay=$lastPeriodPayByArrangement->get($arrange->id);
+                                                    $currentPeriodPay=$currentPeriodPayByArrangement->get($arrange->id);
+                                                    $payDiff =$currentPeriodPay-$lastPeriodPay;
 
+                                                    $lastPeriodBill=$lastPeriodBillByArrangement->get($arrange->id);
+                                                    $currentPeriodBill=$currentPeriodBillByArrangement->get($arrange->id);
+                                                    $billDiff=$currentPeriodBill-$lastPeriodBill;
+                                                @endphp
+
+                                                @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
+                                                    @continue;
+                                                @endif
+                                                <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse"
+                                                    data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">
+                                                    <td></td>
+                                                    <td data-toggle="modal" data-target="#daily-report-modal" data-consultant="{{$arrange->consultant->fullname()}}"
+                                                        data-hours="{{$hours ->where('arrangement_id', $arrange->id)}}" data-client="{{$client->name}}" data-engagement="{{$eng->name}}">
+                                                        <a href="javascript:void(0)">{{$arrange->consultant->fullname()}}</a></td>
+                                                    <td>{{number_format($lastPeriodHours, 2)}}</td>
+                                                    <td>{{number_format($currentPeriodHours, 2)}}</td>
+                                                    <td {{$hoursDiff >= 0 ?: 'data-negative' }}>{{$hoursDiff <0 ? '('.number_format(abs($hoursDiff), 2).')':number_format($hoursDiff, 2)}}</td>
+                                                    <td>{{'$ '.number_format($lastPeriodPay, 2)}}</td>
+                                                    <td>{{'$ '.number_format($currentPeriodPay, 2)}}</td>
+                                                    <td {{$payDiff >= 0 ?: 'data-negative' }}>{{$payDiff <0 ? '$ ('.number_format(abs($payDiff), 2).')':'$ '.number_format($payDiff, 2)}}</td>
+                                                    <td>{{'$ '.number_format($lastPeriodBill, 2)}}</td>
+                                                    <td>{{'$ '.number_format($currentPeriodBill, 2)}}</td>
+                                                    <td {{$billDiff >= 0 ?: 'data-negative' }}>{{$billDiff <0 ? '$ ('.number_format(abs($billDiff), 2).')':'$ '.number_format($billDiff, 2)}}</td>
+                                                </tr>
+
+                                                    @php $consultantGrid++ @endphp
+                                                @endforeach
+
+                                                    @php $engagementGrid++ @endphp
+                                            @endforeach
+
+                                                @php $clientGrid++ @endphp
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+
+                                </div>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-
+    </div>
 @endsection
 
 @section('my-js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
     <script>
         $(function () {
+
+            $(window).on('load', function() {
+                $(".se-pre-con").fadeOut("slow");
+            });
+
+
+
+
             /*hide and show the content area so users wont feel the collapse-expand flash*/
              /*document.getElementsByClassName("main-content")[0].style.visibility = "visible";*/
 
@@ -314,12 +320,12 @@
 
             $('.engagement-level').on('hidden.bs.collapse', function () {
                 group=$(this).attr('data-engagement-group');
-                $("#summary-table tr[data-engagement-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
+                $(".summary-table tr[data-engagement-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
             });
 
             $('.consultant-level').on('hidden.bs.collapse', function () {
                 group=$(this).attr('data-consultant-group');
-                $("#summary-table tr[data-consultant-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
+                $(".summary-table tr[data-consultant-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
             });
 
             $(".consultant-level>td:nth-child(2)").on('click', function () {
@@ -347,12 +353,21 @@
 
 
 
-                    $('#daily-report-table > tbody:last-child').append("<tr><td>" + report_date + "</td>" +
-                        "<td>" + billableHours + "</td><td>" + nonbillableHours + "</td><td>" + pay + "</td><td>"
-                        + bill + "</td><td title='"+task_desctription+"'>" + task_desctription + "</td><td title='" +description+"'>" + description + "</td></tr>");
+                    $('#daily-report-table > tbody:last-child').append("<tr><td style='width: 10%;'>" + report_date + "</td>" +
+                        "<td style='width: 10%;'>" + billableHours + "</td><td style='width: 10%;'>" + nonbillableHours + "</td><td style='width: 10%;'>" + pay +
+                        "</td><td style='width: 10%;'>" + bill + "</td><td style='width: 15%;' title='"+task_desctription+"'>" + task_desctription +
+                        "</td><td style='width: 35%;' title='" +description+"'>" + description + "</td></tr>");
 
                 });
 
+            });
+
+            $('#summary-roll div.scroll-me').slimScroll({
+                height: Math.max(300, $(window).height() - 450), distance: 0
+            });
+
+            $('#daily-report-roll div.scroll-me').slimScroll({
+                height: Math.max(300, $(window).height() - 450), distance: 0
             });
 
 
@@ -397,6 +412,7 @@
 
 
 
+
     </script>
 
 @endsection
@@ -407,13 +423,13 @@
         /*hide and show the content area so users wont feel the collapse-expand flash*/
         /*.main-content { visibility:hidden; }*/
 
-        #summary-table tr:first-child th {
+        .summary-table tr:first-child th {
             text-align: center !important;
         }
 
-        #summary-table tr:first-child th:nth-child(n+4),
-        #summary-table tr:nth-child(2) th:nth-child(n+6):nth-child(3n+3),
-        #summary-table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
+        .summary-table tr:first-child th:nth-child(n+4),
+        .summary-table tr:nth-child(2) th:nth-child(n+6):nth-child(3n+3),
+        .summary-table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
         {
             border-left: 2px solid #ddd !important;
         }
@@ -461,45 +477,19 @@
         }
 
 
-
-        /*.panel-footer {*/
-            /*overflow-x:auto;*/
-            /*max-height:400px;*/
-            /*overflow-y:auto;*/
-        /*}*/
-
-        table {
+        /* Paste this css to your style sheet file or under head tag */
+        /* This only works with JavaScript,
+        if it's not present, don't show loader */
+        .no-js #loader { display: none;  }
+        .js #loader { display: block; position: absolute; left: 100px; top: 0; }
+        .se-pre-con {
+            position: fixed;
+            left: 0px;
+            top: 0px;
             width: 100%;
-        }
-
-        thead, tbody, tr, td, th { display: block; }
-
-        tr:after {
-            content: ' ';
-            display: block;
-            visibility: hidden;
-            clear: both;
-        }
-
-        thead th {
-            height: 30px;
-
-            /*text-align: left;*/
-        }
-
-        tbody {
-            height: 120px;
-            overflow-y: auto;
-        }
-
-        thead {
-            /* fallback */
-        }
-
-
-        tbody td, thead th {
-            width: 19.2%;
-            float: left;
+            height: 100%;
+            z-index: 9999;
+            background: url("/img/Preloader.gif") center no-repeat #fff;
         }
 
 
