@@ -32,7 +32,7 @@
                             </div>
 
 
-                            <div class="panel-footer " id="daily-report-roll">
+                            <div class="panel-footer">
                                 <table class="table table-responsive table-hover" style="margin-bottom: 0">
                                     <thead>
                                     <tr>
@@ -136,9 +136,8 @@
                                         {{--type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>--}}
                             {{--</div>--}}
                         </div>
-                            <div id="summary-roll">
-                                <table class="table table-hover table-responsive summary-table " style="margin-bottom: 0">
-                                    <thead>
+                            <table class="table table-hover table-responsive summary-table " style="margin-bottom: 0">
+                                <thead>
                                         <tr>
                                             <th ></th>
                                             <th ></th>
@@ -159,8 +158,8 @@
                                             <th style="width: 8%;">This Period</th>
                                             <th style="width: 8%;">Change</th>
                                         </tr>
-                                    </thead>
-                                </table>
+                                </thead>
+                            </table>
                                 <div class="scroll-me">
                                     <table class="table table-hover table-responsive summary-table">
                                         <tbody>
@@ -288,13 +287,11 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-
                                 </div>
-                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 @endsection
 
@@ -302,13 +299,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
     <script>
         $(function () {
-
-            $(window).on('load', function() {
-                $(".se-pre-con").fadeOut("slow");
-            });
-
-
-
 
             /*hide and show the content area so users wont feel the collapse-expand flash*/
              /*document.getElementsByClassName("main-content")[0].style.visibility = "visible";*/
@@ -351,8 +341,6 @@
                     var pay = '$ ' + parseFloat(hour.payment||0).toFixed(2);
                     var bill = '$ ' + parseFloat(hour.billing||0).toFixed(2);
 
-
-
                     $('#daily-report-table > tbody:last-child').append("<tr><td style='width: 10%;'>" + report_date + "</td>" +
                         "<td style='width: 10%;'>" + billableHours + "</td><td style='width: 10%;'>" + nonbillableHours + "</td><td style='width: 10%;'>" + pay +
                         "</td><td style='width: 10%;'>" + bill + "</td><td style='width: 15%;' title='"+task_desctription+"'>" + task_desctription +
@@ -362,14 +350,9 @@
 
             });
 
-            $('#summary-roll div.scroll-me').slimScroll({
+            $('.scroll-me').slimScroll({
                 height: Math.max(300, $(window).height() - 450), distance: 0
             });
-
-            $('#daily-report-roll div.scroll-me').slimScroll({
-                height: Math.max(300, $(window).height() - 450), distance: 0
-            });
-
 
 
             $('.date-picker').datepicker(
@@ -396,6 +379,8 @@
         });
 
         function filter_resource() {
+            $('.se-pre-con').fadeIn('slow');
+
             var query = '?eid=' + $('#client-engagements').selectpicker('val') +
                 '&month=' + $('#current-month').val() +
                 '&period=' + $('#period').selectpicker('val') + '&conid=' + $('#consultant-select').selectpicker('val');
@@ -405,13 +390,11 @@
         }
 
         function reset_select() {
+            $('.se-pre-con').fadeIn('slow');
             $('#filter-template').find('select.selectpicker').selectpicker('val', '');
             $('#filter-template').find('.date-picker').val("").datepicker("update");
             filter_resource();
         }
-
-
-
 
     </script>
 
@@ -474,22 +457,6 @@
         .panel-heading h3 {
             color:#17a2b8;
             font-size: 24px !important;
-        }
-
-
-        /* Paste this css to your style sheet file or under head tag */
-        /* This only works with JavaScript,
-        if it's not present, don't show loader */
-        .no-js #loader { display: none;  }
-        .js #loader { display: block; position: absolute; left: 100px; top: 0; }
-        .se-pre-con {
-            position: fixed;
-            left: 0px;
-            top: 0px;
-            width: 100%;
-            height: 100%;
-            z-index: 9999;
-            background: url("/img/Preloader.gif") center no-repeat #fff;
         }
 
 

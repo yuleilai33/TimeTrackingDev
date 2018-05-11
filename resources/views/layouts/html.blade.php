@@ -23,6 +23,9 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-icon.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon.png">
+    {{--diego start adding--}}
+    <link rel="stylesheet" href="/css/custom.css">
+    {{--end--}}
     <style>
         .group-client-name {
             font-size: 1.5em;
@@ -42,6 +45,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-flexdatalist/2.2.2/jquery.flexdatalist.min.js"></script>
+{{--Diego start adding--}}
+{{--preloader--}}
+<script src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.2/modernizr.js"></script>
 @yield('my-js')
 @yield('filter-module')
 </body>
