@@ -112,7 +112,7 @@
                                     id="period" title="&#xf024; Period"
                                     data-live-search="true">
                                 <option value="1month"  {{Request('period')=="1month"?'selected':''}} style="font-size: 1.1em">One Month</option>
-                                <option value="2months" selected {{Request('period')=="2months"?'selected':''}} style="font-size: 1.1em">Two Months</option>
+                                <option value="2months" {{Request('period')!="1month"?'selected':''}} style="font-size: 1.1em">Two Months</option>
                             </select>
                             <i>&nbsp;</i>
                             <a href="javascript:filter_resource();" type="button" class="btn btn-info btn-sm"
@@ -147,7 +147,8 @@
                                         </tr>
                                         <tr>
                                             <th style="width: 4%;">#</th>
-                                            <th style="width: 16%;">Client</th>
+                                            <th style="width: 16%;">Client <a href="javascript:filter_resource();">&nbsp;<i
+                                                            class="fa fa-refresh" aria-hidden="true"></i></a></th>
                                             <th style="width: 8%;">Last Period</th>
                                             <th style="width: 8%;">This Period</th>
                                             <th style="width: 8%;">Change</th>
