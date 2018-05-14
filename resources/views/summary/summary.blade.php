@@ -159,6 +159,35 @@
                                             <th style="width: 8%;">This Period</th>
                                             <th style="width: 8%;">Change</th>
                                         </tr>
+                                        <tr>
+                                            {{--row to show total--}}
+                                            @php $totalLastPeriodBill =0 ; $totalCurrentPeriodBill=0;@endphp
+                                            @foreach($clients as $client)
+                                                @php
+                                                    $totalLastPeriodBill += $client->engagementBill($startDate,$lastEnd)[0];
+                                                    $totalCurrentPeriodBill += $client->engagementBill($currentStart,$endDate)[0];
+                                                @endphp
+                                            @endforeach
+                                            <th></th>
+                                            <th></th>
+                                            <th><i class="badge bg-warning">{{number_format($lastPeriodHoursByClient->sum(),2)}} h</i></th>
+                                            <th><i class="badge bg-warning">{{number_format($currentPeriodHoursByClient->sum(),2)}} h</i></th>
+                                            <th><i class="badge {{($currentPeriodHoursByClient->sum() - $lastPeriodHoursByClient->sum()) < 0 ? 'bg-danger':'bg-warning'}}">
+                                                    {{($currentPeriodHoursByClient->sum() - $lastPeriodHoursByClient->sum()) < 0?
+                                                    '('.number_format(abs($currentPeriodHoursByClient->sum() - $lastPeriodHoursByClient->sum()),2).')' :
+                                                    number_format(($currentPeriodHoursByClient->sum() - $lastPeriodHoursByClient->sum()),2)}} h
+                                                </i></th>
+                                            <th><i class="badge bg-warning">$ {{number_format($lastPeriodPayByClient->sum(),0)}}</i></th>
+                                            <th><i class="badge bg-warning">$ {{number_format($currentPeriodPayByClient->sum(),0)}}</i></th>
+                                            <th><i class="badge {{($currentPeriodPayByClient->sum()- $lastPeriodPayByClient->sum())<0 ? 'bg-danger':'bg-warning'}}">
+                                                    $ {{($currentPeriodPayByClient->sum()- $lastPeriodPayByClient->sum())<0 ? '('.number_format(abs($currentPeriodPayByClient->sum()- $lastPeriodPayByClient->sum()),0).')'
+                                            : number_format(($currentPeriodPayByClient->sum()- $lastPeriodPayByClient->sum()),0)}}</i></th>
+                                            <th><i class="badge bg-warning">$ {{number_format($totalLastPeriodBill),0}}</i></th>
+                                            <th><i class="badge bg-warning">$ {{number_format($totalCurrentPeriodBill),0}}</i></th>
+                                            <th><i class="badge {{($totalCurrentPeriodBill - $totalLastPeriodBill)<0 ? 'bg-danger':'bg-warning'}}">
+                                                    $ {{ ($totalCurrentPeriodBill - $totalLastPeriodBill)<0 ? '('.number_format(abs($totalCurrentPeriodBill - $totalLastPeriodBill),0).')'
+                                            : number_format($totalCurrentPeriodBill - $totalLastPeriodBill,0)}}</i></th>
+                                        </tr>
                                 </thead>
                             </table>
                                 <div class="scroll-me">
@@ -413,6 +442,7 @@
 
         .summary-table tr:first-child th:nth-child(n+4),
         .summary-table tr:nth-child(2) th:nth-child(n+6):nth-child(3n+3),
+        .summary-table tr:nth-child(3) th:nth-child(n+6):nth-child(3n+3),
         .summary-table>tbody>tr>td:nth-child(n+6):nth-child(3n+3)
         {
             border-left: 2px solid #ddd !important;
