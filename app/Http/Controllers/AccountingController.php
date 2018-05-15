@@ -463,7 +463,7 @@ class AccountingController extends Controller
     private function setExcelProperties($excel, $title)
     {
         $excel->setTitle($title)
-            ->setCreator('Hao Xiong')
+            ->setCreator('Diego Li')
             ->setCompany('New Life CFO')
             ->setDescription('The filtering condition is in file name');
     }

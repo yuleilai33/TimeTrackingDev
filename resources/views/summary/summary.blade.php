@@ -33,7 +33,7 @@
 
 
                             <div class="panel-footer">
-                                <table class="table table-responsive table-hover" style="margin-bottom: 0">
+                                <table class="table table-responsive table-hover" id="daily-report-table-header" style="margin-bottom: 0">
                                     <thead>
                                     <tr>
                                         <th style="width: 10%;">Report Date</th>
@@ -43,6 +43,19 @@
                                         <th style="width: 10%;">Billing</th>
                                         <th style="width: 15%;">Task</th>
                                         <th style="width: 35%;">Description</th>
+                                        <div class="pull-right excel-button daily-report-download"><a
+                                        href="javascript:void(0)"
+                                        type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>
+                                        </div>
+                                    </tr>
+                                    <tr>
+                                        <th style="width: 10%;"></th>
+                                        <th style="width: 10%;"><i class="badge bg-warning total-billable-hour"></i></th>
+                                        <th style="width: 10%;"><i class="badge bg-warning total-nonbillable-hour"></i></th>
+                                        <th style="width: 10%;"><i class="badge bg-warning total-pay"></i></th>
+                                        <th style="width: 10%;"><i class="badge bg-warning total-billing"></i></th>
+                                        <th style="width: 15%;"></th>
+                                        <th style="width: 35%;"></th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -293,8 +306,8 @@
                                                 <tr class="treegrid-{{$consultantGrid}} treegrid-parent-{{$engagementGrid}} consultant-level collapse"
                                                     data-engagement-group="engagement-{{$engagementGrid}}" data-consultant-group="consultant-{{$consultantGrid}}">
                                                     <td></td>
-                                                    <td data-toggle="modal" data-target="#daily-report-modal" data-consultant="{{$arrange->consultant->fullname()}}"
-                                                        data-hours="{{$hours ->where('arrangement_id', $arrange->id)}}" data-client="{{$client->name}}" data-engagement="{{$eng->name}}">
+                                                    <td data-toggle="modal" data-target="#daily-report-modal" data-consultant="{{$arrange->consultant->fullname()}}" data-id="{{$arrange->consultant_id}}"
+                                                        data-hours="{{$hours ->where('arrangement_id', $arrange->id)}}" data-client="{{$client->name}}" data-engagement="{{$eng->name}}" data-engagementid="{{$eng->id}}">
                                                         <a href="javascript:void(0)">{{$arrange->consultant->fullname()}}</a></td>
                                                     <td>{{number_format($lastPeriodHours, 2)}}</td>
                                                     <td>{{number_format($currentPeriodHours, 2)}}</td>
@@ -348,6 +361,7 @@
                 $(".summary-table tr[data-consultant-group='" + group +"']").removeClass('in').find('td:nth-child(2)>i').removeClass('fa-minus').addClass('fa-plus');
             });
 
+
             $(".consultant-level>td:nth-child(2)").on('click', function () {
 
                 $('#daily-report-table > tbody > tr').remove();
@@ -356,10 +370,19 @@
                 var consultantName = $(this).data('consultant');
                 var clientName = $(this).data('client');
                 var engagementName = $(this).data('engagement');
+                var consultantId = $(this).data('id');
+                var engagementId = $(this).data('engagementid');
 
                 $('#consultant-name strong').text(consultantName);
                 $('#client-engagement strong').text(clientName+' - '+engagementName);
+                var url = "{{route('summary',array_add(Request::except('eid','conid'),'file','excel'),false)}}"+"&eid=" + engagementId+ "&conid="+consultantId;
+                url = url.replace(/&amp;/g, '&');
+                $('.daily-report-download>a').attr("href", url);
 
+                var totalBillableHours=0;
+                var totalNonbillableHours=0;
+                var totalPay=0;
+                var totalBilling=0;
 
                 $.each(hours, function(index,hour){
                     var date = hour.report_date;
@@ -368,17 +391,28 @@
                     var nonbillableHours = parseFloat(hour.non_billable_hours||0).toFixed(2);
                     var description = (hour.description || '');
                     var task_desctription = ( hour.task_description || '');
-                    var pay = '$ ' + parseFloat(hour.payment||0).toFixed(2);
-                    var bill = '$ ' + parseFloat(hour.billing||0).toFixed(2);
+                    var pay =parseFloat(hour.payment||0).toFixed(2);
+                    var bill =parseFloat(hour.billing||0).toFixed(2);
 
                     $('#daily-report-table > tbody:last-child').append("<tr><td style='width: 10%;'>" + report_date + "</td>" +
-                        "<td style='width: 10%;'>" + billableHours + "</td><td style='width: 10%;'>" + nonbillableHours + "</td><td style='width: 10%;'>" + pay +
-                        "</td><td style='width: 10%;'>" + bill + "</td><td style='width: 15%;' title='"+task_desctription+"'>" + task_desctription +
+                        "<td style='width: 10%;'>" + billableHours + "</td><td style='width: 10%;'>" + nonbillableHours + "</td><td style='width: 10%;'>" +'$ ' + pay +
+                        "</td><td style='width: 10%;'>" + '$ ' + bill + "</td><td style='width: 15%;' title='"+task_desctription+"'>" + task_desctription +
                         "</td><td style='width: 35%;' title='" +description+"'>" + description + "</td></tr>");
 
+                    totalBillableHours += parseFloat(billableHours);
+                    totalNonbillableHours += parseFloat(nonbillableHours);
+                    totalPay += parseFloat(pay);
+                    totalBilling += parseFloat(bill);
                 });
 
+                console.log(totalBillableHours);
+                $('#daily-report-table-header .total-billable-hour').text(totalBillableHours.toFixed(2) +' h');
+                $('#daily-report-table-header .total-nonbillable-hour').text(totalNonbillableHours.toFixed(2) +' h');
+                $('#daily-report-table-header .total-pay').text('$ '+ totalPay.toFixed(2));
+                $('#daily-report-table-header .total-billing').text('$ '+totalBilling.toFixed(2));
+
             });
+
 
             $('.scroll-me').slimScroll({
                 height: Math.max(300, $(window).height() - 450), distance: 0
