@@ -404,8 +404,7 @@
                     totalPay += parseFloat(pay);
                     totalBilling += parseFloat(bill);
                 });
-
-                console.log(totalBillableHours);
+                
                 $('#daily-report-table-header .total-billable-hour').text(totalBillableHours.toFixed(2) +' h');
                 $('#daily-report-table-header .total-nonbillable-hour').text(totalNonbillableHours.toFixed(2) +' h');
                 $('#daily-report-table-header .total-pay').text('$ '+ totalPay.toFixed(2));
