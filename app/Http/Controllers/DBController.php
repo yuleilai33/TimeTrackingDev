@@ -19,8 +19,13 @@ class DbController extends Controller{
     public function test(){
 
 
+        $a=[1,2,3];
+        $b=array('total'=>0, 'engs'=>array(1,2));
+        $b['engs']=array_merge($b['engs'],[4]);
 
-        $b= Hour::first()->toArray();
+
+
+
 
         dd($b);
     }
