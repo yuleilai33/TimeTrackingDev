@@ -177,6 +177,8 @@ return [
         newlifecfo\Providers\EventServiceProvider::class,
         newlifecfo\Providers\RouteServiceProvider::class,
 
+//        for TCPDF
+        Elibyy\TCPDF\ServiceProvider::class,
     ],
 
     /*
@@ -226,6 +228,8 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
+//        for TCPDF
+        'PDF' => Elibyy\TCPDF\Facades\TCPDF::class,
     ],
 
 ];
