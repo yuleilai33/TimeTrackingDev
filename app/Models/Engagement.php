@@ -134,6 +134,7 @@ class Engagement extends Model
 
     public function NonHourBilling($start = null, $end = null, $review_state = null)
     {
+//        it wont bill to the client if there is no hour reported at all in that engagement
         if ($this->paying_cycle == 1 && $this->hasReported($review_state)) {
             $start_day = Carbon::parse($this->start_date);
             $start = Carbon::parse($start ?: '1970-01-01');

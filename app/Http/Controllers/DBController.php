@@ -11,23 +11,17 @@ use newlifecfo\User;
 use newlifecfo\Models\Survey;
 use newlifecfo\Models\SurveyAssignment;
 use newlifecfo\Models\Hour;
+use Carbon\Carbon;
 
 
 
 class DbController extends Controller{
 
-    public function test(){
+    public function Test()
+    {
+//        it wont bill to the client if there is no hour reported at all in that engagement
 
 
-        $a=[1,2,3];
-        $b=array('total'=>0, 'engs'=>array(1,2));
-        $b['engs']=array_merge($b['engs'],[4]);
-
-
-
-
-
-        dd($b);
     }
 
 
