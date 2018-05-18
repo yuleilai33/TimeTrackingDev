@@ -16,6 +16,11 @@ use Mail;
 use newlifecfo\Models\SurveyResult;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
+use codeagent\treemap\Treemap;
+use codeagent\treemap\presenter\NodeInfo;
+use codeagent\treemap\presenter\NodeContent;
+use codeagent\treemap\presenter\ImagePresenter;
+use codeagent\treemap\presenter\CanvasPresenter;
 
 
 class SurveyController extends Controller
@@ -335,14 +340,16 @@ class SurveyController extends Controller
 
     public function createReport(Survey $survey, Request $request)
     {
+        $questionCategories = SurveyQuescategory::all()->pluck('name', 'id')->toArray();
+        $scale = [1 => 'Never', 2 => 'Sporadic', 3 => 'Usually', 4 => 'Always'];
+
         if($request->file == 'excel') {
-            return Excel::create($this->filename($survey), function ($excel) use ($survey) {
+            return Excel::create($this->filename($survey), function ($excel) use ($survey, $questionCategories, $scale) {
                 $this->setExcelProperties($excel, 'Vision to Action Report', $survey);
 
 //                create the summary sheet
-                $excel->sheet('Summary', function ($sheet) use ($survey) {
+                $excel->sheet('Summary', function ($sheet) use ($survey,$questionCategories) {
                     $rowNum = 1;
-                    $questionCategories = SurveyQuescategory::all()->pluck('name', 'id')->toArray();
 
                     $sheet->freezeFirstRow()
 //                        questionCategories Id matches the calculateTotalByCategory Id below
@@ -476,11 +483,9 @@ class SurveyController extends Controller
                 });
 //
 //                create the detail response sheet
-                $excel->sheet('Detailed Responses', function ($sheet) use ($survey) {
+                $excel->sheet('Detailed Responses', function ($sheet) use ($survey, $questionCategories,$scale) {
 
                     $rowNum = 1;
-                    $questionCategories = SurveyQuescategory::all()->pluck('name', 'id')->toArray();
-                    $scale = [1 => 'Never', 2 => 'Sporadic', 3 => 'Usually', 4 => 'Always'];
 
                     $completedAssignments = $survey->surveyAssignments->where('completed', 1);
 
@@ -852,9 +857,165 @@ class SurveyController extends Controller
             })->export('xlsx');
         } elseif ($request->file == 'pdf'){
 
-            PDF::SetTitle('Sample PDF');
-            PDF::AddPage();
-            PDF::Output('SamplePDF.pdf');
+//            set the common info
+            $clientName = $survey -> engagement -> client -> name;
+
+            $this->setPDFProperties($clientName);
+            $this->setHeader();
+            $this->setFooter();
+
+//        pdf section for all responses
+            PDF::addPage();
+
+            foreach ($questionCategories as $id => $name ){
+                $questionIds = SurveyQuestion::all() -> whereIn('survey_quescategory_id',$id)->pluck('id')->toArray();
+
+                foreach ($scale as $score => $description){
+                    $totalByCategoryByScore[$id][$score]=0;
+
+                    foreach ($questionIds as $questionId){
+//                        use this function to count the number who has answer the question with specific score
+                    $totalByCategoryByScore[$id][$score] += $this->excelSection(null,null,$score,'number',$survey,$questionId);
+                    }
+                }
+            }
+
+
+//            $html = <<<EOF
+//<!-- CSS STYLE -->
+//            <style>
+//                .title {
+//                    text-align: center;
+//                    color: navy;
+//                    font-family: times;
+//                    /*font-size: 24pt;*/
+//                    /*text-decoration: underline;*/
+//                }
+//                p.category-title {
+//                    color: black;
+//                    font-family: helvetica;
+//                    font-weight: bold;
+//                    font-size: 12pt;
+//                }
+//
+//                .treemap-1{
+//
+//                    background-color: orangered;
+//                    width: 50%;
+//
+//                }
+//
+//            </style>
+//
+//            <h2 class="title"><i>Overview - All Responses by Category</i></h2>
+//
+//            <p class="category-title">1. Direction Setting</p>
+//
+//EOF;
+            $style4 = array('L' => 0,
+                'T' => array('width' => 0.25, 'cap' => 'butt', 'join' => 'miter', 'dash' => '20,10', 'phase' => 10, 'color' => array(100, 100, 255)),
+                'R' => array('width' => 0.50, 'cap' => 'round', 'join' => 'miter', 'dash' => 0, 'color' => array(50, 50, 127)),
+                'B' => array('width' => 0.75, 'cap' => 'square', 'join' => 'miter', 'dash' => '30,10,5,10'));
+
+//            set the property for text field
+            PDF::setFormDefaultProp(array('lineWidth'=>1, 'borderStyle'=>'solid', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
+
+//            set section title
+            PDF::SetFont('times', 'I', 18);
+            PDF::SetTextColor(0,0,128);
+            PDF::Cell(0, 20, 'Overview - All Responses by Category', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+            PDF::Ln(10);
+
+            PDF::SetFont('helvetica', 'B', 12);
+            PDF::SetTextColor(0,0,0);
+            PDF::Cell(110, 10, '1. Direction Setting', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+
+            PDF::Ln(5);
+
+            PDF::SetFont('helvetica', '', 12);
+
+//            PDF::Rect(10, 50, 100, 80, 'DF', $style4, array(220, 220, 200));
+            PDF::SetFillColor(220, 220, 200);
+            PDF::MultiCell(60, 60, 'Number', 1, 'C', 1, 0, 10, 50, true, 0, false, true, 40, 'M');
+//            PDF::Rect(10, 50, 60, 60, 'DF', $style4, array(220, 220, 200));
+            PDF::Rect(10, 110, 70, 20, 'DF', $style4, array(233,255,255));
+            PDF::Rect(70, 50, 10, 60, 'DF', $style4, array(255, 128, 128));
+            PDF::Rect(80, 50, 30, 80, 'DF', $style4, array(50, 50, 127));
+
+            PDF::TextField('Narrative', 80, 80, array('multiline'=>true), array('v'=>'Please type here'),115,50);
+
+            PDF::SetY(PDF::GetY()+70);
+
+            PDF::Ln(19);
+            PDF::SetFont('helvetica', 'B', 12);
+            PDF::SetTextColor(0,0,0);
+            PDF::Cell(110, 10, '2. Goal Planning', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+
+            $data=[
+                0 =>
+                    ['id' => '1',
+                        'name' => 'Never',
+                        'value' => 8],
+
+                1 =>
+                    ['id' => '2',
+                        'name' => 'Sporadic',
+                        'value' => 2],
+
+                2 =>
+                    ['id' => '3',
+                        'name' => 'Usually',
+                        'value' => 3],
+
+                3 =>
+                    ['id' => '4',
+                        'name' => 'Always',
+                        'value' => 12]
+
+
+
+            ];
+            header("Content-Type: image/png");
+            $img= Treemap::image($data, 1200, 800,"png")->render(function (NodeInfo $node) {
+                if($node->isLeaf()) {
+                    if($node->id()=='2'){
+                        $data = $node->data();
+                        $node->background('#87cefa');
+                        $node
+                            ->content()
+                            ->size(30)
+                            ->color('#000000')
+                            ->align(NodeContent::ALIGN_LEFT)
+                            ->valign(NodeContent::VALIGN_TOP)
+                            ->text($data['name'],20,20);
+                        $node
+                            ->content()
+                            ->size(25)
+                            ->align(NodeContent::ALIGN_LEFT)
+                            ->color('#000000')
+                            ->text($data['value'],50,60);}
+                }
+            });
+//            $img  = imagecreatefrompng($file);
+//            imagepng($img);
+            file_put_contents(storage_path('app/treemap/testing.png'),$img);
+            array_map('unlink', glob("path/to/temp/*"));
+
+//            PDF::SetXY(110, 200);
+//            PDF::Image($img, '', '', 40, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+
+
+
+
+
+// output the HTML content
+//            PDF::writeHTML($html, true, 0, true, 0);
+
+
+//            PDF::Output('Vision to Actions_'.$clientName.'.pdf','D');
         }
 
         return null;
@@ -983,6 +1144,43 @@ class SurveyController extends Controller
         return null;
 
     }
+
+//    start adding function for pdf
+    private function setHeader()
+    {
+        PDF::setHeaderCallback (function($pdf){
+            $NewLifeLogo = public_path().'/img/logo-newlife.jpg';
+            $pdf->Image($NewLifeLogo, 0, 5, 35, 20, 'jpg', '', 'T', true, 300, 'L', false, false, 0, false, false, false);
+            $pdf->SetFont('helvetica', 'B', 24);
+            $pdf->Cell(0, 20, 'Vision to Actions - CEO Report', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+        });
+    }
+
+    private function setFooter()
+    {
+        PDF::setFooterCallback (function($pdf){
+            // Position at 15 mm from bottom
+            $pdf->SetY(-12);
+            // Set font
+            $pdf->SetFont('helvetica', 'I', 8);
+            // Page number
+            $pdf->Cell(0, 10, 'Page '.$pdf->getAliasNumPage().'/'.$pdf->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            $pdf->Cell(0, 10, "Powered by New Life CFO Services", 0, false, 'R', 0, '', 0, false, 'T', 'M');
+        });
+    }
+
+    private function setPDFProperties($clientName)
+    {
+        // set document information
+        PDF::SetCreator('New Life CFO');
+        PDF::SetAuthor('New Life CFO');
+        PDF::SetTitle('Vision to Actions Report - '.$clientName);
+
+        PDF::SetMargins(5, 30, 5);
+        PDF::setAutoPageBreak(true,14.7);
+
+    }
+
 
 
 }
