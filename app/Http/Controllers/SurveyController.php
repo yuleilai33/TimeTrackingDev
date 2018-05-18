@@ -1330,28 +1330,28 @@ EOF;
                     'name' => 'Never',
                     'value' => $value[1],
                     'color' => '#FF0000',
-                    'fade' => '#FF6D6D'],
+                    'fade' => '#FFB5B5'],
 //            node for number of people answer sporadic
             1 =>
                 ['id' => '2',
                     'name' => 'Sporadic',
                     'value' => $value[2],
                     'color' => '#FFFF00',
-                    'fade' => '#FFFFA0'],
+                    'fade' => '#FFFFCC'],
 //            node for number of people answer usually
             2 =>
                 ['id' => '3',
                     'name' => 'Usually',
                     'value' => $value[3],
                     'color' => '#00FF00',
-                    'fade' => '#B7FFB7'],
+                    'fade' => '#D8FFD8'],
 //            node for number of people answer always
             3 =>
                 ['id' => '4',
                     'name' => 'Always',
                     'value' => $value[4],
                     'color' => '#7030A0',
-                    'fade' => '#927EA0']
+                    'fade' => '#9990A0']
 
         ];
 
