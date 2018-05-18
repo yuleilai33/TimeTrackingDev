@@ -26,30 +26,33 @@ class DbController extends Controller{
     public function Test()
     {
 
-        $data=[
-            0 =>
-                ['id' => '1',
-                'name' => 'Never',
-                'value' => 8],
+        $a=[1,2,3,4];
+        dd($a[0+2]);
 
-            1 =>
-                ['id' => '2',
-                    'name' => 'Sporadic',
-                    'value' => 2],
-
-            2 =>
-                ['id' => '3',
-                    'name' => 'Usually',
-                    'value' => 3],
-
-            3 =>
-                ['id' => '4',
-                    'name' => 'Always',
-                    'value' => 12]
-
-
-
-        ];
+//        $data=[
+//            0 =>
+//                ['id' => '1',
+//                'name' => 'Never',
+//                'value' => 8],
+//
+//            1 =>
+//                ['id' => '2',
+//                    'name' => 'Sporadic',
+//                    'value' => 2],
+//
+//            2 =>
+//                ['id' => '3',
+//                    'name' => 'Usually',
+//                    'value' => 3],
+//
+//            3 =>
+//                ['id' => '4',
+//                    'name' => 'Always',
+//                    'value' => 12]
+//
+//
+//
+//        ];
 
 
 
@@ -72,27 +75,27 @@ class DbController extends Controller{
 //        $gradient = self::gradient(0);
 //        $min = self::min($data, 'float');
 //        $max = self::max($data, 'float');
-        header("Content-Type: image/png");
-        echo Treemap::image($data, 1200, 800)->render(function (NodeInfo $node) {
-            if($node->isLeaf()) {
-                if($node->id()=='2'){
-                    $data = $node->data();
-                    $node->background('#87cefa');
-                    $node
-                        ->content()
-                        ->size(30)
-                        ->color('#000000')
-                        ->align(NodeContent::ALIGN_LEFT)
-                        ->valign(NodeContent::VALIGN_TOP)
-                        ->text($data['name'],20,20);
-                    $node
-                        ->content()
-                        ->size(25)
-                        ->align(NodeContent::ALIGN_LEFT)
-                        ->color('#000000')
-                        ->text($data['value'],50,60);}
-            }
-        });
+//        header("Content-Type: image/png");
+//        echo Treemap::image($data, 1200, 800)->render(function (NodeInfo $node) {
+//            if($node->isLeaf()) {
+//                if($node->id()=='2'){
+//                    $data = $node->data();
+//                    $node->background('#87cefa');
+//                    $node
+//                        ->content()
+//                        ->size(30)
+//                        ->color('#000000')
+//                        ->align(NodeContent::ALIGN_LEFT)
+//                        ->valign(NodeContent::VALIGN_TOP)
+//                        ->text($data['name'],20,20);
+//                    $node
+//                        ->content()
+//                        ->size(25)
+//                        ->align(NodeContent::ALIGN_LEFT)
+//                        ->color('#000000')
+//                        ->text($data['value'],50,60);}
+//            }
+//        });
 
 //        dd($presenter->render());
 //        return view('surveys.test');

@@ -1,6 +1,7 @@
 <?php
 
 namespace newlifecfo\Http\Controllers;
+ini_set('max_execution_time', 180);
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -864,9 +865,8 @@ class SurveyController extends Controller
             $this->setHeader();
             $this->setFooter();
 
-//        pdf section for all responses
-            PDF::addPage();
 
+//            count by category by score
             foreach ($questionCategories as $id => $name ){
                 $questionIds = SurveyQuestion::all() -> whereIn('survey_quescategory_id',$id)->pluck('id')->toArray();
 
@@ -878,144 +878,284 @@ class SurveyController extends Controller
                     $totalByCategoryByScore[$id][$score] += $this->excelSection(null,null,$score,'number',$survey,$questionId);
                     }
                 }
+
+//                create tree map
+                $filename='treemap_total_quescategory_'.$id;
+                $this->treemap($totalByCategoryByScore[$id],$filename);
             }
 
 
-//            $html = <<<EOF
-//<!-- CSS STYLE -->
-//            <style>
-//                .title {
-//                    text-align: center;
-//                    color: navy;
-//                    font-family: times;
-//                    /*font-size: 24pt;*/
-//                    /*text-decoration: underline;*/
-//                }
-//                p.category-title {
-//                    color: black;
-//                    font-family: helvetica;
-//                    font-weight: bold;
-//                    font-size: 12pt;
-//                }
-//
-//                .treemap-1{
-//
-//                    background-color: orangered;
-//                    width: 50%;
-//
-//                }
-//
-//            </style>
-//
-//            <h2 class="title"><i>Overview - All Responses by Category</i></h2>
-//
-//            <p class="category-title">1. Direction Setting</p>
-//
-//EOF;
-            $style4 = array('L' => 0,
-                'T' => array('width' => 0.25, 'cap' => 'butt', 'join' => 'miter', 'dash' => '20,10', 'phase' => 10, 'color' => array(100, 100, 255)),
-                'R' => array('width' => 0.50, 'cap' => 'round', 'join' => 'miter', 'dash' => 0, 'color' => array(50, 50, 127)),
-                'B' => array('width' => 0.75, 'cap' => 'square', 'join' => 'miter', 'dash' => '30,10,5,10'));
-
 //            set the property for text field
-            PDF::setFormDefaultProp(array('lineWidth'=>1, 'borderStyle'=>'solid', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
+            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
+//            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(255,255,255), 'strokeColor'=>array(255, 255, 255)));
+//          pdf section for all responses
+
+            for ($i=1;$i<4;$i++) {
+
+                PDF::addPage();
+
+//            set section title
+                PDF::SetFont('times', 'I', 18);
+                PDF::SetTextColor(0, 0, 128);
+                PDF::Cell(0, 20, 'Overview - All Responses by Category', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+                PDF::Ln(10);
+
+//            set category title
+                PDF::SetFont('helvetica', 'B', 12);
+                PDF::SetTextColor(0, 0, 0);
+                PDF::Cell(110, 10, $i.'. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
+//            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+
+                PDF::SetFont('helvetica', '', 12);
+
+//            image for direction setting
+                PDF::Image(storage_path('app/treemap/treemap_total_quescategory_'.$i.'.png'), 10, 55, 100, 80, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+
+                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 80, array('multiline' => true), array('v' => 'Narrative: '), 115, 55);
+
+                PDF::SetY(PDF::GetY() + 80);
+
+                $i++; //start second second on the page
+
+//            set second category title
+                PDF::Ln(19);
+                PDF::SetFont('helvetica', 'B', 12);
+                PDF::SetTextColor(0, 0, 0);
+                PDF::Cell(110, 10, $i.'. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
+//            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
+
+                PDF::SetFont('helvetica', '', 12);
+
+//            image for Planning Activities & Quantifying Expected Outcomes
+                PDF::Image(storage_path('app/treemap/treemap_total_quescategory_'.$i.'.png'), 10, 170, 100, 80, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+
+                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 80, array('multiline' => true), array('v' => 'Narrative: '), 115, 170);
+            }
+
+
+//            pdf section for detail section
+
+            foreach ($questionCategories as $id => $name ) {
+                $questions = SurveyQuestion::all()->whereIn('survey_quescategory_id', $id)->pluck('description','id')->toArray();
+                foreach ($scale as $score => $description){
+                    foreach ($questions as $questionId => $questionName){
+//                        use this function to count the number who has answer the question with specific score
+                        $totalByQuestionByScore[$questionId][$score] = $this->excelSection(null,null,$score,'number',$survey,$questionId);
+                    }
+                }
+
+                PDF::addPage();
+
+//            set section title
+
+                PDF::SetFont('times', 'I', 18);
+                PDF::SetTextColor(0, 0, 128);
+                PDF::Cell(0, 20, $name, 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+                PDF::Ln(15);
+                PDF::SetFont('helvetica', '', 12);
+                PDF::setCellHeightRatio(2);
+
+                $key1=key($questions);
+                $key2=$key1+4;
+                $key3=$key2+4;
+                $key4=$key3+4;
+
+
+//            table section: score by question
+                $html = <<<EOF
+<!-- EXAMPLE OF CSS STYLE -->
+                <style>
+
+                    table.first {
+                        color: #003300;
+                        font-family: helvetica;
+                        font-size: 12pt;
+                        border: 3px solid green;
+                        background-color: #ccffcc;
+                    }
+                    td.not-gap {
+                        border: 2px solid blue;
+                        background-color: #ffffee;
+                    }
+                </style>
+              
+                
+                <table class="first" cellpadding="4" cellspacing="6">
+                 <tr>
+                  <td class="not-gap" width="50%" align="left"><b>Questions:</b></td>
+                  <td width="6%" ></td>
+                  <td class="not-gap" width="9%" align="center"><b>Never</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>Sporadic</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>Usually</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>Always</b></td>
+                 </tr>
+                 <tr>
+                  <td class="not-gap" width="50%" align="left"><b>Q{$key1}. {$questions[$key1]}</b></td>
+                  <td width="6%" ></td>
+                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key1][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key1][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key1][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key1][4]}</b></td>
+                 </tr>                 
+                 <tr>
+                  <td class="not-gap" width="50%" align="left"><b>Q{$key2}. {$questions[$key2]}</b></td>
+                  <td width="6%" ></td>
+                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key2][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key2][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key2][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key2][4]}</b></td>
+                 </tr>                 
+                 <tr>
+                  <td class="not-gap" width="50%" align="left"><b>Q{$key3}. {$questions[$key3]}</b></td>
+                  <td width="6%" ></td>
+                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key3][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key3][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key3][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key3][4]}</b></td>
+                 </tr>                 
+                 <tr>
+                  <td class="not-gap" width="50%" align="left"><b>Q{$key4}. {$questions[$key4]}</b></td>
+                  <td width="6%" ></td>
+                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key4][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key4][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][4]}</b></td>
+                 </tr>
+                </table>
+EOF;
+
+// output the HTML content
+                PDF::writeHTML($html, true, false, true, false, '');
+
+                PDF::TextField('Narrative_Details_'.$key1, 190, 60, array('multiline' => true), array('v' => 'Narrative: '), 10, '');
+            }
+
+//            pdf section deeper detail level
+//            the response by each staff category
+
+            $completedAssignments = $survey->surveyAssignments->where('completed', 1);
+
+            $emplcategoryIDs = $completedAssignments->sortBy('survey_emplcategory_id')->pluck('survey_emplcategory_id')->unique()->toArray();
+
+            foreach ($emplcategoryIDs as $emplcategoryID){
+
+                PDF::addPage();
+
+                $emplcategory=SurveyEmplcategory::find($emplcategoryID)->name;
+
+//            set section title
+                PDF::SetFont('times', 'I', 18);
+                PDF::SetTextColor(0, 0, 128);
+                PDF::Cell(0, 20, 'Responses from '.$emplcategory, 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+                PDF::Ln(15);
+
+                foreach ($questionCategories as $id => $name ) {
+                    $questions = SurveyQuestion::all()->whereIn('survey_quescategory_id', $id)->pluck('description', 'id')->toArray();
+                        foreach ($questions as $questionId => $questionName) {
+                            foreach ($scale as $score => $description) {
+//                        use this function to count the number who has answer the question with specific score
+                            $totalByEmplcategoryByQuestionByScore[$questionId][$score] = $this->excelSection(null, $emplcategoryID, $score, 'number', $survey, $questionId);
+                        }
+                            //                create tree map
+                            $filename='treemap_emplcategory_'.$emplcategoryID.'_question_'.$questionId;
+                            $this->treemap($totalByEmplcategoryByQuestionByScore[$questionId],$filename,true);
+                    }
+                }
+
+//                treemap section for direct setting for this emplcategory
+                //            set category title
+
+                PDF::SetFont('helvetica', 'B', 12);
+                PDF::SetTextColor(0, 0, 0);
+
+                $y=55;
+                for($i=1;$i<=4;$i++) {
+
+                    PDF::Cell(110, 10, $i . '. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
+
+//            image for direction setting
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . $i . '.png'), 10, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 4) . '.png'), 59, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 8) . '.png'), 108, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 12) . '.png'), 157, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+
+                    PDF::Ln(50);
+
+                    $y += 60;
+                }
+
+//                PDF::Cell(110, 10, $row.'. ' . $questionCategories[$row], 0, false, 'L', 0, '', 0, false, 'T', 'M');
+////
+//////            image for direction setting
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.$row.'.png'), 10, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+4).'.png'), 59, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+8).'.png'), 108, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+12).'.png'), 157, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//
+
+
+
+            }
+
+
+
+
+//            pdf section: causes and recommendations
+            PDF::addPage();
 
 //            set section title
             PDF::SetFont('times', 'I', 18);
-            PDF::SetTextColor(0,0,128);
-            PDF::Cell(0, 20, 'Overview - All Responses by Category', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+            PDF::SetTextColor(0, 0, 128);
+            PDF::Cell(0, 20, 'Causes & Solutions', 0, false, 'C', 0, '', 0, false, 'T', 'T');
 
-            PDF::Ln(10);
-
-            PDF::SetFont('helvetica', 'B', 12);
-            PDF::SetTextColor(0,0,0);
-            PDF::Cell(110, 10, '1. Direction Setting', 0, false, 'L', 0, '', 0, false, 'T', 'M');
-            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
-
-            PDF::Ln(5);
+            PDF::Ln(15);
 
             PDF::SetFont('helvetica', '', 12);
 
-//            PDF::Rect(10, 50, 100, 80, 'DF', $style4, array(220, 220, 200));
-            PDF::SetFillColor(220, 220, 200);
-            PDF::MultiCell(60, 60, 'Number', 1, 'C', 1, 0, 10, 50, true, 0, false, true, 40, 'M');
-//            PDF::Rect(10, 50, 60, 60, 'DF', $style4, array(220, 220, 200));
-            PDF::Rect(10, 110, 70, 20, 'DF', $style4, array(233,255,255));
-            PDF::Rect(70, 50, 10, 60, 'DF', $style4, array(255, 128, 128));
-            PDF::Rect(80, 50, 30, 80, 'DF', $style4, array(50, 50, 127));
+            PDF::TextField('Narrative_Causes', 190, 100, array('multiline' => true), array('v' => 'Causes: '), 10, '');
 
-            PDF::TextField('Narrative', 80, 80, array('multiline'=>true), array('v'=>'Please type here'),115,50);
+            PDF::Ln(115);
 
-            PDF::SetY(PDF::GetY()+70);
+            PDF::TextField('Narrative_Solutions', 190, 100, array('multiline' => true), array('v' => 'Recommended Solutions: '), 10, '');
 
-            PDF::Ln(19);
-            PDF::SetFont('helvetica', 'B', 12);
-            PDF::SetTextColor(0,0,0);
-            PDF::Cell(110, 10, '2. Goal Planning', 0, false, 'L', 0, '', 0, false, 'T', 'M');
-            PDF::Cell(0, 10, 'Narrative:', 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
-            $data=[
-                0 =>
-                    ['id' => '1',
-                        'name' => 'Never',
-                        'value' => 8],
+//            pdf possible section: interview
+            PDF::addPage();
 
-                1 =>
-                    ['id' => '2',
-                        'name' => 'Sporadic',
-                        'value' => 2],
+//            set section title
+            PDF::SetFont('times', 'I', 18);
+            PDF::SetTextColor(0, 0, 128);
+            PDF::Cell(0, 20, 'Key Comments & Staff Observation', 0, false, 'C', 0, '', 0, false, 'T', 'T');
 
-                2 =>
-                    ['id' => '3',
-                        'name' => 'Usually',
-                        'value' => 3],
+            PDF::Ln(15);
 
-                3 =>
-                    ['id' => '4',
-                        'name' => 'Always',
-                        'value' => 12]
+            PDF::SetFont('helvetica', '', 12);
+
+            PDF::TextField('Narrative_Interview_Quescategory_1', 190, 50, array('multiline' => true), array('v' => $questionCategories[1].': '), 10, '');
+
+            PDF::Ln(60);
+
+            PDF::TextField('Narrative_Interview_Quescategory_2', 190, 50, array('multiline' => true), array('v' => $questionCategories[2].': '), 10, '');
+
+            PDF::Ln(60);
+
+            PDF::TextField('Narrative_Interview_Quescategory_3', 190, 50, array('multiline' => true), array('v' => $questionCategories[3].': '), 10, '');
+
+            PDF::Ln(60);
+
+            PDF::TextField('Narrative_Interview_Quescategory_4', 190, 50, array('multiline' => true), array('v' => $questionCategories[4].': '), 10, '');
 
 
 
-            ];
-            header("Content-Type: image/png");
-            $img= Treemap::image($data, 1200, 800,"png")->render(function (NodeInfo $node) {
-                if($node->isLeaf()) {
-                    if($node->id()=='2'){
-                        $data = $node->data();
-                        $node->background('#87cefa');
-                        $node
-                            ->content()
-                            ->size(30)
-                            ->color('#000000')
-                            ->align(NodeContent::ALIGN_LEFT)
-                            ->valign(NodeContent::VALIGN_TOP)
-                            ->text($data['name'],20,20);
-                        $node
-                            ->content()
-                            ->size(25)
-                            ->align(NodeContent::ALIGN_LEFT)
-                            ->color('#000000')
-                            ->text($data['value'],50,60);}
-                }
-            });
-//            $img  = imagecreatefrompng($file);
-//            imagepng($img);
-            file_put_contents(storage_path('app/treemap/testing.png'),$img);
-            array_map('unlink', glob("path/to/temp/*"));
+//
+            PDF::Output('Vision to Actions_'.$clientName.'.pdf','D');
 
-//            PDF::SetXY(110, 200);
-//            PDF::Image($img, '', '', 40, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//            erase imgae files after generating pdf
+            $this -> eraseFiles();
 
-
-
-
-
-// output the HTML content
-//            PDF::writeHTML($html, true, 0, true, 0);
-
-
-//            PDF::Output('Vision to Actions_'.$clientName.'.pdf','D');
         }
 
         return null;
@@ -1179,6 +1319,137 @@ class SurveyController extends Controller
         PDF::SetMargins(5, 30, 5);
         PDF::setAutoPageBreak(true,14.7);
 
+    }
+
+    private function treemap($value,$filename, $small=null)
+    {
+        $data=[
+//            node for number of people answer never
+            0 =>
+                ['id' => '1',
+                    'name' => 'Never',
+                    'value' => $value[1],
+                    'color' => '#FF0000',
+                    'fade' => '#FF6D6D'],
+//            node for number of people answer sporadic
+            1 =>
+                ['id' => '2',
+                    'name' => 'Sporadic',
+                    'value' => $value[2],
+                    'color' => '#FFFF00',
+                    'fade' => '#FFFFA0'],
+//            node for number of people answer usually
+            2 =>
+                ['id' => '3',
+                    'name' => 'Usually',
+                    'value' => $value[3],
+                    'color' => '#00FF00',
+                    'fade' => '#B7FFB7'],
+//            node for number of people answer always
+            3 =>
+                ['id' => '4',
+                    'name' => 'Always',
+                    'value' => $value[4],
+                    'color' => '#7030A0',
+                    'fade' => '#927EA0']
+
+        ];
+
+        if($small){
+            $size=100;
+            $x=120;
+            $y=115;
+        } else{
+            $size=50;
+            $x=70;
+            $y=75;
+        }
+
+//            use for display treemap on the browser
+//            header("Content-Type: image/png");
+        $img=Treemap::image($data, 1200, 800,"png")->render(function (NodeInfo $node) use($size,$x,$y) {
+
+            if($node->id()=='0'){
+                $data = $node->data();
+                $node->background($data['color']);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->color('#000000')
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->valign(NodeContent::VALIGN_TOP)
+                    ->text($data['name'],20,20);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->color('#000000')
+                    ->text($data['value'],$x,$y);
+            }
+
+            if($node->id()=='1'){
+                $data = $node->data();
+                $node->background($data['fade']);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->color('#000000')
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->valign(NodeContent::VALIGN_TOP)
+                    ->text($data['name'],20,20);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->color('#000000')
+                    ->text($data['value'],$x,$y);
+            }
+
+            if($node->id()=='2'){
+                $data = $node->data();
+                $node->background($data['fade']);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->color('#000000')
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->valign(NodeContent::VALIGN_TOP)
+                    ->text($data['name'],20,20);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->color('#000000')
+                    ->text($data['value'],$x,$y);
+            }
+
+            if($node->id()=='3'){
+                $data = $node->data();
+                $node->background($data['fade']);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->color('#000000')
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->valign(NodeContent::VALIGN_TOP)
+                    ->text($data['name'],20,20);
+                $node
+                    ->content()
+                    ->size($size)
+                    ->align(NodeContent::ALIGN_LEFT)
+                    ->color('#000000')
+                    ->text($data['value'],$x,$y);
+            }
+
+        });
+
+        file_put_contents(storage_path('app/treemap/'.$filename.'.png'),$img);
+
+    }
+
+    private function eraseFiles()
+    {
+        array_map('unlink', glob(storage_path('app/treemap/*')));
     }
 
 
