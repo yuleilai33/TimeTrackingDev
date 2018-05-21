@@ -42,6 +42,8 @@ class AdminController extends Controller
                 return $this->taskAdmin();
             case 'industry':
                 return $this->industryAdmin();
+            case 'summary':
+                return $this->viewSummary($request);
         }
         return view('admin.miscellaneous');
     }
@@ -181,6 +183,11 @@ class AdminController extends Controller
         } else {
             return app(AccountingController::class)->index($request, true, $resource == 'payroll');
         }
+    }
+
+    private function viewSummary($request)
+    {
+        return app(SummaryController::class)->index($request, true);
     }
 
 }

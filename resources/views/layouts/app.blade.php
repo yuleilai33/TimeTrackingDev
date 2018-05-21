@@ -158,7 +158,7 @@
                                                     Engagement</a></li>
                                             <li><a href="/admin/bp"
                                                    {{--02/19/2018 Diego changed the name from Payroll & Billing to View Payroll & Billing--}}
-                                                   class="{{Request::is('admin/bp')||Request::is('admin/bill')||Request::is('admin/payroll')?'active':''}}">View Payroll & Billing</a>
+                                                   class="{{Request::is('admin/bp')||Request::is('admin/bill')||Request::is('admin/payroll')||Request::is('admin/summary')?'active':''}}">View Payroll & Billing</a>
                                             </li>
                                             {{--02/19/2018 Diego changed the name from Users to Manage Users--}}
                                             <li><a href="/admin/user" class="{{Request::is('admin/user') ?'active':''}}">Manage User</a>

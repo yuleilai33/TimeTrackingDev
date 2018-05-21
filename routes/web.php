@@ -71,7 +71,7 @@ Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('res
 Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');
 
 //start adding route for summary page
-Route::get('/summary', 'SummaryController@index')->name('summary');
+//Route::get('/summary', 'SummaryController@index')->name('summary');
 
 // route for on demand task
 Route::get('task/payroll','TaskController@exportPayroll');

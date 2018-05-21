@@ -375,7 +375,7 @@
 
                 $('#consultant-name strong').text(consultantName);
                 $('#client-engagement strong').text(clientName+' - '+engagementName);
-                var url = "{{route('summary',array_add(Request::except('eid','conid'),'file','excel'),false)}}"+"&eid=" + engagementId+ "&conid="+consultantId;
+                var url = "{{url()->current().'?'.http_build_query(array_add(Request::except('eid','conid'),'file','excel'))}}"+"&eid=" + engagementId+ "&conid="+consultantId;
                 url = url.replace(/&amp;/g, '&');
                 $('.daily-report-download>a').attr("href", url);
 
@@ -448,7 +448,7 @@
                 '&month=' + $('#current-month').val() +
                 '&period=' + $('#period').selectpicker('val') + '&conid=' + $('#consultant-select').selectpicker('val');
 
-                window.location.href = "{{'summary'}}" + query;
+                window.location.href = "summary" + query;
 
         }
 

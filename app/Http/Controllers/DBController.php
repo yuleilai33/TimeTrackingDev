@@ -26,8 +26,8 @@ class DbController extends Controller{
     public function Test()
     {
 
-        $a=[1,2,3,4];
-        dd($a[0+2]);
+        $url = url()->current();
+        dd($url);
 
 //        $data=[
 //            0 =>

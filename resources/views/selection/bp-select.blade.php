@@ -13,7 +13,7 @@
                 <div class="panel-body no-padding">
                     <div class="select-bp row">
                         <div class="col-md-4">
-                            <a href="{{route('summary')}}" title="View Summary Report"><img src="/img/summary_report.png"
+                            <a href="summary" title="View Summary Report"><img src="/img/summary_report.png"
                                                                                    alt="Summary Report"
                                                                                    width="90px"></a>
                             <br>

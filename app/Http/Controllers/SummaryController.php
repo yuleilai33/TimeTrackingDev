@@ -17,12 +17,11 @@ class SummaryController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('verifiedConsultant');
-        $this->middleware('supervisor');
     }
 
     const ACCOUNTING_FORMAT = '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)';
 
-    public function index(Request $request)
+    public function index(Request $request, $isAdmin=false)
     {
 
 //        date condition
