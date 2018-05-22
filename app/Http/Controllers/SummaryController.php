@@ -23,8 +23,12 @@ class SummaryController extends Controller
 
     public function index(Request $request, $isAdmin=false)
     {
-
 //        date condition
+        $user=Auth::user();
+        $currentConsultant=$user->consultant;
+        $access=false;
+        if($user->isLeaderCandidate()||$user->isSupervisor()) $access=true;
+
         if ($request->month) {
             $currentMonth = date('Y-m-01', strtotime(str_replace('/', '-', '01/' . $request->month)));
         } else {
@@ -45,10 +49,65 @@ class SummaryController extends Controller
             $endDate = date("Y-m-t", strtotime($currentMonth));
         }
 
+        if($isAdmin){
 
-        $hours = Hour::reported($startDate, $endDate, $eids, $consultant, null, null);
+            $clients = Client::all()->sortBy('name');
+            $filter_consultants=Consultant::recognized();
+            $filter_engagements=Engagement::groupedByClient($consultant);
+
+        } else {
+//                lead can only see the clients and engagements he is the lead
+            $leadEngagements=$currentConsultant->lead_engagements()->withTrashed()->get();
+            $leadEngagementIds=$leadEngagements->pluck('id')->toArray();
+            $clientIds=$leadEngagements->pluck('client_id')->unique();
+            $clients= Client::all()->whereIn('id',$clientIds)->sortBy('name');
+            if (!$request->eid) {
+                $eids=$leadEngagementIds;
+            } else {
+//                only show the engagement where the consultant is lead when the engagement is selected
+                $eids=array_intersect($eids,$leadEngagementIds);
+            }
+            $filter_consultants=$currentConsultant->lead_engagements->map(function($item){
+               return $item->arrangements->map(function($arrange){
+                   return $arrange->consultant;
+               });
+            })->collapse()->unique()->sortBy('first_name');
+
+            $filter_engagements=$currentConsultant->lead_engagements->sortBy(function($item){
+                return $item->client->name;
+            })->mapToGroups(function ($item, $key) {
+                return [$item->client_id => [$item->id, $item->name]];
+            });
+
+        }
+
+        $hours = $eids ? Hour::reported($startDate, $endDate, $eids, $consultant, null, null):
+            Hour::reported($startDate, $endDate, [0], $consultant, null, null);
+
+        //        get clients in the filtered hours
+        $filterByConsultant = false;
+        $filterByEngagement = false;
+
+        if ($request->conid) {
+            $clients = $hours->map(function ($item) {
+                return $item->client()->withTrashed()->first();
+            })->unique();
+            $filterByConsultant = true;
+        }
+
+
+        if ($request->eid) {
+
+            $clientIds = array();
+            foreach ($eids as $eid) {
+                $clientIds[] = Engagement::find($eid)->client_id;
+            }
+            $clients = $clients->whereIn('id', $clientIds);
+            $filterByEngagement = true;
+        }
 
         //        filter section end
+
         if ($file == 'excel') {
 
             $engagement = Engagement::find($eids[0]);
@@ -87,29 +146,6 @@ class SummaryController extends Controller
                 $currentPeriodHours = $hours->where('report_date', '>=', $currentStart)->where('report_date', '<=', $endDate);
 
             }
-
-//        get clients in the filtered hours
-            $filterByConsultant = false;
-            $filterByEngagement = false;
-
-            $clients = Client::all()->sortBy('name');
-            if ($request->conid) {
-                $clients = $hours->map(function ($item) {
-                    return $item->client()->withTrashed()->first();
-                })->unique();
-                $filterByConsultant = true;
-            }
-
-            if ($request->eid) {
-
-                $clientIds = array();
-                foreach ($eids as $eid) {
-                    $clientIds[] = Engagement::find($eid)->client_id;
-                }
-                $clients = $clients->whereIn('id', $clientIds);
-                $filterByEngagement = true;
-            }
-
 
 //        Also include deleted arrangements and engagements
 //        $arrangements = $hours -> map(function($item){
@@ -209,10 +245,10 @@ class SummaryController extends Controller
 //            return $item->consultant()->withTrashed()->first();
 //        })-> unique();
 //         for filter
-            $clientIds = Engagement::groupedByClient($consultant);
+
 
             return view('summary.summary', compact('hours', 'clients', 'startDate', 'endDate', 'currentStart', 'lastEnd',
-                'clientIds', 'eids', 'filterByConsultant', 'filterByEngagement',
+                'clientIds', 'eids', 'filterByConsultant', 'filterByEngagement','isAdmin','access','filter_consultants','filter_engagements',
                 'lastPeriodHoursByClient', 'currentPeriodHoursByClient', 'lastPeriodHoursByEngagement', 'currentPeriodHoursByEngagement',
                 'lastPeriodHoursByArrangement', 'currentPeriodHoursByArrangement', 'lastPeriodPayByClient', 'currentPeriodPayByClient',
                 'lastPeriodPayByEngagement', 'currentPeriodPayByEngagement', 'lastPeriodPayByArrangement', 'currentPeriodPayByArrangement',

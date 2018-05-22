@@ -224,9 +224,20 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-4">
+
                     <h3 class="page-title"
                         style="margin: auto;">{{$manage?'Engagements I lead':($admin?'Engagement Pool':'Engagements I\'m in')}}
-                        (total {{$engagements->total()}})</h3>
+                        (total {{$engagements->total()}})
+                        @if($manage)
+                            <a href="{{route('summary')}}" class="btn btn-warning"><i class="fa fa-copy">
+                            Summary Report</i></a>
+                        @endif
+                    </h3>
+                    {{--@if($manage)--}}
+                        {{--<a href="javascript:void(0)" class="btn btn-success"><i class="fa fa-cubes">--}}
+                            {{--Summary Report</i></a>--}}
+                    {{--@endif--}}
+
                 </div>
                 <div class="col-md-8">
                     <div class="form-inline pull-right" style="font-family:FontAwesome;" id="filter-selection">

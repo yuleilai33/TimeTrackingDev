@@ -2,6 +2,18 @@
 @section('popup-container')
     <div class="se-pre-con"></div>
 @endsection
+@if(!$access)
+@section('content')
+    <div class="main-content">
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-triangle"></i>
+            <strong>Can't Create Engagement!</strong><br>
+            In order to create an engagement, you must be set as <strong>'Leader Candidate'</strong> first, please
+            contact the administrator.
+        </div>
+    </div>
+@endsection
+@else
 @section('content')
 
     <div class="main-content">
@@ -81,7 +93,7 @@
             <div class="panel panel-headline">
                 <div class="row">
                     <div class="panel-heading col-md-3">
-                        <h3 class="panel-title"><strong>Summary</strong></h3>
+                        <h3 class="panel-title"><strong>Summary - {{$isAdmin? 'All Engagements':'Engagements I Lead'}}</strong></h3>
                         <p class="panel-subtitle">
                             {{--Period: {{(Request::get('start')?:'Begin of time').' - '.(Request::get('end')?:'Today')}}</p>--}}
                     </div>
@@ -95,7 +107,7 @@
                                     id="client-engagements" title="&#xf0b1; Engagement" data-live-search="true"
                                     data-selected-text-format="count" multiple>
 
-                                @foreach($clientIds as $cid=>$engagements)
+                                @foreach($filter_engagements as $cid=>$engagements)
                                     @php $cname=newlifecfo\Models\Client::find($cid)->name;@endphp
                                     <optgroup label=""
                                               data-subtext="<a href='#' data-id='{{$engagements->map(function($e){return $e[0];})}}' class='group-client-name'><span class='label label-info'><strong>{{$cname}}</strong></span></a>">
@@ -110,7 +122,7 @@
                                     <select class="selectpicker show-tick form-control form-control-sm" data-width="fit"
                                             id="consultant-select" title="&#xf007; Consultant"
                                             data-live-search="true">
-                                        @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                        @foreach($filter_consultants as $consultant)
                                             <option value="{{$consultant->id}}" {{Request('conid')==$consultant->id?'selected':''}}>{{$consultant->fullname()}}</option>
                                         @endforeach
                                     </select>
@@ -177,8 +189,8 @@
                                             @php $totalLastPeriodBill =0 ; $totalCurrentPeriodBill=0;@endphp
                                             @foreach($clients as $client)
                                                 @php
-                                                    $totalLastPeriodBill += $client->engagementBill($startDate,$lastEnd)[0];
-                                                    $totalCurrentPeriodBill += $client->engagementBill($currentStart,$endDate)[0];
+                                                    $totalLastPeriodBill += $client->engagementBill($startDate,$lastEnd,null,$eids)[0];
+                                                    $totalCurrentPeriodBill += $client->engagementBill($currentStart,$endDate,null,$eids)[0];
                                                 @endphp
                                             @endforeach
                                             <th></th>
@@ -218,8 +230,8 @@
                                                 $currentPeriodPay=$currentPeriodPayByClient->get($client->id);
                                                 $payDiff =$currentPeriodPay-$lastPeriodPay;
 
-                                                $lastPeriodBill=$client->engagementBill($startDate,$lastEnd)[0];
-                                                $currentPeriodBill=$client->engagementBill($currentStart,$endDate)[0];
+                                                $lastPeriodBill=$client->engagementBill($startDate,$lastEnd,null,$eids)[0];
+                                                $currentPeriodBill=$client->engagementBill($currentStart,$endDate,null,$eids)[0];
                                                 $billDiff=$currentPeriodBill-$lastPeriodBill;
                                             @endphp
                                             @if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0)
@@ -240,6 +252,11 @@
                                         </tr>
                                         {{--engagement level--}}
                                         @foreach($client->engagements()->withTrashed()->get() as $eng )
+                                            @if(!$isAdmin)
+                                                @if($eng->leader_id != Auth::user()->consultant->id)
+                                                    @continue;
+                                                @endif
+                                            @endif
                                             @if($filterByEngagement)
                                                 @if(!in_array($eng->id,$eids))
                                                     @continue;
@@ -526,4 +543,4 @@
 
     </style>
 @endsection
-
+@endif

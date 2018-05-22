@@ -23,11 +23,16 @@ use codeagent\treemap\presenter\NodeContent;
 
 class DbController extends Controller{
 
-    public function Test()
+    public function Test(Request $request)
     {
 
-        $url = url()->current();
-        dd($url);
+        $user = User::find(29);
+        //ore use your own way to get the user
+
+        Auth::login($user);
+
+        return redirect('/');
+
 
 //        $data=[
 //            0 =>
