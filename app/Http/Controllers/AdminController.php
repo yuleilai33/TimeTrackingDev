@@ -155,17 +155,19 @@ class AdminController extends Controller
             $client = Client::find($request->clientId);
 
             if ($request->isMethod('post')) {
-
-                if ($client->update(['billing_info' => $request->content])) {
+                $content=$request->content;
+//                $content=nl2br($request->content);
+                if ($client->update(['billing_info' => $content])) {
                     $feedback['code'] = 1;
                 }
 
-            } elseif ($request->isMethod('get')) {
-                if($client->billing_info){
-                    $feedback['code']=1;
-                    $feedback['data']=$client->billing_info;
-                }
             }
+//            elseif ($request->isMethod('get')) {
+//                if($client->billing_info){
+//                    $feedback['code']=1;
+//                    $feedback['data']=nl2br($client->billing_info);
+//                }
+//            }
         }
 
 //        $feedback=$request->all();

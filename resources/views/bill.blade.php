@@ -236,7 +236,7 @@
                                             <td>{{++$index}}</td>
                                             <td>
                                                 <a href="{{str_replace_first('/','',route('bill',array_add(Request::except('cid','eid','page'),'cid',$client->id),false))}}">{{$client->name}}</a>
-                                                &nbsp&nbsp&nbsp<a href="javascript:void(0);" title="billing info" class="billing-info" ref="popover" data-client="{{$cid}}" data-desc="{{$client->billing_info}}"><i
+                                                &nbsp&nbsp&nbsp<a href="javascript:void(0);" title="billing info" class="billing-info" ref="popover" data-client="{{$cid}}" data-desc="{{nl2br($client->billing_info)}}"><i
                                                             class="fa fa-exclamation{{$client->billing_info? ' filled':''}}" aria-hidden="true"></i></a></td>
                                             </td>
                                             <td>{{$hrs[$cid][0]}}</td>
@@ -296,6 +296,8 @@
                 html: true,
                 content: function () {
                     var content = $(this).data("desc") === undefined ? '' : $(this).data("desc");
+                    var regex = /<br\s*[\/]?>/gi;
+                    content=content.replace(regex, "\n");
                     return '<form action="" id="billing-info-form">' +
                         '<textarea class="notebook" id="notebook" rows="8" cols="70" name="content" required>' + content + '</textarea>'
                         +'<div class="modal-footer">'
@@ -304,7 +306,9 @@
                         +'</form>';
                 }
             }).on('shown.bs.popover', function() {
-                $('.popover').find("#notebook").focus();
+                /*set the focus to the last word*/
+                var data = $('.popover').find("#notebook").val();
+                $('.popover').find("#notebook").focus().val('').val(data);
 
             }).on('click', function (e) {
                 $('[ref="popover"]').each(function () {
@@ -324,7 +328,6 @@
             $(document).on('submit','#billing-info-form',function(e){
                 e.preventDefault();
                 formdata=$(this).serializeArray();
-
                 formdata.push({name: '_token', value: '{{csrf_token()}}'},
                     {name:'clientId',value:clientId},
                     {name: '_method', value: 'POST'});
@@ -401,6 +404,10 @@
 
         .filled {
             color:red !important;
+        }
+
+        .notebook {
+            white-space: pre-wrap;
         }
 
 
