@@ -44,6 +44,8 @@ class AdminController extends Controller
                 return $this->industryAdmin();
             case 'summary':
                 return $this->viewSummary($request);
+            case 'client_billing_info':
+                return $this->clientBillingInfo($request);
         }
         return view('admin.miscellaneous');
     }
@@ -144,6 +146,31 @@ class AdminController extends Controller
             }
         }
         return view('admin.clients', ['client' => $client, 'feedback' => $feedback]);
+    }
+
+    private function clientBillingInfo($request)
+    {
+        $feedback['code']=0;
+        if($request->clientId) {
+            $client = Client::find($request->clientId);
+
+            if ($request->isMethod('post')) {
+
+                if ($client->update(['billing_info' => $request->content])) {
+                    $feedback['code'] = 1;
+                }
+
+            } elseif ($request->isMethod('get')) {
+                if($client->billing_info){
+                    $feedback['code']=1;
+                    $feedback['data']=$client->billing_info;
+                }
+            }
+        }
+
+//        $feedback=$request->all();
+        return json_encode($feedback);
+
     }
 
     private function positionAdmin()

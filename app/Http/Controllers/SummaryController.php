@@ -81,6 +81,7 @@ class SummaryController extends Controller
 
         }
 
+//        intersect eids could be null and return all the hours. so need to address
         $hours = $eids ? Hour::reported($startDate, $endDate, $eids, $consultant, null, null):
             Hour::reported($startDate, $endDate, [0], $consultant, null, null);
 

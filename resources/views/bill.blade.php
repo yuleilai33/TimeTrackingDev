@@ -236,6 +236,8 @@
                                             <td>{{++$index}}</td>
                                             <td>
                                                 <a href="{{str_replace_first('/','',route('bill',array_add(Request::except('cid','eid','page'),'cid',$client->id),false))}}">{{$client->name}}</a>
+                                                &nbsp&nbsp&nbsp<a href="javascript:void(0);" title="billing info" class="billing-info" ref="popover" data-client="{{$cid}}" data-desc="{{$client->billing_info}}"><i
+                                                            class="fa fa-exclamation{{$client->billing_info? ' filled':''}}" aria-hidden="true"></i></a></td>
                                             </td>
                                             <td>{{$hrs[$cid][0]}}</td>
                                             <td>{{$hrs[$cid][1]}}</td>
@@ -264,6 +266,93 @@
                     autoclose: true
                 }
             );
+
+            /*hide and show the content area so users wont feel the collapse-expand flash*/
+            /*save for learning, return data from controller instead of getting it using ajax; using ajax is slow and will
+            load data after the page is shown to the user*/
+           /* $('.billing-info').each(function(){
+                var cid;
+                cid=$(this).data('client');
+                var element=this;
+                $.get({
+                    url:'/admin/client_billing_info?clientId='+cid,
+                    dataType: 'json',
+                    success: function(feedback){
+                        var desc;
+                        if(feedback.code===1){
+                            desc=feedback.data;
+                            $(element).data('desc',desc);
+                            $(element).find('.fa-exclamation').addClass('filled');
+                        }
+                    }
+                });
+            });
+            */
+
+            $('.main-content').popover({
+                placement: 'right',
+                container: '.main-content',
+                selector: '[ref="popover"]',
+                html: true,
+                content: function () {
+                    var content = $(this).data("desc") === undefined ? '' : $(this).data("desc");
+                    return '<form action="" id="billing-info-form">' +
+                        '<textarea class="notebook" id="notebook" rows="8" cols="70" name="content" required>' + content + '</textarea>'
+                        +'<div class="modal-footer">'
+                        +'<button type="submit" class="btn btn-primary pull-right" data-loading-text="Sending info..">Save</button>'
+                        +'</div>'
+                        +'</form>';
+                }
+            }).on('shown.bs.popover', function() {
+                $('.popover').find("#notebook").focus();
+
+            }).on('click', function (e) {
+                $('[ref="popover"]').each(function () {
+                    if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                        $(this).popover('hide');
+                    }
+                });
+            });
+
+
+            var clientId;
+            $('[ref="popover"]').on('click', function(){
+                clientId = $(this).data('client');
+            });
+
+            var formdata;
+            $(document).on('submit','#billing-info-form',function(e){
+                e.preventDefault();
+                formdata=$(this).serializeArray();
+
+                formdata.push({name: '_token', value: '{{csrf_token()}}'},
+                    {name:'clientId',value:clientId},
+                    {name: '_method', value: 'POST'});
+
+                $.ajax({
+                    type: "POST",
+                    url: '/admin/client_billing_info',
+                    dataType:'json',
+                    data: formdata,
+                    success: function(feedback) {
+                        if(feedback.code===1){
+                        swal({title: 'Info has been saved!', text:'', type: "success"},
+                            function () {
+                                location.reload();
+                        });} else if (feedback===0){
+                            swal({title: 'Can\'t save! Unknown Error', text:'', type: "danger"});
+                        }
+                    },
+                    error:function() {
+                        swal({title: 'Can\'t save! Unknown Error', text:'', type: "danger"})
+                    },
+                    complete: function () {
+                        $('[ref="popover"]').popover('hide');
+                    }
+
+                });
+               return false;
+            });
         });
 
     </script>
@@ -303,6 +392,17 @@
             opacity: 0.5;
             filter: alpha(opacity=50);
         }
+
+        .fa-exclamation {
+            color:grey;
+            font-size:1.2em;
+
+        }
+
+        .filled {
+            color:red !important;
+        }
+
 
     </style>
 @endsection
