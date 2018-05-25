@@ -122,14 +122,7 @@ class HomeController extends Controller
             $dates['startOfLast2'] = Carbon::parse('first day of last month')->startOfDay();
             $dates['endOfLast2'] = Carbon::parse('first day of last month')->addDays(14)->endOfDay();
         }
-
-//        for testing
-        $dates['startOfLast'] = Carbon::parse('first day of this month')->subMonth(3)->startOfDay();
-        $dates['endOfLast'] = Carbon::parse('first day of this month')->subMonth(3)->addDays(14)->endOfDay();
-        $dates['startOfLast2'] = Carbon::parse('first day of last month')->subMonth(3)->addDays(15)->startOfDay();
-        $dates['endOfLast2'] = Carbon::parse('last day of last month')->subMonth(3)->endOfDay();
-//        end
-
+        
         for ($i = 12; $i > 0; $i--) {
             $dates['mon'][Carbon::now()->startOfMonth()->subMonth($i)->format('y-M')] = [0, 0];
         }
