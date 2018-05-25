@@ -1,5 +1,7 @@
 @extends('layouts.app')
-
+@section('popup-container')
+    <div class="se-pre-con"></div>
+@endsection
 @section('content')
     <div class="main-content">
         <div class="container-fluid">
@@ -91,6 +93,62 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-md-12">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Hours: {{$hours['start'].' - '.$hours['end']}}</h3>
+                            <div class="right">
+                                <button type="button" class="btn-toggle-collapse"><i class="lnr lnr-chevron-up"></i>
+                                </button>
+                                <button type="button" class="btn-remove"><i class="lnr lnr-cross"></i></button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="form-inline pull-right form-group-sm" id="filter-template" style="font-family:FontAwesome;">
+                                    <a href="javascript:reset_select();" class="btn btn-default form-control form-control-sm"
+                                       title="Reset all condition"><i class="fa fa-refresh" aria-hidden="true"></i></a>
+                                    <i>&nbsp;</i>
+                                    @if($isAdmin)
+                                        <i>&nbsp;</i>
+                                        <select class="selectpicker show-tick form-control form-control-sm" data-width="fit"
+                                                id="consultant-select" title="&#xf007; Consultant"
+                                                data-live-search="true">
+                                            @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                                <option value="{{$consultant->id}}" {{Request('conid')==$consultant->id?'selected':''}}>{{$consultant->fullname()}}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                    {{--<i>&nbsp;</i>--}}
+                                    {{--show graphic on different interval--}}
+                                    {{--<select class="selectpicker show-tick form-control form-control-sm" data-width="fit"--}}
+                                            {{--id="period" title="&#xf024; Period"--}}
+                                            {{--data-live-search="true">--}}
+                                        {{--<option value="1month"  {{Request('period')=="1month"?'selected':''}} style="font-size: 1.1em">One Month</option>--}}
+                                        {{--<option value="2months" {{Request('period')!="1month"?'selected':''}} style="font-size: 1.1em">Two Months</option>--}}
+                                    {{--</select>--}}
+                                    <i>&nbsp;</i>
+                                    <input class="date-picker form-control " id="current-month" size="10" data-width="fit"
+                                           placeholder="&#xf073; Month"
+                                           value="{{Request('month')?: date('m/Y',strtotime('now'))}}"
+                                           type="text"/>
+                                    <i>&nbsp;</i>
+                                    <a href="javascript:filter_resource();" type="button" class="btn btn-info btn-sm"
+                                       id="filter-button">Filter</a>
+                                    <i>&nbsp;</i>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                            <div id="hours-chart" class="ct-chart"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-md-6">
                     <div class="panel">
                         <div class="panel-heading">
@@ -161,6 +219,16 @@
 @section('my-js')
     <script>
         $(function () {
+            $('.date-picker').datepicker(
+                {
+                    format: 'mm/yyyy',
+                    viewMode: "months",
+                    minViewMode: "months",
+                    todayHighlight: true,
+                    autoclose: true
+                }
+            );
+
             var data, options;
             data = {
                 labels: [
@@ -173,7 +241,7 @@
                         '{{$earn}}',
                     @endforeach
                 ], [@foreach($data['last_b'] as $b)
-                    '{{$b*15}}',
+                    '{{$b*10}}',
                     @endforeach]]
             };
             options = {
@@ -200,7 +268,7 @@
                 }, {
                     name: 'series-hours',
                     data: [@foreach($data['dates']['mon'] as $amount)
-                        '{{$amount[0]*15}}',
+                        '{{$amount[0]*10}}',
                         @endforeach],
                 }]
             };
@@ -231,7 +299,64 @@
                 }
             };
             new Chartist.Line('#income-hours-chart', data, options);
+
+            data={
+                labels: [
+                    @foreach($hours['hours'] as $day=>$earn)
+                        '{{$day}}',
+                    @endforeach
+                ],
+                series: [[
+                        @foreach($hours['hours'] as $hour)
+                            {meta: 'Billable Hours', value:'{{$hour[0]}}'},
+                        @endforeach], [@foreach($hours['hours'] as $hour)
+                            {meta: 'Non-billable Hours', value:'{{$hour[1]}}'},
+                        @endforeach]
+                ]
+            };
+
+            options={
+                stackBars: true,
+                height: "300px",
+                plugins: [
+                    Chartist.plugins.tooltip()
+                ],
+                axisY: {
+                    showGrid: true
+
+                },
+                axisX: {
+                    showGrid: false
+                }
+            };
+
+            new Chartist.Bar('#hours-chart', data, options).on('draw', function(data) {
+                if(data.type === 'bar') {
+                    data.element.attr({
+                        style: 'stroke-width: 30px'
+                    });
+                }
+            });
+
         });
+
+        function filter_resource() {
+            $('.se-pre-con').fadeIn('slow');
+
+            var query = '?month=' + $('#current-month').val();
+            @if($isAdmin)
+                    query+='&conid=' + $('#consultant-select').selectpicker('val');
+                    @endif
+            window.location.href = "home" + query;
+
+        }
+
+        function reset_select() {
+            $('.se-pre-con').fadeIn('slow');
+            $('#filter-template').find('select.selectpicker').selectpicker('val', '');
+            $('#filter-template').find('.date-picker').val("").datepicker("update");
+            filter_resource();
+        }
     </script>
 @endsection
 @section('special-css')

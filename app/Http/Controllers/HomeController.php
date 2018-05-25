@@ -3,7 +3,9 @@
 namespace newlifecfo\Http\Controllers;
 
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Expense;
 use newlifecfo\Models\Hour;
 
@@ -25,12 +27,16 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $isAdmin=false;
+
         $data = ['dates' => $this->getDays(),
             'last_b' => [], 'last_nb' => [], 'last_earn' => [], 'eids' => [], 'total_last_b' => 0, 'total_last_earn' => 0, 'total_last2_earn' => 0, 'last_expense' => 0, 'last2_expense' => 0,
             'total_last_nb' => 0, 'last_buz_dev' => 0, 'last2_buz_dev' => 0, 'last_closings' => 0, 'last2_closings' => 0];
         $consultant = Auth::user()->consultant;
+
+        if(Auth::user()->isSupervisor()) $isAdmin=true;
 
         $lastSum = Hour::dailyHoursAndIncome($consultant, $data['dates']['startOfLast'], $data['dates']['endOfLast'], 1);
         foreach ($lastSum as $day => $amounts) {
@@ -93,9 +99,14 @@ class HomeController extends Controller
 
         //data for latest hour report
         $data['recent_hours'] = Hour::reported(null, null, null, $consultant, null)->take(5);
+
+//        get data for hour chart
+        $hours=$this->hourChart($request, $isAdmin);
+
 //            return json_encode($data);
-        return view('home', ['data' => $data]);
+        return view('home', ['data' => $data,'isAdmin'=>$isAdmin, 'hours'=>$hours]);
     }
+
 
     public function getDays()
     {
@@ -111,10 +122,47 @@ class HomeController extends Controller
             $dates['startOfLast2'] = Carbon::parse('first day of last month')->startOfDay();
             $dates['endOfLast2'] = Carbon::parse('first day of last month')->addDays(14)->endOfDay();
         }
+
+//        for testing
+        $dates['startOfLast'] = Carbon::parse('first day of this month')->subMonth(3)->startOfDay();
+        $dates['endOfLast'] = Carbon::parse('first day of this month')->subMonth(3)->addDays(14)->endOfDay();
+        $dates['startOfLast2'] = Carbon::parse('first day of last month')->subMonth(3)->addDays(15)->startOfDay();
+        $dates['endOfLast2'] = Carbon::parse('last day of last month')->subMonth(3)->endOfDay();
+//        end
+
         for ($i = 12; $i > 0; $i--) {
             $dates['mon'][Carbon::now()->startOfMonth()->subMonth($i)->format('y-M')] = [0, 0];
         }
         return $dates;
+
     }
+
+    private function hourChart($request, $isAdmin)
+    {
+        if($request->conid && $isAdmin){
+            $consultant=Consultant::find($request->conid);
+        } else {
+            $consultant=Auth::user()->consultant;
+        }
+
+        if ($request->month) {
+            $currentMonth = date('Y-m-01', strtotime(str_replace('/', '-', '01/' . $request->month)));
+        } else {
+            $currentMonth = date('Y-m-d', strtotime('now'));
+        }
+
+        $startDate = date("Y-m-01", strtotime($currentMonth));
+        $endDate = date("Y-m-t", strtotime($currentMonth));
+
+        $hours['hours'] = Hour::dailyHoursAndIncome($consultant, $startDate, $endDate, null) -> sortBy(function($item,$key){
+            return $key;
+        });
+        $hours['start']=date('m/d/y',strtotime($startDate));
+        $hours['end']=date('m/d/y',strtotime($endDate));
+
+        return $hours;
+
+    }
+
 
 }
