@@ -1142,7 +1142,7 @@ EOF;
 
                 PDF::SetTextColor(0, 0, 0);
                 PDF::SetFont('helvetica', '', 12);
-                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 125);
+                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 120);
 
                 //                set y for the cell
                 PDF::SetY(140);
@@ -1156,11 +1156,6 @@ EOF;
                 PDF::Cell(110, 10, $i.'. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
                 PDF::SetY(165);
-
-                $key1=$i;
-                $key2=$key1+4;
-                $key3=$key2+4;
-                $key4=$key3+4;
 
                 $html = <<<EOF
 <!-- EXAMPLE OF CSS STYLE -->
