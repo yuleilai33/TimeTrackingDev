@@ -1620,16 +1620,16 @@ EOF;
                 
                 <table class="first" cellpadding="4" cellspacing="6">
                  <tr>
-                  <td class="not-gap" width="10%" align="center" bgcolor="#ff746e"><b>Never</b></td>
+                  <td class="not-gap" width="11%" align="center" bgcolor="#ff746e"><b>Never</b></td>
                   <td class="not-gap" width="12%" align="center" bgcolor="#ffff8d"><b>Sporadic</b></td>
                   <td class="not-gap" width="11%" align="center" bgcolor="#53ff53"><b>Usually</b></td>
-                  <td class="not-gap" width="10%" align="center" bgcolor="#9c7dd4"><b>Always</b></td>
+                  <td class="not-gap" width="11%" align="center" bgcolor="#9c7dd4"><b>Always</b></td>
                  </tr>
                  <tr>
-                  <td class="not-gap" width="10%" align="center"><b>{$totalByScore[1]} ({$percent_never}%)</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[1]} ({$percent_never}%)</b></td>
                   <td class="not-gap" width="12%" align="center"><b>{$totalByScore[2]} ({$percent_sporadic}%)</b></td>
                   <td class="not-gap" width="11%" align="center"><b>{$totalByScore[3]} ({$percent_usually}%)</b></td>
-                  <td class="not-gap" width="10%" align="center"><b>{$totalByScore[4]} ({$percent_always}%)</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[4]} ({$percent_always}%)</b></td>
                  </tr>                 
                 </table>
 EOF;
