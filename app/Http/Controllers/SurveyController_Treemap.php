@@ -879,13 +879,15 @@ class SurveyController extends Controller
                     }
                 }
 
+//                create tree map
+                $filename='treemap_total_quescategory_'.$id;
+                $this->treemap($totalByCategoryByScore[$id],$filename);
             }
 
 
 //            set the property for text field
-//            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
-            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(255,255,255), 'strokeColor'=>array(255, 255, 255)));
-
+            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
+//            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(255,255,255), 'strokeColor'=>array(255, 255, 255)));
 //          pdf section for all responses
 
             for ($i=1;$i<4;$i++) {
@@ -907,23 +909,14 @@ class SurveyController extends Controller
 
                 PDF::SetFont('helvetica', '', 12);
 
-//                set the axis coordinate for pie chart
-                $xc=52.5;
-                $yc=90;
+//            image for direction setting
+                PDF::Image(storage_path('app/treemap/treemap_total_quescategory_'.$i.'.png'), 10, 55, 100, 80, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
 
-                $red=round($totalByCategoryByScore[$i][1]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $yellow=round($totalByCategoryByScore[$i][2]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $green=round($totalByCategoryByScore[$i][3]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $purple=360-$red-$yellow-$green;
+                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 80, array('multiline' => true), array('v' => 'Narrative: '), 115, 55);
 
-                $this->piechart($xc,$yc,$red,$yellow,$green,$purple,$totalByCategoryByScore[$i]);
+                PDF::SetY(PDF::GetY() + 80);
 
-                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 90, array('multiline' => true), array('v' => 'CFO Commentary: '), 115, 55);
-
-//                set y for the cell
-                PDF::SetY(140);
-
-                $i++; //start second part on the page
+                $i++; //start second second on the page
 
 //            set second category title
                 PDF::Ln(19);
@@ -934,20 +927,12 @@ class SurveyController extends Controller
 
                 PDF::SetFont('helvetica', '', 12);
 
-//              set the axis coordinate for pie chart
-                $xc=52.5;
-                $yc=210;
+//            image for Planning Activities & Quantifying Expected Outcomes
+                PDF::Image(storage_path('app/treemap/treemap_total_quescategory_'.$i.'.png'), 10, 170, 100, 80, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
 
-                $red=round($totalByCategoryByScore[$i][1]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $yellow=round($totalByCategoryByScore[$i][2]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $green=round($totalByCategoryByScore[$i][3]/array_sum($totalByCategoryByScore[$i]) * 360, 2);
-                $purple=360-$red-$yellow-$green;
-
-                $this->piechart($xc,$yc,$red,$yellow,$green,$purple,$totalByCategoryByScore[$i]);
-
-
-                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 90, array('multiline' => true), array('v' => 'CFO Commentary: '), 115, 170);
+                PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 80, array('multiline' => true), array('v' => 'Narrative: '), 115, 170);
             }
+
 
 //            pdf section for detail section
 
@@ -1038,22 +1023,13 @@ class SurveyController extends Controller
                   <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
                   <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][4]}</b></td>
                  </tr>
-                  <tr>
-                  <td class="not-gap" width="50%" align="left"><b>Total</b></td>
-                  <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByCategoryByScore[$id][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByCategoryByScore[$id][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByCategoryByScore[$id][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByCategoryByScore[$id][4]}</b></td>
-                 </tr>
                 </table>
 EOF;
 
 // output the HTML content
                 PDF::writeHTML($html, true, false, true, false, '');
 
-                PDF::SetTextColor(0, 0, 0);
-                PDF::TextField('Narrative_Details_'.$key1, 190, 50, array('multiline' => true), array('v' => 'CEO Commentary: '), 10, '');
+                PDF::TextField('Narrative_Details_'.$key1, 190, 60, array('multiline' => true), array('v' => 'Narrative: '), 10, '');
             }
 
 //            pdf section deeper detail level
@@ -1063,159 +1039,88 @@ EOF;
 
             $emplcategoryIDs = $completedAssignments->sortBy('survey_emplcategory_id')->pluck('survey_emplcategory_id')->unique()->toArray();
 
-            $allQuestionIDs=SurveyQuestion::all()->pluck('id')->toArray();
-
-            foreach ($allQuestionIDs as $id){
-                $bgcolor['CEO'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,null,1)));
-                $bgcolor['Executives'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,1,null)));
-                $bgcolor['Senior'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,2,null)));
-                $bgcolor['Staff'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,3,null)));
-                $bgcolor['Other'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,4,null)));
-            }
-
-            for ($i=1;$i<4;$i++) {
+            foreach ($emplcategoryIDs as $emplcategoryID){
 
                 PDF::addPage();
+
+                $emplcategory=SurveyEmplcategory::find($emplcategoryID)->name;
+
 //            set section title
                 PDF::SetFont('times', 'I', 18);
                 PDF::SetTextColor(0, 0, 128);
-                PDF::Cell(0, 20, 'Detailed Responses', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+                PDF::Cell(0, 20, 'Responses from '.$emplcategory, 0, false, 'C', 0, '', 0, false, 'T', 'T');
 
-                PDF::Ln(10);
+                PDF::Ln(15);
 
+                foreach ($questionCategories as $id => $name ) {
+                    $questions = SurveyQuestion::all()->whereIn('survey_quescategory_id', $id)->pluck('description', 'id')->toArray();
+                        foreach ($questions as $questionId => $questionName) {
+                            foreach ($scale as $score => $description) {
+//                        use this function to count the number who has answer the question with specific score
+                            $totalByEmplcategoryByQuestionByScore[$questionId][$score] = $this->excelSection(null, $emplcategoryID, $score, 'number', $survey, $questionId);
+                        }
+                            //                create tree map
+                            $filename='treemap_emplcategory_'.$emplcategoryID.'_question_'.$questionId;
+                            $this->treemap($totalByEmplcategoryByQuestionByScore[$questionId],$filename,true);
+                    }
+                }
+
+//                treemap section for direct setting for this emplcategory
                 //            set category title
+
                 PDF::SetFont('helvetica', 'B', 12);
                 PDF::SetTextColor(0, 0, 0);
-                PDF::Cell(110, 10, $i . '. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
-                PDF::SetY(45);
+                $y=55;
+                for($i=1;$i<=4;$i++) {
 
-                $html = <<<EOF
-<!-- EXAMPLE OF CSS STYLE -->
-                <style>
+                    PDF::Cell(110, 10, $i . '. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
-                    table.first {
-                        color: #003300;
-                        font-family: helvetica;
-                        font-size: 12pt;
-                        /*border: 3px solid green;*/
-                        /*background-color: #ccffcc;*/
-                    }
-                    td.not-gap {
-                        /*border: 2px solid blue;*/
-                        /*background-color: #ffffee;*/
-                    }
-                </style>
-              
-                <table class="first" cellpadding="4" cellspacing="6">
-                 <tr>
-                  <td class="not-gap" width="19%" align="center"><b></b></td>
-                  <td width="6%" ></td>
-                  <td class="not-gap" width="15%" align="center"><b>CEO</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Executives</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Sr. Manager</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Staff</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Other</b></td>
-                 </tr>
-EOF;
+//            image for direction setting
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . $i . '.png'), 10, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 4) . '.png'), 59, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 8) . '.png'), 108, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+                    PDF::Image(storage_path('app/treemap/treemap_emplcategory_' . $emplcategoryID . '_question_' . ($i + 12) . '.png'), 157, $y, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
 
-                for ($key=$i;$key<=16;$key+=4) {
-                    $html .= <<<EOF
-                    <tr >
-                      <td class="not-gap"  align = "center" ><b > Q{$key}</b ></td >
-                      <td width = "6%" ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['CEO'][$key]}" ><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Executives'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Senior'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Staff'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Other'][$key]}"><b > </b ></td >
-                    </tr >
-EOF;
+                    PDF::Ln(50);
+
+                    $y += 60;
                 }
 
-                $html .= <<<EOF
-                </table>
-EOF;
+//                PDF::Cell(110, 10, $row.'. ' . $questionCategories[$row], 0, false, 'L', 0, '', 0, false, 'T', 'M');
+////
+//////            image for direction setting
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.$row.'.png'), 10, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+4).'.png'), 59, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+8).'.png'), 108, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//                PDF::Image(storage_path('app/treemap/treemap_emplcategory_'.$emplcategoryID.'_question_'.($row+12).'.png'), 157, 115, 42, 40, '', '', 'T', false, 300, '', false, false, 1, false, false, false);
+//
 
-// output the HTML content
-                PDF::writeHTML($html, true, false, true, false, '');
 
-                PDF::SetTextColor(0, 0, 0);
-                PDF::SetFont('helvetica', '', 12);
-                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 125);
 
-                //                set y for the cell
-                PDF::SetY(140);
-
-                $i++; //start second part on the page
-
-//            set second category title
-                PDF::Ln(19);
-                PDF::SetFont('helvetica', 'B', 12);
-                PDF::SetTextColor(0, 0, 0);
-                PDF::Cell(110, 10, $i.'. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
-
-                PDF::SetY(165);
-
-                $key1=$i;
-                $key2=$key1+4;
-                $key3=$key2+4;
-                $key4=$key3+4;
-
-                $html = <<<EOF
-<!-- EXAMPLE OF CSS STYLE -->
-                <style>
-
-                    table.first {
-                        color: #003300;
-                        font-family: helvetica;
-                        font-size: 12pt;
-                        /*border: 3px solid green;*/
-                        /*background-color: #ccffcc;*/
-                    }
-                    td.not-gap {
-                        /*border: 2px solid blue;*/
-                        /*background-color: #ffffee;*/
-                    }
-                </style>
-              
-                <table class="first" cellpadding="4" cellspacing="6">
-                 <tr>
-                  <td class="not-gap" width="19%" align="center"><b></b></td>
-                  <td width="6%" ></td>
-                  <td class="not-gap" width="15%" align="center"><b>CEO</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Executives</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Sr. Manager</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Staff</b></td>
-                  <td class="not-gap" width="15%" align="center"><b>Other</b></td>
-                 </tr>
-EOF;
-
-                for ($key=$i;$key<=16;$key+=4) {
-                    $html .= <<<EOF
-                    <tr >
-                      <td class="not-gap"  align = "center" ><b > Q{$key}</b ></td >
-                      <td width = "6%" ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['CEO'][$key]}" ><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Executives'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Senior'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Staff'][$key]}"><b > </b ></td >
-                      <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['Other'][$key]}"><b > </b ></td >
-                    </tr >
-EOF;
-                }
-
-                $html .= <<<EOF
-                </table>
-EOF;
-
-// output the HTML content
-                PDF::writeHTML($html, true, false, true, false, '');
-
-                PDF::SetTextColor(0, 0, 0);
-                PDF::SetFont('helvetica', '', 12);
-                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 240);
             }
+
+
+
+
+//            pdf section: causes and recommendations
+            PDF::addPage();
+
+//            set section title
+            PDF::SetFont('times', 'I', 18);
+            PDF::SetTextColor(0, 0, 128);
+            PDF::Cell(0, 20, 'Causes & Solutions', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+            PDF::Ln(15);
+
+            PDF::SetFont('helvetica', '', 12);
+
+            PDF::TextField('Narrative_Causes', 190, 100, array('multiline' => true), array('v' => 'Causes: '), 10, '');
+
+            PDF::Ln(115);
+
+            PDF::TextField('Narrative_Solutions', 190, 100, array('multiline' => true), array('v' => 'Recommended Solutions: '), 10, '');
+
 
 //            pdf possible section: interview
             PDF::addPage();
@@ -1228,7 +1133,6 @@ EOF;
             PDF::Ln(15);
 
             PDF::SetFont('helvetica', '', 12);
-            PDF::SetTextColor(0, 0, 0);
 
             PDF::TextField('Narrative_Interview_Quescategory_1', 190, 50, array('multiline' => true), array('v' => $questionCategories[1].': '), 10, '');
 
@@ -1243,6 +1147,9 @@ EOF;
             PDF::Ln(60);
 
             PDF::TextField('Narrative_Interview_Quescategory_4', 190, 50, array('multiline' => true), array('v' => $questionCategories[4].': '), 10, '');
+
+
+
 //
             PDF::Output('Vision to Actions_'.$clientName.'.pdf','D');
 
@@ -1345,31 +1252,21 @@ EOF;
         return null;
     }
 
-    private function getMostAnswer ($survey, $questionID, $emplCategoryID=null, $positionID=null)
+    private function getMostAnswer ($survey, $questionID, $emplCategoryID=null)
     {
-	    if($positionID){
-            $completedAssignmentIDs=$survey -> surveyAssignments ->where('completed', 1) -> where('survey_position_id', $positionID) ->pluck('id')->toArray();
-        } else if ($emplCategoryID==null) {
+	    if ($emplCategoryID==null) {
             $completedAssignmentIDs = $survey->surveyAssignments->where('completed', 1)->pluck('id')->toArray();
         } else {
             $completedAssignmentIDs=$survey -> surveyAssignments ->where('completed', 1) -> where('survey_emplcategory_id', $emplCategoryID) ->pluck('id')->toArray();
         }
 
-        for ($score=1;$score<5;$score++) {
-                $count=SurveyResult::with('surveyAssignment')->whereIn('survey_assignment_id', $completedAssignmentIDs)->
+            for ($score=1;$score<5;$score++) {
+                $result[$score]=SurveyResult::with('surveyAssignment')->whereIn('survey_assignment_id', $completedAssignmentIDs)->
                 where('survey_question_id', $questionID)->where('score', $score)->count();
-                if($count!=0){
-                    $result[$score]=$count;
-                } else {
-                    $result[$score]=null;
-                }
-	    }
+            }
 
-	    if (max($result)){
             return array_keys($result, max($result));
-        } else {
-	        return [0];
-        }
+
     }
 
     private function getColor ($score)
@@ -1386,21 +1283,6 @@ EOF;
         }
         return null;
 
-    }
-
-    private function getPDFColor ($score)
-    {
-        switch ($score){
-            case 1:
-                return '#ff746e'; //red
-            case 2:
-                return '#ffff8d'; //yellow
-            case 3:
-                return '#53ff53'; //green
-            case 4:
-                return '#9c7dd4'; //purple
-        }
-        return null;
     }
 
 //    start adding function for pdf
@@ -1569,111 +1451,6 @@ EOF;
     {
         array_map('unlink', glob(storage_path('app/treemap/*')));
     }
-
-    private function piechart($x,$y,$red,$yellow,$green,$purple,$totalByScore)
-    {
-        $xc=$x;
-        $yc=$y;
-        $r=35;
-
-//                yellow
-        PDF::SetFillColor(255, 255, 141);
-        PDF::PieSector($xc, $yc, $r, 0, $yellow, 'f', true, 90, 2);
-
-//                green
-        PDF::SetFillColor(83, 255, 83);
-        PDF::PieSector($xc, $yc, $r, $yellow, $yellow+$green, 'f', true, 90, 2);
-
-//                purple
-        PDF::SetFillColor(156, 125, 212);
-        PDF::PieSector($xc, $yc, $r, $yellow+$green, $yellow+$green+$purple, 'f', true, 90, 2);
-
-        //                red
-        PDF::SetFillColor(255,116, 110);
-        PDF::PieSector($xc, $yc, $r, $yellow+$green+$purple, $yellow+$green+$purple+$red, 'f', true, 90, 2);
-
-        PDF::setXY(10,PDF::GetY()+90);
-
-        $total=array_sum($totalByScore);
-        $percent_never=round($totalByScore[1]/$total*100,0);
-        $percent_sporadic=round($totalByScore[2]/$total*100,0);
-        $percent_usually=round($totalByScore[3]/$total*100,0);
-        $percent_always=100-$percent_never-$percent_sporadic-$percent_usually;
-
-        $html = <<<EOF
-<!-- EXAMPLE OF CSS STYLE -->
-                <style>
-
-                    table.first {
-                        color: #003300;
-                        font-family: helvetica;
-                        font-size: 12pt;
-                        /*border: 3px solid green;*/
-                        /*background-color: #ccffcc;*/
-                    }
-                    td.not-gap {
-                        /*border: 2px solid blue;*/
-                        /*background-color: #ffffee;*/
-                    }
-                </style>
-              
-                
-                <table class="first" cellpadding="4" cellspacing="6">
-                 <tr>
-                  <td class="not-gap" width="10%" align="center" bgcolor="#ff746e"><b>Never</b></td>
-                  <td class="not-gap" width="12%" align="center" bgcolor="#ffff8d"><b>Sporadic</b></td>
-                  <td class="not-gap" width="11%" align="center" bgcolor="#53ff53"><b>Usually</b></td>
-                  <td class="not-gap" width="10%" align="center" bgcolor="#9c7dd4"><b>Always</b></td>
-                 </tr>
-                 <tr>
-                  <td class="not-gap" width="10%" align="center"><b>{$totalByScore[1]} ({$percent_never}%)</b></td>
-                  <td class="not-gap" width="12%" align="center"><b>{$totalByScore[2]} ({$percent_sporadic}%)</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[3]} ({$percent_usually}%)</b></td>
-                  <td class="not-gap" width="10%" align="center"><b>{$totalByScore[4]} ({$percent_always}%)</b></td>
-                 </tr>                 
-                </table>
-EOF;
-
-// output the HTML content
-        PDF::writeHTML($html, true, false, true, false, '');
-
-    }
-
-    public function pieLabel($txt, $xc, $yc, $r, $a, $b, $l, $h=0) {
-//	    the function is not working
-        $angle = $a + $b / 2;
-
-        if ($angle >= 270) {
-            $angle = (360 - $angle) * M_PI / 180;
-            $x0 = ($r + $l) * sin($angle);
-            $y0 = ($r + $l) * cos($angle);
-
-            PDF::Text($xc - $x0 - strlen($txt), $yc - $y0 - $h, $txt);
-        }
-        else if ($angle >= 180 && $angle < 270) {
-            $angle = ($angle - 180) * M_PI / 180;
-            $x0 = ($r + $l) * sin($angle);
-            $y0 = ($r + $l) * cos($angle);
-
-            PDF::Text($xc - $x0 - strlen($txt), $yc + $y0 - $h, $txt);
-        }
-        else if ($angle >= 90 && $angle < 180) {
-            $angle = (180 - $angle) * M_PI / 180;
-            $x0 = ($r + $l) * sin($angle);
-            $y0 = ($r + $l) * cos($angle);
-
-            PDF::Text($xc + $x0, $yc + $y0 - $h, $txt);
-        }
-        else {
-            $angle = $angle * M_PI / 180;
-            $x0 = ($r + $l) * sin($angle);
-            $y0 = ($r + $l) * cos($angle);
-
-            PDF::Text($xc + $x0, $yc - $y0 - $h, $txt);
-        }
-    }
-
-
 
 
 
