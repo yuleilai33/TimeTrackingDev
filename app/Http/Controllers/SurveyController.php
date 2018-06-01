@@ -886,6 +886,7 @@ class SurveyController extends Controller
 //            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
             PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(255,255,255), 'strokeColor'=>array(255, 255, 255)));
 
+//            ************************************************************************************
 //          pdf section for all responses
 
             for ($i=1;$i<4;$i++) {
@@ -949,6 +950,7 @@ class SurveyController extends Controller
                 PDF::TextField('Narrative_QuestionCategory_'.$i, 80, 90, array('multiline' => true), array('v' => 'CFO Commentary: '), 115, 170);
             }
 
+//************************************************************************************
 //            pdf section for detail section
 
             foreach ($questionCategories as $id => $name ) {
@@ -977,6 +979,16 @@ class SurveyController extends Controller
                 $key3=$key2+4;
                 $key4=$key3+4;
 
+                $allQuestionIDs=SurveyQuestion::all()->pluck('id')->toArray();
+
+                for ($i=$key1;$i<=16;$i+=4) {
+                    $highlightScore[$i]['score'] = min($this->getMostAnswer($survey, $i, null, null));
+                    $highlightScore[$i]['color'] = $this->getPDFColor($highlightScore[$i]['score']);
+                }
+
+                $highlightScore_Total[$key1]['score']=min(array_keys($totalByCategoryByScore[$key1], max($totalByCategoryByScore[$key1])));
+                $highlightScore_Total[$key1]['color']=$this->getPDFColor($highlightScore_Total[$key1]['score']);
+
 
 //            table section: score by question
                 $html = <<<EOF
@@ -994,9 +1006,23 @@ class SurveyController extends Controller
                         border: 2px solid blue;
                         background-color: #ffffee;
                     }
+                    td#question_{$key1}_{$highlightScore[$key1]['score']} {
+                    background-color: {$highlightScore[$key1]['color']};
+                    }
+                    td#question_{$key2}_{$highlightScore[$key2]['score']} {
+                    background-color: {$highlightScore[$key2]['color']};
+                    }
+                    td#question_{$key3}_{$highlightScore[$key3]['score']} {
+                    background-color: {$highlightScore[$key3]['color']};
+                    }
+                    td#question_{$key4}_{$highlightScore[$key4]['score']} {
+                    background-color: {$highlightScore[$key4]['color']};
+                    }
+                    td#total_{$key1}_{$highlightScore_Total[$key1]['score']} {
+                    background-color: {$highlightScore_Total[$key1]['color']};
+                    }
                 </style>
               
-                
                 <table class="first" cellpadding="4" cellspacing="6">
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Questions:</b></td>
@@ -1009,42 +1035,42 @@ class SurveyController extends Controller
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key1}. {$questions[$key1]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key1][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key1][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key1][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key1][4]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key1}_1"><b>{$totalByQuestionByScore[$key1][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key1}_2"><b>{$totalByQuestionByScore[$key1][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key1}_3"><b>{$totalByQuestionByScore[$key1][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key1}_4"><b>{$totalByQuestionByScore[$key1][4]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key2}. {$questions[$key2]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key2][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key2][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key2][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key2][4]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key2}_1"><b>{$totalByQuestionByScore[$key2][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key2}_2"><b>{$totalByQuestionByScore[$key2][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key2}_3"><b>{$totalByQuestionByScore[$key2][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key2}_4"><b>{$totalByQuestionByScore[$key2][4]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key3}. {$questions[$key3]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key3][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key3][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key3][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key3][4]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key3}_1"><b>{$totalByQuestionByScore[$key3][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key3}_2"><b>{$totalByQuestionByScore[$key3][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key3}_3"><b>{$totalByQuestionByScore[$key3][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key3}_4"><b>{$totalByQuestionByScore[$key3][4]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key4}. {$questions[$key4]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByQuestionByScore[$key4][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByQuestionByScore[$key4][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByQuestionByScore[$key4][4]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key4}_1"><b>{$totalByQuestionByScore[$key4][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key4}_2"><b>{$totalByQuestionByScore[$key4][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key4}_3"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key4}_4"><b>{$totalByQuestionByScore[$key4][4]}</b></td>
                  </tr>
                   <tr>
                   <td class="not-gap" width="50%" align="left"><b>Total</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>{$totalByCategoryByScore[$id][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>{$totalByCategoryByScore[$id][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByCategoryByScore[$id][3]}</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByCategoryByScore[$id][4]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="total_{$key1}_1"><b>{$totalByCategoryByScore[$id][1]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="total_{$key1}_2"><b>{$totalByCategoryByScore[$id][2]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="total_{$key1}_3"><b>{$totalByCategoryByScore[$id][3]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="total_{$key1}_4"><b>{$totalByCategoryByScore[$id][4]}</b></td>
                  </tr>
                 </table>
 EOF;
@@ -1056,14 +1082,13 @@ EOF;
                 PDF::TextField('Narrative_Details_'.$key1, 190, 50, array('multiline' => true), array('v' => 'CEO Commentary: '), 10, '');
             }
 
+//            ************************************************************************************
 //            pdf section deeper detail level
 //            the response by each staff category
 
             $completedAssignments = $survey->surveyAssignments->where('completed', 1);
 
             $emplcategoryIDs = $completedAssignments->sortBy('survey_emplcategory_id')->pluck('survey_emplcategory_id')->unique()->toArray();
-
-            $allQuestionIDs=SurveyQuestion::all()->pluck('id')->toArray();
 
             foreach ($allQuestionIDs as $id){
                 $bgcolor['CEO'][$id]=$this->getPDFColor(min($this->getMostAnswer($survey,$id,null,1)));
@@ -1212,6 +1237,8 @@ EOF;
                 PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 240);
             }
 
+
+//            ************************************************************************************
 //            pdf possible section: interview
             PDF::addPage();
 
@@ -1240,9 +1267,6 @@ EOF;
             PDF::TextField('Narrative_Interview_Quescategory_4', 190, 50, array('multiline' => true), array('v' => $questionCategories[4].': '), 10, '');
 //
             PDF::Output('Vision to Actions_'.$clientName.'.pdf','D');
-
-//            erase imgae files after generating pdf
-            $this -> eraseFiles();
 
         }
 
