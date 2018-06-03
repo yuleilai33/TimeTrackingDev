@@ -48,7 +48,7 @@
                                     <th>Pending</th>
                                     <th>Completed</th>
                                     {{--<th>Status</th>--}}
-                                    <th>NL Report</th>
+                                    <th>Excel Details</th>
                                     <th>CEO Report</th>
                                     <th>Resend</th>
                                 </tr>

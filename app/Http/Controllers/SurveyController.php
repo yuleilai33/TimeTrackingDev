@@ -1083,7 +1083,7 @@ EOF;
             }
 
 //            ************************************************************************************
-//            pdf section deeper detail level
+//            pdf section detail responses
 //            the response by each staff category
 
             $completedAssignments = $survey->surveyAssignments->where('completed', 1);
@@ -1113,7 +1113,7 @@ EOF;
                 PDF::SetTextColor(0, 0, 0);
                 PDF::Cell(110, 10, $i . '. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
-                PDF::SetY(45);
+                PDF::SetY(50);
 
                 $html = <<<EOF
 <!-- EXAMPLE OF CSS STYLE -->
@@ -1124,12 +1124,16 @@ EOF;
                         font-family: helvetica;
                         font-size: 12pt;
                         /*border: 3px solid green;*/
-                        /*background-color: #ccffcc;*/
+                        background-color: #EDEDED ;
                     }
                     td.not-gap {
                         /*border: 2px solid blue;*/
                         /*background-color: #ffffee;*/
                     }
+                    /*tr.not-first-row {*/
+                        /*background-color: #ccffcc;*/
+                        /*border-color: black;*/
+                    /*}*/
                 </style>
               
                 <table class="first" cellpadding="4" cellspacing="6">
@@ -1146,7 +1150,7 @@ EOF;
 
                 for ($key=$i;$key<=16;$key+=4) {
                     $html .= <<<EOF
-                    <tr >
+                    <tr class="not-first-row">
                       <td class="not-gap"  align = "center" ><b > Q{$key}</b ></td >
                       <td width = "6%" ></td >
                       <td class="not-gap"  align = "center" bgcolor = "{$bgcolor['CEO'][$key]}" ><b > </b ></td >
@@ -1167,7 +1171,7 @@ EOF;
 
                 PDF::SetTextColor(0, 0, 0);
                 PDF::SetFont('helvetica', '', 12);
-                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 120);
+                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 125);
 
                 //                set y for the cell
                 PDF::SetY(140);
@@ -1180,7 +1184,7 @@ EOF;
                 PDF::SetTextColor(0, 0, 0);
                 PDF::Cell(110, 10, $i.'. ' . $questionCategories[$i], 0, false, 'L', 0, '', 0, false, 'T', 'M');
 
-                PDF::SetY(165);
+                PDF::SetY(170);
 
                 $html = <<<EOF
 <!-- EXAMPLE OF CSS STYLE -->
@@ -1191,7 +1195,7 @@ EOF;
                         font-family: helvetica;
                         font-size: 12pt;
                         /*border: 3px solid green;*/
-                        /*background-color: #ccffcc;*/
+                        background-color: #EDEDED ;
                     }
                     td.not-gap {
                         /*border: 2px solid blue;*/
@@ -1234,7 +1238,7 @@ EOF;
 
                 PDF::SetTextColor(0, 0, 0);
                 PDF::SetFont('helvetica', '', 12);
-                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 240);
+                PDF::TextField('Actions_'.$i, 190, 30, array('multiline' => true), array('v' => 'Call to Actions: '), 10, 245);
             }
 
 
@@ -1595,21 +1599,21 @@ EOF;
         $yc=$y;
         $r=35;
 
-//                yellow
-        PDF::SetFillColor(255, 255, 141);
-        PDF::PieSector($xc, $yc, $r, 0, $yellow, 'f', true, 90, 2);
+//                purple
+        PDF::SetFillColor(156, 125, 212);
+        PDF::PieSector($xc, $yc, $r, 0, $purple, 'DF', true, 90, 2);
 
 //                green
         PDF::SetFillColor(83, 255, 83);
-        PDF::PieSector($xc, $yc, $r, $yellow, $yellow+$green, 'f', true, 90, 2);
+        PDF::PieSector($xc, $yc, $r, $purple, $purple+$green, 'DF', true, 90, 2);
 
-//                purple
-        PDF::SetFillColor(156, 125, 212);
-        PDF::PieSector($xc, $yc, $r, $yellow+$green, $yellow+$green+$purple, 'f', true, 90, 2);
+//                yellow
+        PDF::SetFillColor(255, 255, 141);
+        PDF::PieSector($xc, $yc, $r, $purple+$green, $purple+$green+$yellow, 'DF', true, 90, 2);
 
         //                red
         PDF::SetFillColor(255,116, 110);
-        PDF::PieSector($xc, $yc, $r, $yellow+$green+$purple, $yellow+$green+$purple+$red, 'f', true, 90, 2);
+        PDF::PieSector($xc, $yc, $r, $purple+$green+$yellow, $purple+$green+$yellow+$red, 'DF', true, 90, 2);
 
         PDF::setXY(10,PDF::GetY()+90);
 
@@ -1639,16 +1643,16 @@ EOF;
                 
                 <table class="first" cellpadding="4" cellspacing="6">
                  <tr>
-                  <td class="not-gap" width="11%" align="center" bgcolor="#ff746e"><b>Never</b></td>
-                  <td class="not-gap" width="12%" align="center" bgcolor="#ffff8d"><b>Sporadic</b></td>
-                  <td class="not-gap" width="11%" align="center" bgcolor="#53ff53"><b>Usually</b></td>
                   <td class="not-gap" width="11%" align="center" bgcolor="#9c7dd4"><b>Always</b></td>
+                  <td class="not-gap" width="11%" align="center" bgcolor="#53ff53"><b>Usually</b></td>
+                  <td class="not-gap" width="12%" align="center" bgcolor="#ffff8d"><b>Sporadic</b></td>
+                  <td class="not-gap" width="11%" align="center" bgcolor="#ff746e"><b>Never</b></td>
                  </tr>
                  <tr>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[1]} ({$percent_never}%)</b></td>
-                  <td class="not-gap" width="12%" align="center"><b>{$totalByScore[2]} ({$percent_sporadic}%)</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[3]} ({$percent_usually}%)</b></td>
                   <td class="not-gap" width="11%" align="center"><b>{$totalByScore[4]} ({$percent_always}%)</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[3]} ({$percent_usually}%)</b></td>
+                  <td class="not-gap" width="12%" align="center"><b>{$totalByScore[2]} ({$percent_sporadic}%)</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>{$totalByScore[1]} ({$percent_never}%)</b></td>
                  </tr>                 
                 </table>
 EOF;
