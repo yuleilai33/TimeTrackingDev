@@ -34,7 +34,9 @@
     <body>
         <h4>Dear {{$participant->participant_first_name}} {{$participant->participant_last_name}},</h4>
 
-        <p>This is the survey sent by {{Auth::user()->consultant->fullname()}} from New Life CFO Services. Please click to start the survey.</p>
+        <p>Thank you for participating in the Vision to Actions survey from New Life CFO.
+            We are assisting your CEO and leadership team with a confidential assessment of the goals, vision,
+            accountability and reporting/processes for your company. Please click to start the survey.</p>
 
         <br>
 
@@ -53,7 +55,7 @@
             <li><b>Combined results of entire company</b></li>
         </ul>
 
-    <p>Thanks!</p>
+    <p>We appreciate your participation in this assessment.</p>
     <p>New Life CFO Services</p>
 
 
