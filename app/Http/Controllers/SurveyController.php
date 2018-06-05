@@ -191,6 +191,8 @@ class SurveyController extends Controller
 
             }
 
+            $assignment->comment = $request->comment;
+
         }
 
 //        change the status of assignment
@@ -354,14 +356,14 @@ class SurveyController extends Controller
 
                     $sheet->freezeFirstRow()
 //                        questionCategories Id matches the calculateTotalByCategory Id below
-                        ->row($rowNum, ['Participant Name', 'Employee Category', 'Position', $questionCategories[1], $questionCategories[2], $questionCategories[3], $questionCategories[4], 'Total'])
-                        ->cells('A1:H1', function ($cells) {
+                        ->row($rowNum, ['Participant Name', 'Employee Category', 'Position', $questionCategories[1], $questionCategories[2], $questionCategories[3], $questionCategories[4], 'Total','Comment'])
+                        ->cells('A1:I1', function ($cells) {
                             $this->setTitleCellsStyle($cells);
-                        })->setColumnFormat(['D:H' => '0.00']);
+                        })->setColumnFormat(['D:I' => '0.00']);
 
-                    $sheet->getStyle('A1:G1')->getAlignment()->setWrapText(true);
+                    $sheet->getStyle('A1:I1')->getAlignment()->setWrapText(true);
 
-                    $sheet->setWidth(['A' => 20, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 30, 'F' => 30, 'G' => 20, 'H' => 20]);
+                    $sheet->setWidth(['A' => 20, 'B' => 20, 'C' => 20, 'D' => 20, 'E' => 30, 'F' => 30, 'G' => 20, 'H' => 20, 'I'=>60]);
 //
                     $completedAssignments = $survey->surveyAssignments->where('completed', 1);
 
@@ -372,7 +374,8 @@ class SurveyController extends Controller
                             $rowNum++;
                             //                        questionCategories Id matches the calculateTotalByCategory Id
                             $sheet->row($rowNum, [$assignment->fullname(), $assignment->surveyEmplcategory->name, $assignment->surveyPosition->name,
-                                $assignment->calculateTotalByCategory(1), $assignment->calculateTotalByCategory(2), $assignment->calculateTotalByCategory(3), $assignment->calculateTotalByCategory(4), $assignment->calculateTotalScore()]);
+                                $assignment->calculateTotalByCategory(1), $assignment->calculateTotalByCategory(2), $assignment->calculateTotalByCategory(3), $assignment->calculateTotalByCategory(4), $assignment->calculateTotalScore(),
+                                $assignment->comment]);
 
                         }
 

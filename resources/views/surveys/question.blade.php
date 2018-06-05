@@ -60,6 +60,9 @@
                                         $question_index ++;
                                     @endphp
                                 @endforeach
+                                <p>17. If you have any comment, please leave it below.</p>
+                                <textarea id="comment" title="comment" name="comment" class="form-control" rows="6" placeholder="Please type your comments here"></textarea>
+                                <br>
                                 <div class="text-center">
                                 <button type="submit" class="btn btn-primary btn-lg" id="question-submit">Submit</button>
                                 </div>
