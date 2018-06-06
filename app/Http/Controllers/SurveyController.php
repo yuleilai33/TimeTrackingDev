@@ -876,12 +876,15 @@ class SurveyController extends Controller
         } elseif ($request->file == 'pdf'){
 
 //            set the common info
+            $client=$survey -> engagement -> client;
             $clientName = $survey -> engagement -> client -> name;
 
             $this->setPDFProperties($clientName);
             $this->setHeader();
             $this->setFooter();
 
+//            pdf section cover page
+            $this->setCover($client);
 
 //            count by category by score
             foreach ($questionCategories as $id => $name ){
@@ -1447,10 +1450,13 @@ EOF;
     private function setHeader()
     {
         PDF::setHeaderCallback (function($pdf){
-            $NewLifeLogo = public_path().'/img/logo-newlife.jpg';
-            $pdf->Image($NewLifeLogo, 0, 5, 35, 20, 'jpg', '', 'T', true, 300, 'L', false, false, 0, false, false, false);
-            $pdf->SetFont('helvetica', 'B', 24);
-            $pdf->Cell(0, 20, 'Vision to Actions - CEO Report', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+//            skip cover page
+            if($pdf->getPage()!=1) {
+                $NewLifeLogo = public_path() . '/img/logo-newlife.jpg';
+                $pdf->Image($NewLifeLogo, 0, 5, 35, 20, 'jpg', '', 'T', true, 300, 'L', false, false, 0, false, false, false);
+                $pdf->SetFont('helvetica', 'B', 24);
+                $pdf->Cell(0, 20, 'Vision to Actions - CEO Report', 0, false, 'C', 0, '', 0, false, 'T', 'M');
+            }
         });
     }
 
@@ -1465,6 +1471,43 @@ EOF;
             $pdf->Cell(0, 10, 'Page '.$pdf->getAliasNumPage().'/'.$pdf->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
             $pdf->Cell(0, 10, "Powered by New Life CFO Services", 0, false, 'R', 0, '', 0, false, 'T', 'M');
         });
+    }
+
+    private function setCover($client)
+    {
+        $consultant=Auth::user()->consultant->fullname();
+        PDF::addPage();
+
+        $NewLifeLogo = public_path() . '/img/logo-newlifetree.png';
+
+        // -- set new background ---
+
+// get the current page break margin
+        $bMargin = PDF::getBreakMargin();
+// get current auto-page-break mode
+        $auto_page_break = PDF::getAutoPageBreak();
+// disable auto-page-break
+        PDF::SetAutoPageBreak(false, 0);
+// set bacground image
+        PDF::Image($NewLifeLogo, 0, 0, 211, 298, '', '', '', false, 300, '', false, false, 0);
+// restore auto-page-break status
+        PDF::SetAutoPageBreak($auto_page_break, $bMargin);
+// set the starting point for the page content
+        PDF::setPageMark();
+
+        $html = '<h1 style="font-size: 200%; line-height: 100%;">Vision to Actions Survey</h1>';
+        $html .= '<h1 style="font-size: 150%; line-height: 100%;">Prepared for '.$client->name.'</h1>';
+        PDF::setY(170);
+        PDF::writeHTML($html, true, false, true, false, 'R');
+
+        $clientLogo = storage_path().'/app/'.$client->logo;
+        PDF::Image($clientLogo, 0, 195, 60, 36, '', '', 'T', true, 300, 'R', false, false, 0, false, false, false);
+
+        $html = '<h1 style="font-size: 100%; line-height: 100%;">Presented by '.$consultant.'</h1>';
+        $html .= '<h1 style="font-size: 100%; line-height: 100%;">Date: '.date('m/d/y', strtotime('now')).'</h1>';
+        PDF::setY(235);
+        PDF::writeHTML($html, true, false, true, false, 'R');
+
     }
 
     private function setPDFProperties($clientName)
