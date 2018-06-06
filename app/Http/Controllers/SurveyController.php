@@ -91,8 +91,10 @@ class SurveyController extends Controller
 
                 if ($survey->save()) {
                     if ($this->saveAssignments($request, $survey->id)) {
+                        $this->saveLogo($survey,$request);
                         $feedback['code'] = 7;
                         $feedback['message'] = 'success';
+
                     } else {
                         $survey->delete();
                         $feedback['code'] = 2;
@@ -105,6 +107,17 @@ class SurveyController extends Controller
         }
 
         return json_encode($feedback);
+
+    }
+
+    private function saveLogo($survey,$request){
+
+        if($request->hasFile('logo')){
+            $filename = $request->logo->store('client/logo');
+            $client=$survey->engagement->client;
+            $client->logo = $filename;
+            $client->save();
+        }
 
     }
 
@@ -267,6 +280,7 @@ class SurveyController extends Controller
 //            if ($user->can('update', $eng)) {
                 if ($survey->update(['engagement_id' => $request->eid, 'start_date' => $request -> start_date])) {
                     if ($this->updateAssignments($request, $survey)) {
+                        $this->saveLogo($survey,$request);
                         $feedback['code'] = 7;
                         $feedback['message'] = 'Record Update Success';
                     } else {

@@ -23,9 +23,15 @@
                                     @endcomponent
 
                                     <span class="input-group-addon"><i
-                                    class="fa fa-calendar"></i>&nbsp; Start Date</span>
+                                    class="fa fa-calendar"></i>&nbsp; Start Date:</span>
                                     <input class="date-picker form-control" id="start-date" name="start_date"
                                     placeholder="mm/dd/yyyy" type="text" required/>
+                                </div>
+                            <br>
+                                <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-file-text"
+                                                                               aria-hidden="true"></i>&nbsp;Client Logo:</span>
+                                    <input class="form-control" id="client-logo" name="logo" type="file">
                                 </div>
                             <br>
                         </div>

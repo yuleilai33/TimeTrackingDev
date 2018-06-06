@@ -70,6 +70,13 @@ Route::get('surveys/resend/{survey}','SurveyController@resendSurvey')->name('res
 
 Route::get('surveys/report/{survey}', 'SurveyController@createReport') -> name('create_report');
 
+Route::get('/client/logo/{name}', function ($name) {
+    //header("Content-type: " . str_contains($name, 'pdf') ? "application/pdf" : "image/*");
+        header("Content-type:image/*");
+
+    echo Storage::get('client/logo/' . $name);
+});
+
 //start adding route for summary page
 //the summary page for admin is access via admin controller above
 Route::get('/summary', 'SummaryController@index')->name('summary');

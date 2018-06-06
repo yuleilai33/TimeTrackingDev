@@ -13,10 +13,8 @@
     <hr>
 
     @foreach($surveys as $survey)
-        @if($loop->index%2==0)
             <div class="row">
-                @endif
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="panel">
                         <div class="panel-heading engagement-table">
                             <h3 class="panel-title">Name: <strong>{{$survey->engagement->name}}</strong>
@@ -50,6 +48,7 @@
                                     {{--<th>Status</th>--}}
                                     <th>Excel Details</th>
                                     <th>CEO Report</th>
+                                    <th>Client Logo</th>
                                     <th>Resend</th>
                                 </tr>
                                 </thead>
@@ -63,6 +62,11 @@
                                            {{--aria-hidden="true"></i>{{$survey->state()}}</td>--}}
                                     <td>{!! $survey->completedAssignments()->count()>0 ? '<a style="cursor: pointer;" href=' . route('create_report', $survey->id) . '?file=excel >Download</a>' : 'Unavailable' !!}</td>
                                     <td>{!! $survey->completedAssignments()->count()>0 ? '<a style="cursor: pointer;" href=' . route('create_report', $survey->id) . '?file=pdf >Download</a>' : 'Unavailable' !!}</td>
+                                    <td>
+                                        @if($survey->engagement->client->logo)
+                                        <a href="#" data-featherlight="/{{$survey->engagement->client->logo}}"><i class="fa fa-file-image-o" aria-hidden="true"></i></a>
+                                        @endif
+                                    </td>
                                     <td><a href='javascript:void(0)' class="resendSurvey" data-id="{{$survey->id}}"><i class="lnr lnr-location"></i></a></td>
                                 </tr>
                                 </tbody>
@@ -73,9 +77,7 @@
 
                     </div>
                 </div>
-                @if($loop->index%2==1||$loop->last)
             </div>
-        @endif
     @endforeach
 </div>
 

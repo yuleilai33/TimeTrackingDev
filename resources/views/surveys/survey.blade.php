@@ -19,7 +19,8 @@
 @endsection
 
 @section('my-js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/featherlight/1.7.10/featherlight.min.js"></script>
+    <script src="/js/formdata.js"></script>
     <script>
 
         $(function() {
@@ -162,12 +163,11 @@
 
             $('#survey-form').on('submit', function (e) {
                 e.preventDefault();
-                var formdata;
                 var title;
-                formdata = $(this).serializeArray();
-                formdata.push({name: '_token', value: '{{csrf_token()}}'});
+                var formdata = new FormData($(this)[0]);
+                formdata.append('_token',  '{{csrf_token()}}');
 
-                if (update) formdata.push({name: '_method', value: 'PATCH'});
+                if (update) formdata.append('_method', 'PATCH');
 
                 getAssignments(formdata);
 
@@ -176,6 +176,8 @@
                     url: update ? '/surveys/' + surveyID : '/surveys',
                     dataType: 'json',
                     data: formdata,
+                    processData: false,
+                    contentType: false,
                     success: function (feedback) {
                         if (feedback.code == 7) {
                             $('#surveyModal').modal('toggle');
@@ -303,20 +305,14 @@
 
         function getAssignments(formdata){
             $('#participants-table').find('tr').each( function(){
-               formdata.push({name: 'surveyEmplCategoryID[]', value: $(this).find('.survey_empl_category').selectpicker('val')},
-                   {name: 'surveyPositionID[]', value: $(this).find('.survey_position').selectpicker('val')},
-                   {name: 'participantFirstName[]', value: $(this).find('.survey_firstName').val() },
-                   {name: 'participantLastName[]', value: $(this).find('.survey_lastName').val()},
-                   {name: 'participantEmail[]', value: $(this).find('.survey_Email').val()}
-               );
+               formdata.append( 'surveyEmplCategoryID[]', $(this).find('.survey_empl_category').selectpicker('val'));
+               formdata.append('surveyPositionID[]', $(this).find('.survey_position').selectpicker('val'));
+               formdata.append('participantFirstName[]', $(this).find('.survey_firstName').val());
+               formdata.append('participantLastName[]',  $(this).find('.survey_lastName').val());
+               formdata.append('participantEmail[]', $(this).find('.survey_Email').val());
+
             });
         }
-
-
-
-
-
-
 
 
     </script>
@@ -326,7 +322,7 @@
 
 
 @section('special-css')
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/featherlight/1.7.10/featherlight.min.css">
     <style>
         .arrangement-table {
             margin-top: -3.1%;
