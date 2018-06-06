@@ -308,9 +308,11 @@
                 ],
                 series: [[
                         @foreach($hours['hours'] as $hour)
-                            {meta: 'Billable Hours', value:'{{$hour[0]}}'},
+                            {meta: 'Billable Hours to Clients', value:'{{$hour[0]}}'},
                         @endforeach], [@foreach($hours['hours'] as $hour)
                             {meta: 'Non-billable Hours', value:'{{$hour[1]}}'},
+                        @endforeach], [@foreach($hours['hours'] as $hour)
+                            {meta: 'Billable Hours to New Life', value:'{{$hour[3]}}'},
                         @endforeach]
                 ]
             };

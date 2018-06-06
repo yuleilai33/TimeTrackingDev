@@ -147,14 +147,28 @@ class HomeController extends Controller
         $startDate = date("Y-m-01", strtotime($currentMonth));
         $endDate = date("Y-m-t", strtotime($currentMonth));
 
-        $hours['hours'] = Hour::dailyHoursAndIncome($consultant, $startDate, $endDate, null) -> sortBy(function($item,$key){
-            return $key;
+        $hours['hours'] =$this->splitDailyHoursAndIncome($consultant, $startDate, $endDate, null)-> sortBy(function($item,$key){
+        return $key;
         });
         $hours['start']=date('m/d/y',strtotime($startDate));
         $hours['end']=date('m/d/y',strtotime($endDate));
 
         return $hours;
 
+    }
+
+    private function splitDailyHoursAndIncome($consultant = null, $start = null, $end = null, $review_state = null)
+    {
+        return Hour::reported($start, $end, null, $consultant, $review_state, null)
+            ->mapToGroups(function ($hour) {
+                     if(in_array($hour->client->id,[35,36]) ){
+                         return [Carbon::parse($hour->report_date)->format('M d') =>[0, $hour->non_billable_hours, $hour->earned(),$hour->billable_hours, $hour->arrangement_id]];
+                }else {
+                         return [Carbon::parse($hour->report_date)->format('M d') =>[$hour->billable_hours, $hour->non_billable_hours, $hour->earned(),0, $hour->arrangement_id]];}
+            })->transform(function ($day) {
+//                sum(0) for billable to client and sum(3) for billable to New Life
+                return [$day->sum(0), $day->sum(1), $day->sum(2),$day->sum(3), $day->pluck(4)->unique()];
+            });
     }
 
 
