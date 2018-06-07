@@ -906,6 +906,25 @@ class SurveyController extends Controller
 //            PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(233,255,255), 'strokeColor'=>array(255, 128, 128)));
             PDF::setFormDefaultProp(array('lineWidth'=>0, 'borderStyle'=>'none', 'fillColor'=>array(255,255,255), 'strokeColor'=>array(255, 255, 255)));
 
+//          ************************************************************************************
+//          pdf section for origin
+            //            set section title
+            PDF::addPage();
+            PDF::SetFont('times', 'I', 18);
+            PDF::SetTextColor(0, 0, 128);
+            PDF::Cell(0, 20, 'Origin', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+
+            PDF::Ln(10);
+
+            PDF::SetTextColor(0, 0, 0);
+            PDF::SetFont('helvetica', '', 12);
+
+            $html='<p>This survey is co-developed with Hogan Center for Performance Excellence. Hogan center lead 5 companies to win the Malcoln Baldridge award for quality excellence.</p>
+                    <p>Hogan was the only advisor at the time to get ANY company with revenues of $100mm or less to win the international prestigious award, with the smallest company 
+                    being only $2mm in annual revenues.</p>';
+
+            PDF::writeHTML($html, true, false, true, false, '');
+
 //            ************************************************************************************
 //          pdf section for all responses
 
@@ -1466,10 +1485,10 @@ EOF;
             // Position at 15 mm from bottom
             $pdf->SetY(-12);
             // Set font
-            $pdf->SetFont('helvetica', 'I', 8);
+            $pdf->SetFont('helvetica', 'I', 12);
             // Page number
             $pdf->Cell(0, 10, 'Page '.$pdf->getAliasNumPage().'/'.$pdf->getAliasNbPages(), 0, false, 'C', 0, '', 0, false, 'T', 'M');
-            $pdf->Cell(0, 10, "Powered by New Life CFO Services", 0, false, 'R', 0, '', 0, false, 'T', 'M');
+            $pdf->Cell(0, 10, "© Powered by New Life CFO Services", 0, false, 'R', 0, '', 0, false, 'T', 'M');
         });
     }
 
