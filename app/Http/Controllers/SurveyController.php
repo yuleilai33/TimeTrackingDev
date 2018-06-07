@@ -919,7 +919,7 @@ class SurveyController extends Controller
             PDF::SetTextColor(0, 0, 0);
             PDF::SetFont('helvetica', '', 12);
 
-            $html='<p>This survey is co-developed with Hogan Center for Performance Excellence. Hogan center lead 5 companies to win the Malcoln Baldridge award for quality excellence.</p>
+            $html='<p>This survey is co-developed with Hogan Center for Performance Excellence. Hogan center led 5 companies to win the Malcoln Baldridge award for quality excellence.</p>
                     <p>Hogan was the only advisor at the time to get ANY company with revenues of $100mm or less to win the international prestigious award, with the smallest company 
                     being only $2mm in annual revenues.</p>';
 
