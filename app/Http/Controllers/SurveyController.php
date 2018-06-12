@@ -912,16 +912,19 @@ class SurveyController extends Controller
             PDF::addPage();
             PDF::SetFont('times', 'I', 18);
             PDF::SetTextColor(0, 0, 128);
-            PDF::Cell(0, 20, 'Origin', 0, false, 'C', 0, '', 0, false, 'T', 'T');
+            PDF::Cell(0, 20, 'Introduction', 0, false, 'C', 0, '', 0, false, 'T', 'T');
 
             PDF::Ln(10);
 
             PDF::SetTextColor(0, 0, 0);
             PDF::SetFont('helvetica', '', 12);
 
-            $html='<p>This survey is co-developed with Hogan Center for Performance Excellence. Hogan center led 5 companies to win the Malcoln Baldridge award for quality excellence.</p>
-                    <p>Hogan was the only advisor at the time to get ANY company with revenues of $100mm or less to win the international prestigious award, with the smallest company 
-                    being only $2mm in annual revenues.</p>';
+            $html="<p>This survey is co-developed with Hogan Center for Performance Excellence. The Hogan Center was a performance excellence training and consulting company founded by Warren Hogan. 
+                    The Center's sole purpose was to assist and lead companies to achieving world class operating structures that not only ensured best in class execution of a company's production, 
+                    customer service and administrative processes, but also increased sustainable profits and companies' ability to consistently achieve stated goals.</p>
+                    <p>When the Hogan Center was in full operations, it was considered a leader in its implementation programs.   These programs were instrumental in 6 companies 
+                    being awarded the Malcolm Baldrige National Quality Award and 10 companies receiving the  Texas Award for Performance Excellence.</p>
+                    <p>While Warren Hogan is now semi-retired and merged The Hogan Center into US Leadership in Las Colinas, he remains a coach and advisor to New Life CFO Services.</p>";
 
             PDF::writeHTML($html, true, false, true, false, '');
 
