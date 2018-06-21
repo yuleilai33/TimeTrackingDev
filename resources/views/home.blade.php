@@ -362,6 +362,8 @@
     </script>
 @endsection
 @section('special-css')
+    {{--chartist plugin--}}
+    <link rel="stylesheet" href="/css/chartist-plugin-tooltip.css">
     <style>
         div.closings-biz-dev span.number {
             font-size: 1.7em;

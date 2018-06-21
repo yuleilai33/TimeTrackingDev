@@ -25,8 +25,6 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/img/favicon.png">
     {{--diego start adding--}}
     <link rel="stylesheet" href="/css/custom.css">
-    {{--chartist plugin--}}
-    {{--<link rel="stylesheet" href="/css/chartist-plugin-tooltip.css">--}}
     {{--end--}}
     <style>
         .group-client-name {
