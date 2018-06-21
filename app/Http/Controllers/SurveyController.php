@@ -275,9 +275,6 @@ class SurveyController extends Controller
     {
         $user = Auth::user();
         $feedback = [];
-        $feedback['code'] = 7;
-        $feedback['message'] = 'Record Update Success';
-        /*
         if ($request->ajax()) {
 
 //            if ($user->can('update', $eng)) {
@@ -308,9 +305,8 @@ class SurveyController extends Controller
 //                $feedback['code'] = 1;
 //                $feedback['message'] = 'Active engagement can only be updated by manager';
 //            }
-        */
             return json_encode($feedback);
-//        }
+        }
 
 
     }

@@ -26,7 +26,7 @@
     {{--diego start adding--}}
     <link rel="stylesheet" href="/css/custom.css">
     {{--chartist plugin--}}
-    <link rel="stylesheet" href="/css/chartist-plugin-tooltip.css">
+    {{--<link rel="stylesheet" href="/css/chartist-plugin-tooltip.css">--}}
     {{--end--}}
     <style>
         .group-client-name {
