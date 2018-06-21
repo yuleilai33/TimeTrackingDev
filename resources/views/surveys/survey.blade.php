@@ -169,6 +169,7 @@
 
                 formdata.append('_method', update ? 'put' : 'post');
 
+                /* hack to fix safari bug where upload fails if file input is empty*/
                 if (document.getElementById("client-logo").files.length == 0 ) {
                     formdata.delete('logo');
                 }

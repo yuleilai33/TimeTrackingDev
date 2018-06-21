@@ -262,6 +262,10 @@
                 formdata.delete('total');
                 formdata.set('mileage_cost', (formdata.get('mileage_cost') * 0.545).toFixed(2));
                 formdata.append('_method', update ? 'put' : 'post');
+                /* hack to fix safari bug where upload fails if file input is empty*/
+                if (document.getElementById("input-receipts").files.length == 0 ) {
+                    formdata.delete('receipts[]');
+                }
                 $.ajax({
                     type: "POST",
                     url: update ? "/expense/" + expid : "/expense",
