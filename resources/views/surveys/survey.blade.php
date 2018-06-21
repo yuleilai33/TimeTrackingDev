@@ -167,7 +167,7 @@
                 var formdata = new FormData($(this)[0]);
                 formdata.append('_token',  '{{csrf_token()}}');
 
-                if (update) formdata.append('_method', 'PATCH');
+                formdata.append('_method', update ? 'put' : 'post');
 
                 getAssignments(formdata);
 
