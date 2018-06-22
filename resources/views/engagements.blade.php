@@ -280,6 +280,21 @@
                         <a href="javascript:void(0)" type="button" class="btn btn-info"
                            id="filter-button">Filter</a>
                     </div>
+
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="pull-right excel-button">
+                    @if($manage)
+                        <i>&nbsp; </i>
+                        <a href="{{route('engagement.index',array_add(array_add(Request::all(),'file','excel'),'lid',Auth::user()->consultant->id),false)}}"
+                           type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>
+                    @elseif($admin)
+                        <i>&nbsp; </i>
+                        <a href="{{str_replace_first('/','',route('engagement.index', array_add(Request::all(),'file','excel'),false))}}"
+                           type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>
+                    @endif
                 </div>
             </div>
             <hr>
@@ -743,6 +758,15 @@
 
         #billing-day-container div.datepicker-days thead {
             display: none;
+        }
+
+        .excel-button:hover {
+            opacity: 0.5;
+            filter: alpha(opacity=50);
+        }
+
+        .excel-button {
+            padding-right: 20px;
         }
     </style>
 @endsection

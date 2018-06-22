@@ -9,9 +9,12 @@ use newlifecfo\Models\Arrangement;
 use newlifecfo\Models\Client;
 use newlifecfo\Models\Consultant;
 use newlifecfo\Models\Engagement;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EngagementController extends Controller
 {
+
+    const ACCOUNTING_FORMAT = '_("$"* #,##0.00_);_("$"* \(#,##0.00\);_("$"* "-"??_);_(@_)';
 
     public function __construct()
     {
@@ -33,16 +36,55 @@ class EngagementController extends Controller
             ->sortBy(function ($eng) {
                 return $eng->client->name;
             });
-        $engagements = $this->paginate($engs, 20);
-        return view('engagements', ['engagements' => $engagements,
-            'clients' => $engs->map(function ($item) {
-                return $item->client;
-            })->sortBy('name')->unique(),
-            'leaders' => Engagement::all()->map(function ($item) {
-                return $item->leader;
-            })->sortBy('first_name')->unique(),
-            'admin' => $isAdmin
-        ]);
+        if($request->file == 'excel'){
+//            in case that people enter url directly to download
+
+            if($isAdmin || $request->lid == $consultant->id){
+                return Excel::create($this->filename($request), function ($excel) use ($engs) {
+                    $excel->sheet('Engagement', function ($sheet) use ($engs) {
+                        $engagementGroups=$engs->groupBy('client_id');
+                        $rowNum = 1;
+                        $sheet->freezeFirstRow()
+                            ->row($rowNum++, ['Client', 'Biz Dev Person', 'Biz Dev Share', 'Engagement Name', 'Status', 'Engagement Closer', 'Closer Share', 'Closing From', 'Closing To',
+                                'Billing Type', 'Leader', 'Consultant','Position','Billing Rate','Firm Share', 'Pay Rate'])
+                            ->cells('A1:P1', function ($cells) {
+                                $this->setTitleCellsStyle($cells);
+                            })->setColumnFormat(['C' => '0.0%','G' => '0.0%','N' => self::ACCOUNTING_FORMAT, 'O' => '0.00%', 'P' => self::ACCOUNTING_FORMAT]);
+
+                        foreach($engagementGroups as $key => $engagementGroup) {
+                            $client = Client::find($key);
+                            $sheet->row($rowNum++, [$client->name, $client->dev_by_consultant->fullname()])
+                                    ->cells('A'.($rowNum-1) .':'.'P'.($rowNum-1), function($cells){
+                                        $cells->setBackground('#dddddd')->setFontWeight('bold');
+                                    });
+                            foreach ($engagementGroup as $eng) {
+                                $sheet->row($rowNum++, [null, null, $eng->buz_dev_share, $eng->name, $eng->state(),
+                                    $eng->closer->fullname(), $eng->closer_share, $eng->closer_from, $eng->closer_end, $eng->clientBilledType(), $eng->leader->fullname()]);
+                                $arrangements = $eng->arrangements;
+                                foreach ($arrangements as $arrangement) {
+                                    $sheet->row($rowNum++, [null, null, null, null, null, null, null, null, null, null, null, $arrangement->consultant->fullname(), $arrangement->position->name, $arrangement->billing_rate,
+                                        $arrangement->firm_share, $eng->isHourlyBilling() ? $arrangement->billing_rate*(1-$arrangement->firm_share):$arrangement->pay_rate]);
+                                }
+                            }
+                        }
+                    });
+
+            })->export('xlsx');
+            } else {
+                return null;
+            }
+        } else {
+            $engagements = $this->paginate($engs, 20);
+            return view('engagements', ['engagements' => $engagements,
+                'clients' => $engs->map(function ($item) {
+                    return $item->client;
+                })->sortBy('name')->unique(),
+                'leaders' => Engagement::all()->map(function ($item) {
+                    return $item->leader;
+                })->sortBy('first_name')->unique(),
+                'admin' => $isAdmin
+            ]);
+        }
     }
 
     /**
@@ -280,5 +322,27 @@ class EngagementController extends Controller
             }
         }
         return true;
+    }
+
+    private function filename($request)
+    {
+        $client='';
+        $leader='';
+        $start='';
+        $status='';
+        if($request->cid)
+        {$client='_client-'.Client::find($request->cid)->name;}
+        if($request->lid)
+        {$leader='_leader-'.Consultant::find($request->lid)->fullname();}
+        if($request->start)
+        {$start='_start-'.$request->start;}
+        if($request->status)
+        {$status=$request->status==0? '_pending': $request->status==1? '_active': '_closed';}
+      return 'engagement'.$client.$leader.$start.$status;
+    }
+
+    private function setTitleCellsStyle($cells)
+    {
+        $cells->setBackground('#3bd3f9')->setFontFamily('Calibri')->setFontWeight('bold')->setAlignment('center');
     }
 }
