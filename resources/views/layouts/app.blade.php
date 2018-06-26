@@ -98,19 +98,22 @@
                                 </div>
                             </li>
                             <li>
-                                <a href="#subPages3" data-toggle="collapse"
-                                   class="{{str_contains(Request::path(),'approval') ? 'active':'collapsed '}}"><i
-                                            class="fa fa-gavel" aria-hidden="true"></i><span>Approval</span> <i
-                                            class="icon-submenu lnr lnr-chevron-left"></i></a>
-                                <div id="subPages3" class="collapse {{str_contains(Request::path(),'approval') ?'in':''}}">
-                                    <ul class="nav">
-                                        <li><a href="/approval/hour?summary=1" class="{{Request::is('approval/hour') ?'active':''}}">Time
-                                                Report</a></li>
-                                        <li><a href="/approval/expense?summary=1"
-                                               class="{{Request::is('approval/expense') ?'active':''}}">Expense Report</a>
-                                        </li>
-                                    </ul>
-                                </div>
+                                {{--<a href="#subPages3" data-toggle="collapse"--}}
+                                   {{--class="{{str_contains(Request::path(),'approval') ? 'active':'collapsed '}}"><i--}}
+                                            {{--class="fa fa-gavel" aria-hidden="true"></i><span>Approval</span> <i--}}
+                                            {{--class="icon-submenu lnr lnr-chevron-left"></i></a>--}}
+                                {{--<div id="subPages3" class="collapse {{str_contains(Request::path(),'approval') ?'in':''}}">--}}
+                                    {{--<ul class="nav">--}}
+                                        {{--<li><a href="/approval/hour?summary=1" class="{{Request::is('approval/hour') ?'active':''}}">Time--}}
+                                                {{--Report</a></li>--}}
+                                        {{--<li><a href="/approval/expense?summary=1"--}}
+                                               {{--class="{{Request::is('approval/expense') ?'active':''}}">Expense Report</a>--}}
+                                        {{--</li>--}}
+                                    {{--</ul>--}}
+                                {{--</div>--}}
+                                <a href="/approval/hour?summary=1"
+                                class="{{str_contains(Request::path(),'approval') ? 'active':'collapsed '}}"><i
+                                class="fa fa-gavel" aria-hidden="true"></i><span>Approval</span></a>
                             </li>
 
                             <!-- Start adding the code for goal survey -->

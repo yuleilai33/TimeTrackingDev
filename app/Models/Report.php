@@ -110,13 +110,17 @@ class Report extends Model
     public static function confirmation($request, $consultant)
     {
         $confirm = [];
-        if (Carbon::now()->day > 15) {
-            $confirm['startOfLast'] = Carbon::parse('first day of this month')->startOfDay();
-            $confirm['endOfLast'] = Carbon::parse('first day of this month')->addDays(14)->endOfDay();
-        } else {
-            $confirm['startOfLast'] = Carbon::parse('first day of last month')->addDays(15)->startOfDay();
-            $confirm['endOfLast'] = Carbon::parse('last day of last month')->endOfDay();
-        }
+//        if (Carbon::now()->day > 15) {
+//            $confirm['startOfLast'] = Carbon::parse('first day of this month')->startOfDay();
+//            $confirm['endOfLast'] = Carbon::parse('first day of this month')->addDays(14)->endOfDay();
+//        } else {
+//            $confirm['startOfLast'] = Carbon::parse('first day of last month')->addDays(15)->startOfDay();
+//            $confirm['endOfLast'] = Carbon::parse('last day of last month')->endOfDay();
+//        }
+//        change the time period to full month
+        $confirm['startOfLast'] = Carbon::parse('first day of last month')->startOfDay();
+        $confirm['endOfLast'] = Carbon::parse('last day of last month')->endOfDay();
+
         $eid = explode(',', $request->get('eid'));
 
         $myReports = self::reported($confirm['startOfLast'], $confirm['endOfLast'], $eid, $consultant, [0, 4]);

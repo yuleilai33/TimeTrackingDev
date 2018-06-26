@@ -4,24 +4,24 @@
         <div class="container-fluid">
             <div class="panel panel-headline">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Confirm Team's Reports</h3>
-                    <p class="panel-subtitle">Last billing period: <span class="badge bg-success">{{$confirm['hour']['startOfLast']->toFormattedDateString().' - '.$confirm['hour']['endOfLast']->toFormattedDateString()}}</span></p>
+                    <h3 class="panel-title">Confirm {{$report=='time'?'Time':'Expense'}} Reports</h3>
+                    <p class="panel-subtitle">Last paying period: <span class="badge bg-success">{{$confirm['startOfLast']->toFormattedDateString().' - '.$confirm['endOfLast']->toFormattedDateString()}}</span></p>
                 </div>
                 <div class="panel-body no-padding">
                     <div class="select-bp row">
                         <div class="col-md-3">
-                            <a href="hour?reporter=team" title="Confirm team's time reports"><img src="/img/mytime.png"
-                                                                                   alt="time"
-                                                                                   width="90px"><span class="badge bg-{{$confirm['hour']['count']['team']==0?'default':'danger'}}">{{$confirm['hour']['count']['team']}}</span></a>
+                            <a href="{{$report=='time'?'hour?reporter=me':'expense?reporter=me'}}" title="Confirm my {{$report}} reports"><img src="/img/my{{$report}}.png"
+                                                                                   alt="{{$report}}"
+                                                                                   width="90px"><span class="badge bg-{{$confirm['count']['me']==0?'default':'danger'}}">{{$confirm['count']['me']}}</span></a>
                             <br>
-                            <p class="label label-primary">Team Hours</p>
+                            <p class="label label-{{$report=='time'?'primary':'info'}}">My Own {{$report=='time'?'Hours':'Expenses'}}</p>
 
                         </div>
                         <div class="col-md-3 pull-right">
-                            <a href="expense?reporter=team" title="Approve my team's expense reports"><img src="/img/teamexpense.png" alt="expense"
-                                                                         width="90px"><span class="badge bg-{{$confirm['expense']['count']['team']==0?'default':'danger'}}">{{$confirm['expense']['count']['team']}}</span></a>
+                            <a href="{{$report=='time'?'hour?reporter=team':'expense?reporter=team'}}" title="Approve my team's {{$report}} reports"><img src="/img/team{{$report}}.png" alt="{{$report}}"
+                                                                         width="90px"><span class="badge bg-{{$confirm['count']['team']==0?'default':'danger'}}">{{$confirm['count']['team']}}</span></a>
                             <br>
-                            <p class="label label-success">Team Expenses</p>
+                            <p class="label label-success">Lead Engagements</p>
                         </div>
                     </div>
                 </div>

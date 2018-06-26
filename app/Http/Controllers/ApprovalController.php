@@ -29,11 +29,13 @@ class ApprovalController extends Controller
 
     private function hourApproval($request)
     {
-        $confirm = Hour::confirmation($request, Auth::user()->consultant);
+//        change the confirm variable to show the total both for hours and expenses
+        $confirm['hour'] = Hour::confirmation($request, Auth::user()->consultant);
+        $confirm['expense'] = Expense::confirmation($request, Auth::user()->consultant);
         if ($request->get('summary')) {
             return view('selection.approval-select', ['confirm' => $confirm,'report'=>'time']);
         }
-        return app(HoursController::class)->index($request, false, $confirm);
+        return app(HoursController::class)->index($request, false, $confirm['hour']);
     }
 
     private function expenseApproval($request)

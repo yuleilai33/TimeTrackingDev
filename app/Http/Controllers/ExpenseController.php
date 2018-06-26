@@ -90,6 +90,7 @@ class ExpenseController extends Controller
                     $exp = (new Expense(['arrangement_id' => $arr->id, 'consultant_id' => $arr->consultant_id, 'client_id' => $eng->client_id]))->fill($request->except(['eid', 'receipts', 'review_state']));
                     if ($exp->save()) {
                         if ($this->saveReceipts($request, $exp->id)) {
+                            $exp=Expense::find($exp->id);
                             $feedback['code'] = 7;
                             $feedback['message'] = 'success';
                             $feedback['data'] = ['company_paid' => $exp->company_paid ? 'Yes' : 'No', 'status' => $exp->getStatus(), 'total' => $exp->total(),

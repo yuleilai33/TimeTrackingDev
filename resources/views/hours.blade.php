@@ -177,7 +177,8 @@
                         $('#billable-hours').val(data.billable_hours).trigger("change");
                         $('#non-billable-hours').val(data.non_billable_hours);
                         $('#description').val(data.description);
-                        $('#report-update').attr('disabled', data.review_state !== "0");
+                        /* 06262018 change to editable when self_confirmed*/
+                        $('#report-update').attr('disabled', (data.review_state !== "0") && (data.review_state !== "3"));
                         $('#consultant-name').text(data.cname);
                         @if($admin)
                         $('#report-update').attr('disabled', false);

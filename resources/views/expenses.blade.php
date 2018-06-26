@@ -333,7 +333,8 @@
                     $('#input-receipts').val('');
                     $('#description').val(data.description);
                     $('#expense-total').val(parseFloat(data.total).toFixed(2));
-                    $('#report-update').attr('disabled', data.review_state !== "0");
+                    /* 06262018 change to editable when self_confirmed*/
+                    $('#report-update').attr('disabled', (data.review_state !== "0") && (data.review_state !== "3"));
                     $('#consultant-name').text(data.cname);
                     @if($admin)
                     $('#report-update').attr('disabled', false);
