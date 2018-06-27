@@ -62,10 +62,12 @@
                                         <span class="input-group-addon"><i class="fa fa-male"
                                                                            aria-hidden="true"></i>&nbsp; Leader:</span>
                                         <select class="selectpicker" name="leader_id" id="leader_id"
-                                                data-width="auto"
-                                                disabled>
+                                                data-width="auto" data-live-search="true" title="select the lead"
+                                                disabled required>
                                             @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                                @if(!$consultant->user->isInactive())
                                                 <option value="{{$consultant->id}}" {{($manage&&$consultant->id==$leader->id)?'selected':''}}>{{$consultant->fullname()}}</option>
+                                                @endif
                                             @endforeach
                                         </select>
                                     </div>
@@ -117,7 +119,9 @@
                                                 data-live-search="true"
                                                 name="closer_id" title="select closer">
                                             @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                                @if(!$consultant->user->isInactive())
                                                 <option value="{{$consultant->id}}">{{$consultant->fullname()}}</option>
+                                                @endif
                                             @endforeach
                                         </select>
                                         <span class="input-group-addon"><i
@@ -161,8 +165,10 @@
                                                         data-live-search="true"
                                                         required disabled>
                                                     @foreach(\newlifecfo\Models\Consultant::recognized() as $consultant)
+                                                        @if(!$consultant->user->isInactive())
                                                         <option class="{{$consultant->user->isVerified()?'':'h-consultant'}}"
                                                                 value="{{$consultant->id}}">{{$consultant->fullname()}}</option>
+                                                        @endif
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -189,7 +195,7 @@
                             </div>
                             @if($admin)
                                 <div class="row"
-                                     style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em">
+                                     style="width:95%;border-style: dotted;color:#33c0ff;padding: .2em .2em .2em .2em;margin-left: 1.4em" id="status-bar">
                                     <div class="col-md-4">
                                         <label class="fancy-radio">
                                             <input name="status" value="0" type="radio">
@@ -241,7 +247,7 @@
                 </div>
                 <div class="col-md-8">
                     <div class="form-inline pull-right" style="font-family:FontAwesome;" id="filter-selection">
-                        @if($manage)
+                        @if($manage||$admin)
                             <a href="javascript:void(0)" class="btn btn-success" id="build-engagement"><i
                                         class="fa fa-cubes">&nbsp;
                                     Build</i></a>
@@ -484,6 +490,10 @@
                 curFormatter = new AutoNumeric('#billing_amount', {'currencySymbol': '$', 'unformatOnSubmit': true});
                 $('#engagementModal').modal('toggle');
             });
+            $('#leader_id').on('change', function(){
+                var tb = $("#members-table");
+                tb.find('select').first().selectpicker('val', $('#leader_id').val());
+            });
             $('.eng-delete').on('click', function () {
                 if ($(this).data('del') == 0) {
                     toastr.warning('Can\'t delete non-pending engagement here.');
@@ -671,6 +681,8 @@
             var tb = $("#members-table");
             tb.find("tr:not(:first-child)").remove();
             tb.find("tr .selectpicker").selectpicker('refresh');
+            $('#leader_id').prop('disabled', true).selectpicker('refresh');
+            $('#status-bar').attr('hidden', true);
             if (!update) {
                 $('#cycle-select').selectpicker('val', 0).trigger('change');
                 $('#engagement-name').val('');
@@ -684,11 +696,16 @@
                 $('#closer-from').val('');
                 $('#closer-end').val('');
                 $('#closer-share').val('');
+                if('{{$admin}}'){
+                    $('#leader_id').prop('disabled', false).val('default').selectpicker('refresh');
+                    $("input[name=status][value='1']").prop("checked",true);
+                }
                 tb.find('select').first().selectpicker('val', $('#leader_id').val());
                 tb.find('select').last().selectpicker('val', 8);
             } else {
                 $('#submit-modal').html('Update');
-                $('#engagementModalLabel').find('span').text('Update Engagement')
+                $('#engagementModalLabel').find('span').text('Update Engagement');
+                $('#status-bar').attr('hidden', false);
             }
         }
 
