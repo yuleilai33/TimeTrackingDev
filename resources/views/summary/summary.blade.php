@@ -156,10 +156,10 @@
 
                             </ul>
                             {{--might add the excel download in the future--}}
-                            {{--<div class="pull-right excel-button"><a--}}
-                                        {{--href="{{str_replace_first('/','',route('payroll',array_add(Request::all(),'file','excel'),false))}}"--}}
-                                        {{--type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>--}}
-                            {{--</div>--}}
+                            <div class="pull-right excel-button"><a
+                                        href="{{str_replace_first('/','',route('summary',array_add(Request::all(),'file','excel_overall'),false))}}"
+                                        type="button" title="Download excel file"><img src="/img/excel.png" alt=""></a>
+                            </div>
                         </div>
                             <table class="table table-hover table-responsive summary-table " style="margin-bottom: 0">
                                 <thead>
@@ -392,7 +392,7 @@
 
                 $('#consultant-name strong').text(consultantName);
                 $('#client-engagement strong').text(clientName+' - '+engagementName);
-                var url = "{{url()->current().'?'.http_build_query(array_add(Request::except('eid','conid'),'file','excel'))}}"+"&eid=" + engagementId+ "&conid="+consultantId;
+                var url = "{{url()->current().'?'.http_build_query(array_add(Request::except('eid','conid'),'file','excel_detail'))}}"+"&eid=" + engagementId+ "&conid="+consultantId;
                 url = url.replace(/&amp;/g, '&');
                 $('.daily-report-download>a').attr("href", url);
 

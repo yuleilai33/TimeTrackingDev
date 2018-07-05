@@ -109,7 +109,7 @@ class SummaryController extends Controller
 
         //        filter section end
 
-        if ($file == 'excel') {
+        if ($file == 'excel_detail') {
 
             $engagement = Engagement::find($eids[0]);
 
@@ -132,6 +132,7 @@ class SummaryController extends Controller
             })->export('xlsx');
 
         } else {
+
             if ($range == '2months') {
 
                 $currentStart = date("Y-m-01", strtotime($currentMonth));
@@ -247,13 +248,115 @@ class SummaryController extends Controller
 //        })-> unique();
 //         for filter
 
+            if ($file == 'excel_overall')
+            {
+                return Excel::create('Summary_'.$startDate.'_'.$endDate, function ($excel) use ($clients, $lastPeriodHoursByClient,$currentPeriodHoursByClient, $lastPeriodPayByClient, $currentPeriodPayByClient,
+                    $startDate, $lastEnd, $currentStart, $endDate, $eids, $isAdmin, $filterByEngagement, $lastPeriodHoursByEngagement, $currentPeriodHoursByEngagement, $lastPeriodPayByEngagement, $currentPeriodPayByEngagement,
+                    $filterByConsultant, $lastPeriodHoursByArrangement, $currentPeriodHoursByArrangement, $lastPeriodPayByArrangement, $currentPeriodPayByArrangement, $lastPeriodBillByArrangement, $currentPeriodBillByArrangement) {
+                    $this->setExcelProperties($excel, 'Summary Report');
 
-            return view('summary.summary', compact('hours', 'clients', 'startDate', 'endDate', 'currentStart', 'lastEnd',
-                'clientIds', 'eids', 'filterByConsultant', 'filterByEngagement','isAdmin','access','filter_consultants','filter_engagements',
-                'lastPeriodHoursByClient', 'currentPeriodHoursByClient', 'lastPeriodHoursByEngagement', 'currentPeriodHoursByEngagement',
-                'lastPeriodHoursByArrangement', 'currentPeriodHoursByArrangement', 'lastPeriodPayByClient', 'currentPeriodPayByClient',
-                'lastPeriodPayByEngagement', 'currentPeriodPayByEngagement', 'lastPeriodPayByArrangement', 'currentPeriodPayByArrangement',
-                'lastPeriodBillByArrangement', 'currentPeriodBillByArrangement'));
+                    $excel->sheet('Summary Report', function ($sheet) use ($clients, $lastPeriodHoursByClient,$currentPeriodHoursByClient, $lastPeriodPayByClient, $currentPeriodPayByClient, $startDate, $lastEnd,
+                        $currentStart, $endDate, $eids, $isAdmin, $filterByEngagement, $lastPeriodHoursByEngagement, $currentPeriodHoursByEngagement, $lastPeriodPayByEngagement, $currentPeriodPayByEngagement,
+                        $filterByConsultant, $lastPeriodHoursByArrangement, $currentPeriodHoursByArrangement, $lastPeriodPayByArrangement, $currentPeriodPayByArrangement, $lastPeriodBillByArrangement, $currentPeriodBillByArrangement) {
+                        $rowNum = 1;
+                        $sheet->freezeFirstRow()
+                            ->row($rowNum++, ['Client', 'Engagement', 'Consultant', 'Hours - Last Period', 'Hours - Current Period', 'Hours - Change', 'Pay - Last Period', 'Pay - Current Period', 'Pay - Change', 'Bill - Last Period', 'Bill - Current Period', 'Bill - Change'])
+                            ->cells('A1:L1', function ($cells) {
+                                $this->setTitleCellsStyle($cells);
+                            })->setColumnFormat(['D:F' => '0.00', 'G:L' => self::ACCOUNTING_FORMAT]);
+                        foreach ($clients as $client) {
+//                            client level
+                            $lastPeriodHours = $lastPeriodHoursByClient->get($client->id);
+                            $currentPeriodHours = $currentPeriodHoursByClient->get($client->id);
+                            $hoursDiff = $currentPeriodHours - $lastPeriodHours;
+
+                            $lastPeriodPay = $lastPeriodPayByClient->get($client->id);
+                            $currentPeriodPay = $currentPeriodPayByClient->get($client->id);
+                            $payDiff = $currentPeriodPay - $lastPeriodPay;
+
+                            $lastPeriodBill = $client->engagementBill($startDate, $lastEnd, null, $eids)[0];
+                            $currentPeriodBill = $client->engagementBill($currentStart, $endDate, null, $eids)[0];
+                            $billDiff = $currentPeriodBill - $lastPeriodBill;
+
+                            if ($lastPeriodHours == 0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill == 0) {
+                                continue;
+                            }
+                            $sheet->row($rowNum++, [$client->name, null, null, $lastPeriodHours, $currentPeriodHours, $hoursDiff, $lastPeriodPay, $currentPeriodPay, $payDiff, $lastPeriodBill, $currentPeriodBill, $billDiff])
+                                ->cells('A' . ($rowNum - 1) . ':' . 'L' . ($rowNum - 1), function ($cells) {
+                                    $cells->setBackground('#ffff8d')->setFontWeight('bold');
+                                });
+
+                            foreach ($client->engagements()->withTrashed()->get() as $eng) {
+//                                engagement level
+                                if (!$isAdmin) {
+                                    if ($eng->leader_id != Auth::user()->consultant->id) {
+                                        continue;
+                                    }
+                                }
+                                if ($filterByEngagement) {
+                                    if (!in_array($eng->id, $eids)) {
+                                        continue;
+                                    }
+                                }
+
+                                $lastPeriodHours=$lastPeriodHoursByEngagement->get($eng->id);
+                                $currentPeriodHours=$currentPeriodHoursByEngagement->get($eng->id);
+                                $hoursDiff =$currentPeriodHours-$lastPeriodHours;
+
+                                $lastPeriodPay=$lastPeriodPayByEngagement->get($eng->id);
+                                $currentPeriodPay=$currentPeriodPayByEngagement->get($eng->id);
+                                $payDiff =$currentPeriodPay-$lastPeriodPay;
+
+                                $eid=array();
+                                $eid[]=$eng->id;
+                                $lastPeriodBill=$client->engagementBill($startDate,$lastEnd,null,$eid)[0];
+                                $currentPeriodBill=$client->engagementBill($currentStart,$endDate,null,$eid)[0];
+                                $billDiff=$currentPeriodBill-$lastPeriodBill;
+
+                                if($filterByConsultant) {
+                                    if($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0){ continue;}
+                                    } elseif($filterByEngagement) {
+                                } elseif($lastPeriodHours==0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill ==0){ continue;}
+
+                                $sheet->row($rowNum++, [null, $eng->name, null, $lastPeriodHours, $currentPeriodHours, $hoursDiff, $lastPeriodPay, $currentPeriodPay, $payDiff, $lastPeriodBill, $currentPeriodBill, $billDiff])
+                                    ->cells('A' . ($rowNum - 1) . ':' . 'L' . ($rowNum - 1), function ($cells) {
+                                        $cells->setBackground('#dddddd')->setFontWeight('bold');
+                                    });
+
+//                                Consultant level
+                                foreach($eng->arrangements()->withTrashed()->get() as $arrange) {
+                                    $lastPeriodHours = $lastPeriodHoursByArrangement->get($arrange->id);
+                                    $currentPeriodHours = $currentPeriodHoursByArrangement->get($arrange->id);
+                                    $hoursDiff = $currentPeriodHours - $lastPeriodHours;
+
+                                    $lastPeriodPay = $lastPeriodPayByArrangement->get($arrange->id);
+                                    $currentPeriodPay = $currentPeriodPayByArrangement->get($arrange->id);
+                                    $payDiff = $currentPeriodPay - $lastPeriodPay;
+
+                                    $lastPeriodBill = $lastPeriodBillByArrangement->get($arrange->id);
+                                    $currentPeriodBill = $currentPeriodBillByArrangement->get($arrange->id);
+                                    $billDiff = $currentPeriodBill - $lastPeriodBill;
+
+                                    if ($lastPeriodHours == 0 && $currentPeriodHours == 0 && $lastPeriodPay == 0 && $currentPeriodPay == 0 && $lastPeriodBill == 0 && $currentPeriodBill == 0) {
+                                        continue;
+                                    }
+
+                                    $sheet->row($rowNum++, [null, null, $arrange->consultant->fullname(), $lastPeriodHours, $currentPeriodHours, $hoursDiff, $lastPeriodPay, $currentPeriodPay, $payDiff, $lastPeriodBill, $currentPeriodBill, $billDiff]);
+                                }
+                            }
+
+                        }
+                    });
+                })->export('xlsx');
+
+            } else {
+                return view('summary.summary', compact('hours', 'clients', 'startDate', 'endDate', 'currentStart', 'lastEnd',
+                    'clientIds', 'eids', 'filterByConsultant', 'filterByEngagement', 'isAdmin', 'access', 'filter_consultants', 'filter_engagements',
+                    'lastPeriodHoursByClient', 'currentPeriodHoursByClient', 'lastPeriodHoursByEngagement', 'currentPeriodHoursByEngagement',
+                    'lastPeriodHoursByArrangement', 'currentPeriodHoursByArrangement', 'lastPeriodPayByClient', 'currentPeriodPayByClient',
+                    'lastPeriodPayByEngagement', 'currentPeriodPayByEngagement', 'lastPeriodPayByArrangement', 'currentPeriodPayByArrangement',
+                    'lastPeriodBillByArrangement', 'currentPeriodBillByArrangement'));
+            }
 ////
         }
 
