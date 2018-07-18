@@ -1069,50 +1069,50 @@ class SurveyController extends Controller
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Questions:</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center"><b>Never</b></td>
-                  <td class="not-gap" width="13%" align="center"><b>Sporadic</b></td>
-                  <td class="not-gap" width="11%" align="center"><b>Usually</b></td>
                   <td class="not-gap" width="11%" align="center"><b>Always</b></td>
+                  <td class="not-gap" width="11%" align="center"><b>Usually</b></td>
+                  <td class="not-gap" width="13%" align="center"><b>Sporadic</b></td>                  
+                  <td class="not-gap" width="9%" align="center"><b>Never</b></td>
                  </tr>
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key1}. {$questions[$key1]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center" id="question_{$key1}_1"><b>{$totalByQuestionByScore[$key1][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center" id="question_{$key1}_2"><b>{$totalByQuestionByScore[$key1][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center" id="question_{$key1}_3"><b>{$totalByQuestionByScore[$key1][3]}</b></td>
                   <td class="not-gap" width="11%" align="center" id="question_{$key1}_4"><b>{$totalByQuestionByScore[$key1][4]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key1}_3"><b>{$totalByQuestionByScore[$key1][3]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key1}_2"><b>{$totalByQuestionByScore[$key1][2]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key1}_1"><b>{$totalByQuestionByScore[$key1][1]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key2}. {$questions[$key2]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center" id="question_{$key2}_1"><b>{$totalByQuestionByScore[$key2][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center" id="question_{$key2}_2"><b>{$totalByQuestionByScore[$key2][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center" id="question_{$key2}_3"><b>{$totalByQuestionByScore[$key2][3]}</b></td>
                   <td class="not-gap" width="11%" align="center" id="question_{$key2}_4"><b>{$totalByQuestionByScore[$key2][4]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key2}_3"><b>{$totalByQuestionByScore[$key2][3]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key2}_2"><b>{$totalByQuestionByScore[$key2][2]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key2}_1"><b>{$totalByQuestionByScore[$key2][1]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key3}. {$questions[$key3]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center" id="question_{$key3}_1"><b>{$totalByQuestionByScore[$key3][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center" id="question_{$key3}_2"><b>{$totalByQuestionByScore[$key3][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center" id="question_{$key3}_3"><b>{$totalByQuestionByScore[$key3][3]}</b></td>
                   <td class="not-gap" width="11%" align="center" id="question_{$key3}_4"><b>{$totalByQuestionByScore[$key3][4]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key3}_3"><b>{$totalByQuestionByScore[$key3][3]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key3}_2"><b>{$totalByQuestionByScore[$key3][2]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key3}_1"><b>{$totalByQuestionByScore[$key3][1]}</b></td>
                  </tr>                 
                  <tr>
                   <td class="not-gap" width="50%" align="left"><b>Q{$key4}. {$questions[$key4]}</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center" id="question_{$key4}_1"><b>{$totalByQuestionByScore[$key4][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center" id="question_{$key4}_2"><b>{$totalByQuestionByScore[$key4][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center" id="question_{$key4}_3"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
                   <td class="not-gap" width="11%" align="center" id="question_{$key4}_4"><b>{$totalByQuestionByScore[$key4][4]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="question_{$key4}_3"><b>{$totalByQuestionByScore[$key4][3]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="question_{$key4}_2"><b>{$totalByQuestionByScore[$key4][2]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="question_{$key4}_1"><b>{$totalByQuestionByScore[$key4][1]}</b></td>
                  </tr>
                   <tr>
                   <td class="not-gap" width="50%" align="left"><b>Total</b></td>
                   <td width="6%" ></td>
-                  <td class="not-gap" width="9%" align="center" id="total_{$key1}_1"><b>{$totalByCategoryByScore[$id][1]}</b></td>
-                  <td class="not-gap" width="13%" align="center" id="total_{$key1}_2"><b>{$totalByCategoryByScore[$id][2]}</b></td>
-                  <td class="not-gap" width="11%" align="center" id="total_{$key1}_3"><b>{$totalByCategoryByScore[$id][3]}</b></td>
                   <td class="not-gap" width="11%" align="center" id="total_{$key1}_4"><b>{$totalByCategoryByScore[$id][4]}</b></td>
+                  <td class="not-gap" width="11%" align="center" id="total_{$key1}_3"><b>{$totalByCategoryByScore[$id][3]}</b></td>
+                  <td class="not-gap" width="13%" align="center" id="total_{$key1}_2"><b>{$totalByCategoryByScore[$id][2]}</b></td>
+                  <td class="not-gap" width="9%" align="center" id="total_{$key1}_1"><b>{$totalByCategoryByScore[$id][1]}</b></td>
                  </tr>
                 </table>
 EOF;
@@ -1500,7 +1500,7 @@ EOF;
         $consultant=Auth::user()->consultant->fullname();
         PDF::addPage();
 
-        $NewLifeLogo = public_path() . '/img/logo-newlifetree.png';
+        $NewLifeLogo = public_path() . '/img/logo-newlifeleaf.png';
 
         // -- set new background ---
 
@@ -1511,7 +1511,8 @@ EOF;
 // disable auto-page-break
         PDF::SetAutoPageBreak(false, 0);
 // set bacground image
-        PDF::Image($NewLifeLogo, 0, 0, 211, 298, '', '', '', false, 300, '', false, false, 0);
+
+        PDF::Image($NewLifeLogo, -40, -35, 300, 350, '', '', 'M', false, 300, '', false, false, 0);
 // restore auto-page-break status
         PDF::SetAutoPageBreak($auto_page_break, $bMargin);
 // set the starting point for the page content
