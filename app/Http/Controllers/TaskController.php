@@ -20,11 +20,11 @@ class TaskController extends Controller
         $this->middleware('verifiedConsultant');
     }
 
-    public function exportPayroll()
+    public function exportPayroll(Request $request)
     {
 
-        $start = '04/01/2018';
-        $end = '04/30/2018';
+        $start = $request -> start;
+        $end = $request ->end;
         $eid = null;
         $state = null;
         $file = 'excel';
